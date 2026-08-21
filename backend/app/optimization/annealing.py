@@ -155,7 +155,7 @@ def solve_with_qaoa(Q: np.ndarray, num_vars: int, reps: int = 2, shots: int = 10
     """
     import time
     if num_vars > 18:
-        raise ValueError("QAOA path only supports small instances — reduce corridors/buckets before calling")
+        raise ValueError("QAOA path only supports small instances - reduce corridors/buckets before calling")
 
     t0 = time.perf_counter()
     
