@@ -88,12 +88,20 @@ export default function Corridors() {
                       {forecasts[c.code] ? (
                         (() => {
                           const fc = forecasts[c.code];
+                          
+                          // Match the new backend spec logic
                           const expected7d = fc.expected_demand_musd;
                           const peakBuffer = Math.max(0, fc.ci_high_musd - expected7d);
-                          const settlementBuffer = expected7d * 0.05;
-                          const fxReserve = fc.std_dev_musd * 0.4;
-                          const correspondentMargin = expected7d * 0.02;
-                          const recommendedMin = expected7d + peakBuffer + settlementBuffer + fxReserve + correspondentMargin;
+                          const base_demand = fc.ci_high_musd;
+                          
+                          const settlementBuffer = base_demand * 0.05;
+                          const fxReserve = base_demand * 0.075;
+                          const correspondentMargin = base_demand * 0.02;
+                          
+                          const minimumRequired = base_demand + settlementBuffer + fxReserve + correspondentMargin;
+                          const recommendedMin = minimumRequired * 1.05;
+                          const recommendationBuffer = recommendedMin - minimumRequired;
+                          
                           const currentBal = c.current_balance_musd;
                           const excess = currentBal - recommendedMin;
                           const coverageRatio = (currentBal / recommendedMin) * 100;
@@ -140,17 +148,22 @@ export default function Corridors() {
                                     <tr>
                                       <td className="px-4 py-2">Settlement Risk Buffer</td>
                                       <td className="px-4 py-2 text-right font-mono">${settlementBuffer.toFixed(1)}M</td>
-                                      <td className="px-4 py-2 text-muted text-xs">5% of demand</td>
+                                      <td className="px-4 py-2 text-muted text-xs">5% of P95 Demand</td>
                                     </tr>
                                     <tr>
                                       <td className="px-4 py-2">FX Volatility Reserve</td>
                                       <td className="px-4 py-2 text-right font-mono">${fxReserve.toFixed(1)}M</td>
-                                      <td className="px-4 py-2 text-muted text-xs">Based on {c.name.split(' ')[0]} volatility</td>
+                                      <td className="px-4 py-2 text-muted text-xs">7.5% of P95 Demand (volatility proxy)</td>
                                     </tr>
                                     <tr>
                                       <td className="px-4 py-2">Correspondent Risk Margin</td>
                                       <td className="px-4 py-2 text-right font-mono">${correspondentMargin.toFixed(1)}M</td>
-                                      <td className="px-4 py-2 text-muted text-xs">A- rating requirement</td>
+                                      <td className="px-4 py-2 text-muted text-xs">2% of P95 (A- rating)</td>
+                                    </tr>
+                                    <tr>
+                                      <td className="px-4 py-2">+ 5% Recommendation Buffer</td>
+                                      <td className="px-4 py-2 text-right font-mono">${recommendationBuffer.toFixed(1)}M</td>
+                                      <td className="px-4 py-2 text-muted text-xs">Final 5% margin on Minimum Required</td>
                                     </tr>
                                     <tr className="bg-surface/50 font-medium">
                                       <td className="px-4 py-2.5 text-teal">RECOMMENDED MINIMUM</td>
