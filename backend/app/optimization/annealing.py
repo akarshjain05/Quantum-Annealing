@@ -165,3 +165,31 @@ def local_search_refine(Q: np.ndarray, x: np.ndarray, *args, **kwargs) -> Tuple[
             break
     return x, improved_any
 
+def solve_with_neal(Q: np.ndarray, num_reads=200, num_sweeps=1000, seed=None):
+    """
+    Alternative SA solver using D-Wave's neal (pip install dwave-neal dimod).
+    Returns list of (bits, energy).
+    Mixed in from the original hackathon_solver prototype.
+    """
+    import dimod
+    import neal
+
+    # Convert QUBO matrix to dict format expected by dimod
+    Q_dict = {}
+    n_vars = Q.shape[0]
+    for i in range(n_vars):
+        for j in range(i, n_vars):
+            if Q[i, j] != 0:
+                Q_dict[(i, j)] = float(Q[i, j])
+
+    bqm = dimod.BinaryQuadraticModel.from_qubo(Q_dict)
+    sampler = neal.SimulatedAnnealingSampler()
+    sampleset = sampler.sample(
+        bqm, num_reads=num_reads, num_sweeps=num_sweeps, seed=seed
+    )
+    results = []
+    for sample, energy in sampleset.data(fields=["sample", "energy"]):
+        bits = np.array([int(sample[i]) for i in range(n_vars)])
+        results.append((bits, energy))
+    return results
+

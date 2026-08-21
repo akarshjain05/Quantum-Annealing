@@ -21,3 +21,4 @@
 8. **Auditability** via a real, verifiable SHA-256 hash chain, not just a database table someone could quietly edit.
 9. **GIFT City / IFSC-oriented positioning** - the sandbox-readiness self-assessment (`docs/sandbox-readiness.md`) is written against what an actual regulatory review would examine, not generic "AI safety" language.
 10. **Honesty as a feature** - this document set, the limitations doc, and the README's "deliberate simplifications" table exist because we think a fintech reviewer trusts a team more, not less, for stating precisely what is and isn't real.
+11. **Scalable product vs. service model** - NostroQ is a self-serve software platform where banks control their own optimizations, parameterized via standardized integration schemas, with usage-based pricing. The IP (QUBO formulations, deterministic agents, hash chains) compounds across the network as assets—we are not a consulting shop selling bespoke engineering and billable hours.

@@ -14,6 +14,8 @@ We built the architecture so the same formulation can migrate toward quantum ann
 
 Our agentic layer adds the context a static buffer can't: what's regulation, what's just how correspondent banks tend to behave, and what's our own model's assumption - three things treasury teams currently have to keep straight in their heads, that we keep straight in the data model instead.
 
-The result isn't just a prediction. It's an explainable liquidity allocation recommendation, validated independently of the solver that produced it, that a human has to approve before anything downstream would ever act on it.
+We deliver this not as a consulting service, but as a self-serve software platform. Treasury teams configure their own corridors, weights, and risk tolerances in our UI, and trigger the QUBO/SA optimization natively in their own tenant.
+
+The result isn't just a prediction. It's an explainable liquidity allocation recommendation, validated independently of the solver that produced it, that a human has to approve before anything downstream would ever act on it. Every recommendation and human action is secured via a tamper-evident hash chain.
 
 In one real run during this build: $386.06M in nostro liquidity, optimized down to $300.00M - $86.06M released, about 22% capital efficiency - without materially increasing modeled settlement risk, and with one corridor correctly flagged to *increase* rather than blindly shrink everything. That's not a target we hit; it's what the model actually produced.
