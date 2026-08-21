@@ -5,7 +5,7 @@ import client from "../api/client";
 import { Kpi, Loading, ErrorState } from "../components/Common";
 import SettlementTimeline from "../components/SettlementTimeline";
 
-const BAR_COLORS = ["#4FB8AE", "#C7A24C", "#6E8FE0", "#D66B56", "#8B8698", "#5B8DEF"];
+const BAR_COLORS = ["#4FB8AE", "#C7A24C", "#6E8FE0", "#D66B56", "#A78BFA", "#5B8DEF"];
 
 export default function Dashboard() {
   const [dash, setDash] = useState(null);
@@ -110,7 +110,7 @@ export default function Dashboard() {
               <CartesianGrid strokeDasharray="3 3" stroke="#263041" />
               <XAxis dataKey="currency" stroke="#7C8AA0" fontSize={12} />
               <YAxis stroke="#7C8AA0" fontSize={12} />
-              <Tooltip contentStyle={{ background: "#171E27", border: "1px solid #263041", fontSize: 12 }} />
+              <Tooltip cursor={{ fill: "#1f2937" }} contentStyle={{ background: "#171E27", border: "1px solid #263041", fontSize: 12 }} />
               <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                 {currencyData.map((_, i) => <Cell key={i} fill={BAR_COLORS[i % BAR_COLORS.length]} />)}
               </Bar>
@@ -125,7 +125,7 @@ export default function Dashboard() {
               <CartesianGrid strokeDasharray="3 3" stroke="#263041" />
               <XAxis type="number" stroke="#7C8AA0" fontSize={12} />
               <YAxis type="category" dataKey="code" stroke="#7C8AA0" fontSize={11} width={70} />
-              <Tooltip contentStyle={{ background: "#171E27", border: "1px solid #263041", fontSize: 12 }} />
+              <Tooltip cursor={{ fill: "#1f2937" }} contentStyle={{ background: "#171E27", border: "1px solid #263041", fontSize: 12 }} />
               <Bar dataKey="current_balance_musd" fill="#4FB8AE" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
