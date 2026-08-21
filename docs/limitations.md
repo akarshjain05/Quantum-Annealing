@@ -16,7 +16,7 @@ Documented directly and prominently, on the belief that this increases credibili
 
 ## Optimization
 - Liquidity is discretized into 8 fixed buckets. The true continuous optimum may sit between buckets - finer discretization trades solution precision for a larger QUBO and longer solve time (currently well within demo-scale performance, ~100-300ms for 88 variables).
-- The current QUBO is exactly block-diagonal across corridors (no cross-corridor coupling terms exist yet) - see `docs/qubo-mathematics.md` §3. This made the one-hot refinement pass in §6 of that document provably exact; a future version with real cross-corridor constraints (shared collateral, joint FX netting) would need a more general local-search or reheating strategy, since the current refinement's exactness depends on this block-diagonal structure.
+- When the global capital cap is disabled, the QUBO is exactly block-diagonal across corridors. When enabled, the capital cap constraint introduces real cross-corridor coupling via a slack-variable encoding (see `docs/qubo-mathematics.md` §3). This cross-coupling can create complex energy landscapes that challenge the simple coordinate-descent refinement pass, requiring the solver to use iterated local search (reheating) to escape local minima.
 - Simulated annealing with a penalty-based one-hot encoding has a documented pathology (the two-hot energy barrier, §6 of the math doc) that we hit, diagnosed, and fixed during this build's own testing - flagged prominently rather than swept under the rug.
 
 ## Quantum computing
