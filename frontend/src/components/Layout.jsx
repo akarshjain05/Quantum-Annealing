@@ -1,19 +1,30 @@
 import { NavLink } from "react-router-dom";
-// import { useAuth } from "../AuthContext";
+import { useEffect, useState } from "react";
+import client from "../api/client";
 
 const NAV = [
-  { to: "/", label: "Dashboard", end: true },
-  { to: "/corridors", label: "Corridors" },
-  { to: "/optimizer", label: "Optimizer" },
-  { to: "/approvals", label: "Approvals" },
-  { to: "/qubo", label: "QUBO Inspector" },
-  { to: "/scenarios", label: "Scenarios" },
-  { to: "/stress-tests", label: "Stress Tests" },
-  { to: "/agent", label: "Agent" },
-  { to: "/audit", label: "Audit Trail" },
+  { to: "/", label: "Executive Summary", end: true },
+  { to: "/corridors", label: "Corridor Management" },
+  { to: "/optimizer", label: "Liquidity Optimizer" },
+  { to: "/approvals", label: "Approvals Center", hasBadge: true },
+  { to: "/scenarios", label: "What-If Analysis" },
+  { to: "/stress-tests", label: "Stress Testing" },
+  { to: "/agent", label: "Decision Pipeline" },
+  { to: "/audit", label: "Compliance & Audit" },
+  { type: "divider" },
+  { to: "/settings", label: "Settings" },
+  { to: "/settings/model", label: "Model Transparency", indent: true },
 ];
 
 export default function Layout({ children }) {
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    client.get("/api/optimization/approvals/pending")
+      .then(r => setPendingCount(r.data.length))
+      .catch(err => console.error("Failed to fetch pending approvals count", err));
+  }, []);
+
   return (
     <div className="min-h-screen flex">
       <aside className="w-60 shrink-0 border-r border-border bg-surface flex flex-col">
@@ -25,23 +36,33 @@ export default function Layout({ children }) {
             Quantum-ready liquidity intelligence
           </div>
         </div>
-        <nav className="flex-1 py-3 px-2 space-y-0.5">
-          {NAV.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-raised text-text border border-border"
-                    : "text-muted hover:text-text hover:bg-raised/60"
-                }`
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
+        <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
+          {NAV.map((item, idx) => {
+            if (item.type === "divider") {
+              return <div key={`div-${idx}`} className="my-3 border-t border-border/50 mx-2" />;
+            }
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) =>
+                  `flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors ${item.indent ? "ml-4 text-xs" : ""} ${
+                    isActive
+                      ? "bg-raised text-text border border-border"
+                      : "text-muted hover:text-text hover:bg-raised/60"
+                  }`
+                }
+              >
+                <span>{item.label}</span>
+                {item.hasBadge && pendingCount > 0 && (
+                  <span className="bg-teal text-bg text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                    {pendingCount}
+                  </span>
+                )}
+              </NavLink>
+            );
+          })}
         </nav>
         <div className="px-3 py-4 border-t border-border">
           <div className="px-2 mb-2">
