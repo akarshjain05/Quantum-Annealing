@@ -5,6 +5,7 @@ const NAV = [
   { to: "/", label: "Dashboard", end: true },
   { to: "/corridors", label: "Corridors" },
   { to: "/optimizer", label: "Optimizer" },
+  { to: "/approvals", label: "Approvals" },
   { to: "/qubo", label: "QUBO Inspector" },
   { to: "/scenarios", label: "Scenarios" },
   { to: "/stress-tests", label: "Stress Tests" },
