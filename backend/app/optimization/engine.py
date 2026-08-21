@@ -114,23 +114,36 @@ def run_optimization(
     seed: int = 42,
     onehot_penalty: Optional[float] = None,
     weights: Optional[Dict[str, float]] = None,
+<<<<<<< HEAD
+) -> OptimizationOutcome:
+    qubo = build_qubo(corridors, weights=weights, onehot_penalty=onehot_penalty)
+=======
     capital_cap_musd: Optional[float] = None,
 ) -> OptimizationOutcome:
     qubo = build_qubo(corridors, weights=weights, onehot_penalty=onehot_penalty, capital_cap_musd=capital_cap_musd)
+>>>>>>> origin/main
     sa = simulated_annealing(
         qubo.Q, qubo.num_vars,
         iterations=iterations, initial_temp=initial_temperature,
         cooling_rate=cooling_rate, seed=seed, num_restarts=3,
     )
     K = len(qubo.buckets)
+<<<<<<< HEAD
+    refined_x, was_improved = local_search_refine(qubo.Q, sa.best_x, qubo.num_corridors, K)
+=======
     num_blocks = qubo.num_vars // K
     refined_x, was_improved = local_search_refine(qubo.Q, sa.best_x, num_blocks, K)
+>>>>>>> origin/main
     refined_energy = qubo_energy(qubo.Q, refined_x)
     if refined_energy <= sa.best_energy:
         final_x, final_energy = refined_x, refined_energy
     else:
         final_x, final_energy = sa.best_x, sa.best_energy
+<<<<<<< HEAD
+    assignment, onehot_clean = decode_assignment(final_x, qubo.num_corridors, K)
+=======
     assignment, onehot_clean = decode_assignment(final_x, num_blocks, K)
+>>>>>>> origin/main
     violations = validate_solution(assignment, qubo, corridors)
 
     corridor_results = []
