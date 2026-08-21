@@ -897,8 +897,9 @@ class QAOACustom(BaseSolver):
                 "optimizer": self.optimizer_name,
                 "maxiter": self.maxiter,
                 "optimal_gamma": gamma_opt.tolist(),
-                "optimal_beta": beta_opt.tolist(),
-                "optimization_success": optimization_result.get("success", None),
+                "optimal_beta": beta_opt.tolist() if beta_opt is not None else [],
+                "optimization_success": bool(optimization_result.get("success", True)) if optimization_result else True,
+                "message": str(optimization_result.get("message", "")) if optimization_result else "",
                 "optimization_nfev": optimization_result.get("nfev", None),
                 "timing": {
                     "optimization_ms": optimization_time,
