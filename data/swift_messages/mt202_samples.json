@@ -1,0 +1,117 @@
+[
+  {
+    "header": {
+      "message_type": "MT202",
+      "sender_bic": "INGBNL2A",
+      "receiver_bic": "ABORINBB",
+      "message_reference": "20260822363319",
+      "creation_date": "260822",
+      "creation_time": "0105"
+    },
+    "fields": {
+      "20": "COV9479356",
+      "21": "REF9196204",
+      "32A": {
+        "value_date": "260823",
+        "currency": "EUR",
+        "amount": "10,976,268.30"
+      },
+      "52A": "INGBNL2A",
+      "58A": "ABORINBB",
+      "72": "/BNF/COVER FOR MT103"
+    },
+    "synthetic": true
+  },
+  {
+    "header": {
+      "message_type": "MT202",
+      "sender_bic": "MIDLGB22",
+      "receiver_bic": "HDFCINBB",
+      "message_reference": "20260822908577",
+      "creation_date": "260822",
+      "creation_time": "0440"
+    },
+    "fields": {
+      "20": "COV1059486",
+      "21": "REF6596150",
+      "32A": {
+        "value_date": "260823",
+        "currency": "GBP",
+        "amount": "21,755,212.86"
+      },
+      "52A": "MIDLGB22",
+      "58A": "HDFCINBB",
+      "72": "/BNF/COVER FOR MT103"
+    },
+    "synthetic": true
+  },
+  {
+    "header": {
+      "message_type": "MT202",
+      "sender_bic": "BNPAFRPP",
+      "receiver_bic": "SBININBB",
+      "message_reference": "20260822217308",
+      "creation_date": "260822",
+      "creation_time": "0256"
+    },
+    "fields": {
+      "20": "COV8175395",
+      "21": "REF1162230",
+      "32A": {
+        "value_date": "260823",
+        "currency": "EUR",
+        "amount": "8,917,516.84"
+      },
+      "52A": "BNPAFRPP",
+      "58A": "SBININBB",
+      "72": "/BNF/COVER FOR MT103"
+    },
+    "synthetic": true
+  },
+  {
+    "header": {
+      "message_type": "MT202",
+      "sender_bic": "LOYDGB2L",
+      "receiver_bic": "HDFCINBB",
+      "message_reference": "20260822550664",
+      "creation_date": "260822",
+      "creation_time": "0402"
+    },
+    "fields": {
+      "20": "COV7194416",
+      "21": "REF3484601",
+      "32A": {
+        "value_date": "260823",
+        "currency": "GBP",
+        "amount": "45,292,500.01"
+      },
+      "52A": "LOYDGB2L",
+      "58A": "HDFCINBB",
+      "72": "/BNF/COVER FOR MT103"
+    },
+    "synthetic": true
+  },
+  {
+    "header": {
+      "message_type": "MT202",
+      "sender_bic": "DEUTDEFF",
+      "receiver_bic": "ABORINBB",
+      "message_reference": "20260822799330",
+      "creation_date": "260822",
+      "creation_time": "0322"
+    },
+    "fields": {
+      "20": "COV4524499",
+      "21": "REF5186414",
+      "32A": {
+        "value_date": "260823",
+        "currency": "EUR",
+        "amount": "18,867,924.25"
+      },
+      "52A": "DEUTDEFF",
+      "58A": "ABORINBB",
+      "72": "/BNF/COVER FOR MT103"
+    },
+    "synthetic": true
+  }
+]

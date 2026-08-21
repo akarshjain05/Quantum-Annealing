@@ -1,0 +1,340 @@
+[
+  {
+    "header": {
+      "message_type": "MT940",
+      "sender_bic": "BOFAUS3N",
+      "receiver_bic": "CUSTXXXX",
+      "message_reference": "20260822979995",
+      "creation_date": "260822",
+      "creation_time": "0039"
+    },
+    "fields": {
+      "20": "STMT20260822",
+      "25": "BOFAUS3N/846198988073",
+      "28C": "079/1",
+      "60F": {
+        "dc_mark": "C",
+        "date": "260822",
+        "currency": "USD",
+        "amount": "93,773,429.74"
+      },
+      "61": [
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "C",
+          "amount": 1341360.49,
+          "currency": "USD",
+          "transaction_type": "TRF",
+          "reference": "NBQH7M35IXOKC1MS",
+          "supplementary_details": "/FEE"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "C",
+          "amount": 585555.34,
+          "currency": "USD",
+          "transaction_type": "RTN",
+          "reference": "G8JDP0LVSNUJZA7T",
+          "supplementary_details": "/TRANSFER"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "D",
+          "amount": 2162174.02,
+          "currency": "USD",
+          "transaction_type": "RTN",
+          "reference": "WXE6SYLZTGXN0GUO",
+          "supplementary_details": "/PAYMENT"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "D",
+          "amount": 1441699.45,
+          "currency": "USD",
+          "transaction_type": "INT",
+          "reference": "2VLPYS280XKXWD8I",
+          "supplementary_details": "/FEE"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "C",
+          "amount": 4034748.84,
+          "currency": "USD",
+          "transaction_type": "CHK",
+          "reference": "AIR4COWGZRIXA11D",
+          "supplementary_details": "/INTEREST"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "C",
+          "amount": 887674.54,
+          "currency": "USD",
+          "transaction_type": "INT",
+          "reference": "BI4Q2Y9V86WZS3T6",
+          "supplementary_details": "/INTEREST"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "D",
+          "amount": 1303365.83,
+          "currency": "USD",
+          "transaction_type": "CHK",
+          "reference": "4J1RIPZIM6CFNFHO",
+          "supplementary_details": "/FEE"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "D",
+          "amount": 2084713.43,
+          "currency": "USD",
+          "transaction_type": "CHK",
+          "reference": "3O18A5UR7KO64T02",
+          "supplementary_details": "/TRANSFER"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "D",
+          "amount": 1104913.96,
+          "currency": "USD",
+          "transaction_type": "INT",
+          "reference": "RNY20479T6VXDP5G",
+          "supplementary_details": "/FEE"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "D",
+          "amount": 1643489.81,
+          "currency": "USD",
+          "transaction_type": "INT",
+          "reference": "L1N13JCAT9MX2X18",
+          "supplementary_details": "/TRANSFER"
+        }
+      ],
+      "62F": {
+        "dc_mark": "C",
+        "date": "260822",
+        "currency": "USD",
+        "amount": "90,882,412.45"
+      },
+      "64": {
+        "dc_mark": "C",
+        "date": "260822",
+        "currency": "USD",
+        "amount": "90,882,412.45"
+      }
+    },
+    "synthetic": true
+  },
+  {
+    "header": {
+      "message_type": "MT940",
+      "sender_bic": "DEUTDEFF",
+      "receiver_bic": "CUSTXXXX",
+      "message_reference": "20260822387636",
+      "creation_date": "260822",
+      "creation_time": "0103"
+    },
+    "fields": {
+      "20": "STMT20260822",
+      "25": "DEUTDEFF/165267167189",
+      "28C": "284/1",
+      "60F": {
+        "dc_mark": "C",
+        "date": "260822",
+        "currency": "EUR",
+        "amount": "19,728,887.47"
+      },
+      "61": [
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "D",
+          "amount": 2883225.67,
+          "currency": "EUR",
+          "transaction_type": "INT",
+          "reference": "OZCYWD14VE92MPNS",
+          "supplementary_details": "/FEE"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "C",
+          "amount": 4249382.38,
+          "currency": "EUR",
+          "transaction_type": "INT",
+          "reference": "D8W3ZP08J3TRP0J4",
+          "supplementary_details": "/PAYMENT"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "D",
+          "amount": 4409339.61,
+          "currency": "EUR",
+          "transaction_type": "CHK",
+          "reference": "1UYMRLRMJKV5USGI",
+          "supplementary_details": "/INTEREST"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "D",
+          "amount": 2780329.3,
+          "currency": "EUR",
+          "transaction_type": "CHK",
+          "reference": "YXR2DHYLURTP0LZJ",
+          "supplementary_details": "/FEE"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "C",
+          "amount": 612072.86,
+          "currency": "EUR",
+          "transaction_type": "CHK",
+          "reference": "L08YG0JV1V93KMKZ",
+          "supplementary_details": "/TRANSFER"
+        }
+      ],
+      "62F": {
+        "dc_mark": "C",
+        "date": "260822",
+        "currency": "EUR",
+        "amount": "14,517,448.13"
+      },
+      "64": {
+        "dc_mark": "C",
+        "date": "260822",
+        "currency": "EUR",
+        "amount": "14,517,448.13"
+      }
+    },
+    "synthetic": true
+  },
+  {
+    "header": {
+      "message_type": "MT940",
+      "sender_bic": "ABORINBB",
+      "receiver_bic": "CUSTXXXX",
+      "message_reference": "20260822997594",
+      "creation_date": "260822",
+      "creation_time": "1302"
+    },
+    "fields": {
+      "20": "STMT20260822",
+      "25": "ABORINBB/618485441094",
+      "28C": "163/1",
+      "60F": {
+        "dc_mark": "C",
+        "date": "260822",
+        "currency": "INR",
+        "amount": "83,990,408.08"
+      },
+      "61": [
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "D",
+          "amount": 379670.03,
+          "currency": "INR",
+          "transaction_type": "TRF",
+          "reference": "F38DIUOVW1N6KVPU",
+          "supplementary_details": "/PAYMENT"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "C",
+          "amount": 4738475.1,
+          "currency": "INR",
+          "transaction_type": "CHK",
+          "reference": "WJCITFOYQBKK4CIJ",
+          "supplementary_details": "/TRANSFER"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "D",
+          "amount": 582733.75,
+          "currency": "INR",
+          "transaction_type": "CHK",
+          "reference": "X63CFL0UKEYZ7SRC",
+          "supplementary_details": "/PAYMENT"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "D",
+          "amount": 3675324.28,
+          "currency": "INR",
+          "transaction_type": "RTN",
+          "reference": "AIY4VA13U1GSPK9P",
+          "supplementary_details": "/INTEREST"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "C",
+          "amount": 2355351.87,
+          "currency": "INR",
+          "transaction_type": "INT",
+          "reference": "LY4LYK83TQLL8OS9",
+          "supplementary_details": "/INTEREST"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "D",
+          "amount": 280478.39,
+          "currency": "INR",
+          "transaction_type": "RTN",
+          "reference": "WRPBJEK5RBW2ZLAO",
+          "supplementary_details": "/TRANSFER"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "C",
+          "amount": 2312624.99,
+          "currency": "INR",
+          "transaction_type": "TRF",
+          "reference": "XF7KZORQQFGV0EC1",
+          "supplementary_details": "/INTEREST"
+        },
+        {
+          "value_date": "260822",
+          "entry_date": "0822",
+          "type": "D",
+          "amount": 4671899.48,
+          "currency": "INR",
+          "transaction_type": "RTN",
+          "reference": "3KKV9RFTMTTQLGZU",
+          "supplementary_details": "/TRANSFER"
+        }
+      ],
+      "62F": {
+        "dc_mark": "C",
+        "date": "260822",
+        "currency": "INR",
+        "amount": "83,806,754.11"
+      },
+      "64": {
+        "dc_mark": "C",
+        "date": "260822",
+        "currency": "INR",
+        "amount": "83,806,754.11"
+      }
+    },
+    "synthetic": true
+  }
+]

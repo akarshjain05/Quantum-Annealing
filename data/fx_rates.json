@@ -1,0 +1,128 @@
+{
+  "USD_INR": {
+    "pair": "USD_INR",
+    "mid_rate": 83.548912,
+    "bid": 83.510275,
+    "ask": 83.587549,
+    "spread_bps": 9.25,
+    "timestamp": "2026-08-21T18:37:30.283617",
+    "source": "synthetic"
+  },
+  "EUR_INR": {
+    "pair": "EUR_INR",
+    "mid_rate": 90.840974,
+    "bid": 90.790422,
+    "ask": 90.891525,
+    "spread_bps": 11.13,
+    "timestamp": "2026-08-21T18:37:30.283617",
+    "source": "synthetic"
+  },
+  "GBP_INR": {
+    "pair": "GBP_INR",
+    "mid_rate": 104.972539,
+    "bid": 104.890465,
+    "ask": 105.054613,
+    "spread_bps": 15.64,
+    "timestamp": "2026-08-21T18:37:30.283617",
+    "source": "synthetic"
+  },
+  "AED_INR": {
+    "pair": "AED_INR",
+    "mid_rate": 22.735612,
+    "bid": 22.720073,
+    "ask": 22.751152,
+    "spread_bps": 13.67,
+    "timestamp": "2026-08-21T18:37:30.283617",
+    "source": "synthetic"
+  },
+  "SGD_INR": {
+    "pair": "SGD_INR",
+    "mid_rate": 61.563818,
+    "bid": 61.548095,
+    "ask": 61.579541,
+    "spread_bps": 5.11,
+    "timestamp": "2026-08-21T18:37:30.283617",
+    "source": "synthetic"
+  },
+  "JPY_INR": {
+    "pair": "JPY_INR",
+    "mid_rate": 0.560865,
+    "bid": 0.560436,
+    "ask": 0.561295,
+    "spread_bps": 15.32,
+    "timestamp": "2026-08-21T18:37:30.283617",
+    "source": "synthetic"
+  },
+  "USD_EUR": {
+    "pair": "USD_EUR",
+    "mid_rate": 0.918306,
+    "bid": 0.917827,
+    "ask": 0.918785,
+    "spread_bps": 10.43,
+    "timestamp": "2026-08-21T18:37:30.283617",
+    "source": "synthetic"
+  },
+  "EUR_USD": {
+    "pair": "EUR_USD",
+    "mid_rate": 1.086237,
+    "bid": 1.085435,
+    "ask": 1.087039,
+    "spread_bps": 14.77,
+    "timestamp": "2026-08-21T18:37:30.283617",
+    "source": "synthetic"
+  },
+  "USD_GBP": {
+    "pair": "USD_GBP",
+    "mid_rate": 0.788054,
+    "bid": 0.787351,
+    "ask": 0.788756,
+    "spread_bps": 17.82,
+    "timestamp": "2026-08-21T18:37:30.283617",
+    "source": "synthetic"
+  },
+  "GBP_USD": {
+    "pair": "GBP_USD",
+    "mid_rate": 1.269029,
+    "bid": 1.268364,
+    "ask": 1.269694,
+    "spread_bps": 10.48,
+    "timestamp": "2026-08-21T18:37:30.283617",
+    "source": "synthetic"
+  },
+  "GBP_EUR": {
+    "pair": "GBP_EUR",
+    "mid_rate": 1.157397,
+    "bid": 1.156516,
+    "ask": 1.158277,
+    "spread_bps": 15.21,
+    "timestamp": "2026-08-21T18:37:30.283617",
+    "source": "synthetic"
+  },
+  "EUR_GBP": {
+    "pair": "EUR_GBP",
+    "mid_rate": 0.862193,
+    "bid": 0.86171,
+    "ask": 0.862676,
+    "spread_bps": 11.2,
+    "timestamp": "2026-08-21T18:37:30.283617",
+    "source": "synthetic"
+  },
+  "USD_CHF": {
+    "pair": "USD_CHF",
+    "mid_rate": 0.882497,
+    "bid": 0.881957,
+    "ask": 0.883037,
+    "spread_bps": 12.24,
+    "timestamp": "2026-08-21T18:37:30.283617",
+    "source": "synthetic"
+  },
+  "CHF_USD": {
+    "pair": "CHF_USD",
+    "mid_rate": 1.13852,
+    "bid": 1.137762,
+    "ask": 1.139279,
+    "spread_bps": 13.32,
+    "timestamp": "2026-08-21T18:37:30.283617",
+    "source": "synthetic"
+  }
+}
