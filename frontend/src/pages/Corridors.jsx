@@ -49,7 +49,9 @@ export default function Corridors() {
               <th className="px-4 py-2.5">Corridor</th>
               <th className="px-4 py-2.5">Pair</th>
               <th className="px-4 py-2.5 text-right">Balance ($M)</th>
+              <th className="px-4 py-2.5 text-right">Recommended ($M)</th>
               <th className="px-4 py-2.5 text-right">Efficiency</th>
+              <th className="px-4 py-2.5">Status</th>
               <th className="px-4 py-2.5 text-right">Cut-off (UTC)</th>
               <th className="px-4 py-2.5 text-right">Window (UTC)</th>
               <th className="px-4 py-2.5" />
@@ -65,9 +67,15 @@ export default function Corridors() {
                   <td className="px-4 py-2.5 font-mono">{c.code}</td>
                   <td className="px-4 py-2.5 text-muted">{c.name}</td>
                   <td className="px-4 py-2.5 text-right font-mono">${c.current_balance_musd.toFixed(1)}</td>
+                  <td className="px-4 py-2.5 text-right font-mono text-teal">${c.recommended_musd?.toFixed(1) || '--'}</td>
                   <td className="px-4 py-2.5 text-right font-mono">
                     <span className={`px-1.5 py-0.5 rounded text-xs ${c.efficiency_pct < 75 ? 'bg-red/20 text-red' : c.efficiency_pct < 90 ? 'bg-gold/20 text-gold' : 'bg-teal/20 text-teal'}`}>
                       {c.efficiency_pct.toFixed(1)}%
+                    </span>
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-semibold ${c.status === 'Optimal' ? 'bg-teal/20 text-teal border border-teal/30' : 'bg-gold/20 text-gold border border-gold/30'}`}>
+                      {c.status || 'Unknown'}
                     </span>
                   </td>
                   <td className="px-4 py-2.5 text-right font-mono text-muted">{c.cutoff_hour_utc}:00</td>
@@ -76,7 +84,7 @@ export default function Corridors() {
                 </tr>
                 {expanded === c.code && (
                   <tr className="bg-surface/50 border-b border-border">
-                    <td colSpan={7} className="px-6 py-6">
+                    <td colSpan={9} className="px-6 py-6">
                       {forecasts[c.code] ? (
                         (() => {
                           const fc = forecasts[c.code];

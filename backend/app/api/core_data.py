@@ -24,12 +24,16 @@ def dashboard(db: Session = Depends(get_db), user=Depends(get_current_user)):
         txns = db.query(models.PaymentTransaction).filter(models.PaymentTransaction.corridor_id == c.id).all()
         pairs = [(t.ts, t.amount_musd) for t in txns]
         fc = compute_forecast(pairs, horizon_days=7)
-        expected7d = fc.expected_demand_musd
-        peakBuffer = max(0, fc.ci_high_musd - expected7d)
-        settlementBuffer = expected7d * 0.05
-        fxReserve = fc.std_dev_musd * 0.4
-        correspondentMargin = expected7d * 0.02
-        recommendedMin = expected7d + peakBuffer + settlementBuffer + fxReserve + correspondentMargin
+        
+        # Match the generator's P95 logic exactly
+        base_demand = fc.ci_high_musd
+        safety_amount = base_demand * 0.05
+        fx_amount = base_demand * 0.075  # 15% * 0.5
+        correspondent_amount = base_demand * 0.02
+        
+        minimum_required = base_demand + safety_amount + fx_amount + correspondent_amount
+        recommendedMin = minimum_required * 1.05
+        
         total_recommended += recommendedMin
 
     capital_released_potential = max(0.0, total_liquidity - total_recommended)
@@ -82,25 +86,34 @@ def list_corridors(db: Session = Depends(get_db), user=Depends(get_current_user)
         txns = db.query(models.PaymentTransaction).filter(models.PaymentTransaction.corridor_id == c.id).all()
         pairs = [(t.ts, t.amount_musd) for t in txns]
         fc = compute_forecast(pairs, horizon_days=7)
-        expected7d = fc.expected_demand_musd
-        peakBuffer = max(0, fc.ci_high_musd - expected7d)
-        settlementBuffer = expected7d * 0.05
-        fxReserve = fc.std_dev_musd * 0.4
-        correspondentMargin = expected7d * 0.02
-        recommendedMin = expected7d + peakBuffer + settlementBuffer + fxReserve + correspondentMargin
+        
+        base_demand = fc.ci_high_musd
+        safety_amount = base_demand * 0.05
+        fx_amount = base_demand * 0.075
+        correspondent_amount = base_demand * 0.02
+        
+        minimum_required = base_demand + safety_amount + fx_amount + correspondent_amount
+        recommendedMin = minimum_required * 1.05
         
         efficiency_pct = (recommendedMin / current_balance) * 100 if current_balance > 0 else 100
         if efficiency_pct > 100:
             efficiency_pct = 100.0
+            
+        status = "Excess Capital" if efficiency_pct < 90 else "Optimal"
 
         out.append({
-            "id": c.id, "code": c.code, "name": c.name,
-            "source_currency": c.source_currency, "dest_currency": c.dest_currency,
+            "id": c.id,
+            "code": c.code,
+            "name": c.name,
+            "source_currency": c.source_currency,
+            "dest_currency": c.dest_currency,
             "settlement_window_utc": [c.settlement_window_start_hour_utc, c.settlement_window_end_hour_utc],
             "cutoff_hour_utc": c.cutoff_hour_utc,
             "current_balance_musd": round(current_balance, 2),
+            "recommended_musd": round(recommendedMin, 2),
             "num_nostro_accounts": len(accounts),
             "efficiency_pct": round(efficiency_pct, 1),
+            "status": status
         })
     return out
 
