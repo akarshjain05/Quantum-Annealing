@@ -1,0 +1,270 @@
+[
+  {
+    "id": "stress_001",
+    "name": "USD/INR Flash Crash",
+    "category": "market",
+    "severity": "high",
+    "probability": "low",
+    "description": "Sudden 5% depreciation in INR against USD within 24 hours",
+    "triggers": [
+      "Unexpected RBI policy announcement",
+      "Global risk-off event",
+      "Emerging market contagion"
+    ],
+    "impacts": {
+      "fx_shock": {
+        "USD_INR": 0.05,
+        "EUR_INR": 0.04,
+        "GBP_INR": 0.04
+      },
+      "volatility_multiplier": 3.0,
+      "demand_surge": 0.3,
+      "settlement_delay_hours": 2
+    },
+    "affected_corridors": [
+      "USD_INR",
+      "EUR_INR",
+      "GBP_INR"
+    ],
+    "mitigation_actions": [
+      "Increase INR corridor buffers by 20%",
+      "Activate contingent liquidity lines",
+      "Reduce intraday settlement windows"
+    ],
+    "historical_precedent": "2013 Taper Tantrum, 2018 EM Crisis",
+    "created_at": "2026-08-21T18:37:30.455664",
+    "synthetic": true
+  },
+  {
+    "id": "stress_002",
+    "name": "EUR/USD Parity Break",
+    "category": "market",
+    "severity": "medium",
+    "probability": "medium",
+    "description": "EUR falls to parity with USD (1:1 exchange rate)",
+    "triggers": [
+      "ECB emergency rate cut",
+      "European banking crisis",
+      "Energy supply disruption"
+    ],
+    "impacts": {
+      "fx_shock": {
+        "EUR_USD": -0.08,
+        "EUR_INR": -0.06,
+        "GBP_EUR": 0.05
+      },
+      "volatility_multiplier": 2.5,
+      "demand_surge": 0.2,
+      "settlement_delay_hours": 1
+    },
+    "affected_corridors": [
+      "USD_EUR",
+      "EUR_USD",
+      "EUR_INR",
+      "GBP_EUR"
+    ],
+    "mitigation_actions": [
+      "Rebalance EUR exposure",
+      "Increase EUR corridor minimums",
+      "Hedge EUR positions"
+    ],
+    "historical_precedent": "2022 EUR/USD near-parity",
+    "created_at": "2026-08-21T18:37:30.455994",
+    "synthetic": true
+  },
+  {
+    "id": "stress_003",
+    "name": "Month-End Liquidity Surge",
+    "category": "liquidity",
+    "severity": "medium",
+    "probability": "high",
+    "description": "2.5x normal demand on last 3 business days of month",
+    "triggers": [
+      "Salary payments",
+      "Corporate treasury rebalancing",
+      "Regulatory reporting deadlines"
+    ],
+    "impacts": {
+      "fx_shock": {},
+      "volatility_multiplier": 1.2,
+      "demand_surge": 1.5,
+      "settlement_delay_hours": 0
+    },
+    "affected_corridors": [
+      "USD_INR",
+      "EUR_INR",
+      "GBP_INR",
+      "AED_INR"
+    ],
+    "mitigation_actions": [
+      "Pre-position additional liquidity 2 days before month-end",
+      "Extend settlement windows",
+      "Activate standby credit lines"
+    ],
+    "historical_precedent": "Recurring monthly pattern",
+    "created_at": "2026-08-21T18:37:30.456007",
+    "synthetic": true
+  },
+  {
+    "id": "stress_004",
+    "name": "Correspondent Bank Failure",
+    "category": "liquidity",
+    "severity": "critical",
+    "probability": "very_low",
+    "description": "Major correspondent bank unable to process settlements",
+    "triggers": [
+      "Bank insolvency",
+      "Regulatory intervention",
+      "Cyber attack on correspondent"
+    ],
+    "impacts": {
+      "fx_shock": {},
+      "volatility_multiplier": 1.5,
+      "demand_surge": 0.5,
+      "settlement_delay_hours": 24,
+      "corridor_unavailable": true
+    },
+    "affected_corridors": [
+      "Variable - depends on correspondent"
+    ],
+    "mitigation_actions": [
+      "Activate backup correspondent relationships",
+      "Reroute payments through alternative corridors",
+      "Invoke contingency credit facilities"
+    ],
+    "historical_precedent": "2023 US regional bank crisis",
+    "created_at": "2026-08-21T18:37:30.456016",
+    "synthetic": true
+  },
+  {
+    "id": "stress_005",
+    "name": "SWIFT Network Disruption",
+    "category": "operational",
+    "severity": "high",
+    "probability": "low",
+    "description": "4-hour SWIFT network outage affecting all corridors",
+    "triggers": [
+      "Technical failure",
+      "Cyber attack",
+      "Natural disaster at data center"
+    ],
+    "impacts": {
+      "fx_shock": {},
+      "volatility_multiplier": 1.0,
+      "demand_surge": 0.0,
+      "settlement_delay_hours": 4,
+      "all_corridors_affected": true
+    },
+    "affected_corridors": [
+      "ALL"
+    ],
+    "mitigation_actions": [
+      "Queue payments for batch processing",
+      "Activate alternative messaging channels",
+      "Communicate with counterparties"
+    ],
+    "historical_precedent": "2020 SWIFT outage (2 hours)",
+    "created_at": "2026-08-21T18:37:30.456031",
+    "synthetic": true
+  },
+  {
+    "id": "stress_006",
+    "name": "Holiday Settlement Squeeze",
+    "category": "operational",
+    "severity": "low",
+    "probability": "high",
+    "description": "Extended settlement cycle due to overlapping holidays",
+    "triggers": [
+      "Diwali + US Thanksgiving overlap",
+      "Christmas + Japan holiday",
+      "Eid + European holiday"
+    ],
+    "impacts": {
+      "fx_shock": {},
+      "volatility_multiplier": 1.1,
+      "demand_surge": 0.2,
+      "settlement_delay_hours": 48
+    },
+    "affected_corridors": [
+      "USD_INR",
+      "JPY_INR",
+      "EUR_INR"
+    ],
+    "mitigation_actions": [
+      "Pre-fund corridors before holiday period",
+      "Adjust minimum balances +30%",
+      "Front-load settlements"
+    ],
+    "historical_precedent": "Recurring annual pattern",
+    "created_at": "2026-08-21T18:37:30.456040",
+    "synthetic": true
+  },
+  {
+    "id": "stress_007",
+    "name": "Global Risk-Off Event",
+    "category": "combined",
+    "severity": "critical",
+    "probability": "low",
+    "description": "Combined market, liquidity, and operational stress",
+    "triggers": [
+      "Geopolitical crisis",
+      "Global pandemic",
+      "Major sovereign default"
+    ],
+    "impacts": {
+      "fx_shock": {
+        "USD_INR": 0.08,
+        "EUR_INR": 0.06,
+        "GBP_INR": 0.07,
+        "AED_INR": 0.03,
+        "SGD_INR": 0.04
+      },
+      "volatility_multiplier": 4.0,
+      "demand_surge": 0.8,
+      "settlement_delay_hours": 8
+    },
+    "affected_corridors": [
+      "ALL"
+    ],
+    "mitigation_actions": [
+      "Invoke crisis management protocol",
+      "Increase all corridor buffers to 99th percentile",
+      "Activate all contingent liquidity",
+      "Daily senior management review"
+    ],
+    "historical_precedent": "2020 COVID-19 market stress",
+    "created_at": "2026-08-21T18:37:30.456049",
+    "synthetic": true
+  },
+  {
+    "id": "stress_008",
+    "name": "Regulatory Capital Call",
+    "category": "combined",
+    "severity": "medium",
+    "probability": "medium",
+    "description": "Unexpected increase in regulatory capital requirements",
+    "triggers": [
+      "Basel IV implementation acceleration",
+      "Local regulator intervention",
+      "Stress test failure"
+    ],
+    "impacts": {
+      "fx_shock": {},
+      "volatility_multiplier": 1.0,
+      "demand_surge": 0.0,
+      "settlement_delay_hours": 0,
+      "capital_requirement_increase": 0.25
+    },
+    "affected_corridors": [
+      "ALL"
+    ],
+    "mitigation_actions": [
+      "Review and optimize capital allocation",
+      "Reduce low-yield corridor exposures",
+      "Accelerate capital raising"
+    ],
+    "historical_precedent": "Post-2008 regulatory changes",
+    "created_at": "2026-08-21T18:37:30.456059",
+    "synthetic": true
+  }
+]

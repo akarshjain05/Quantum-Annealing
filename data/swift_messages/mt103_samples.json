@@ -1,0 +1,422 @@
+[
+  {
+    "header": {
+      "message_type": "MT103",
+      "sender_bic": "LOYDGB2L",
+      "receiver_bic": "ABORINBB",
+      "message_reference": "20260822246316",
+      "creation_date": "260822",
+      "creation_time": "2306"
+    },
+    "fields": {
+      "20": "REF4744854",
+      "23B": "CRED",
+      "32A": {
+        "value_date": "260822",
+        "currency": "GBP",
+        "amount": "1,157,744.13"
+      },
+      "33B": {
+        "currency": "GBP",
+        "amount": "1,157,744.13"
+      },
+      "50K": {
+        "account": "/5002657744",
+        "name": "COMPANY 384 LTD",
+        "address": "123 BUSINESS STREET",
+        "city": "CITY"
+      },
+      "52A": "LOYDGB2L",
+      "53A": "ABORINBB",
+      "57A": "ABORINBB",
+      "59": {
+        "account": "/8086319300",
+        "name": "INTERNATIONAL SUPPLIERS INC",
+        "address": "456 BENEFICIARY ROAD"
+      },
+      "70": "/INV/REF4744854/PAYMENT FOR SERVICES",
+      "71A": "SHA",
+      "72": "/ACC/REGULAR PAYMENT"
+    },
+    "raw_message": ":20:REF4744854\n:23B:CRED\n:32A:260823GBP1,157,744.13\n:33B:GBP1,157,744.13\n:50K:/1234567890\nORDERING COMPANY LTD\n123 BUSINESS STREET\n:52A:LOYDGB2L\n:57A:ABORINBB\n:59:/0987654321\nINTERNATIONAL SUPPLIERS INC\n456 BENEFICIARY ROAD\n:70:/INV/REF4744854/PAYMENT\n:71A:SHA",
+    "synthetic": true
+  },
+  {
+    "header": {
+      "message_type": "MT103",
+      "sender_bic": "DEUTDEFF",
+      "receiver_bic": "SBININBB",
+      "message_reference": "20260822230889",
+      "creation_date": "260822",
+      "creation_time": "1205"
+    },
+    "fields": {
+      "20": "REF9996414",
+      "23B": "CRED",
+      "32A": {
+        "value_date": "260823",
+        "currency": "EUR",
+        "amount": "6,057,074.01"
+      },
+      "33B": {
+        "currency": "EUR",
+        "amount": "6,057,074.01"
+      },
+      "50K": {
+        "account": "/8685702202",
+        "name": "COMPANY 203 LTD",
+        "address": "123 BUSINESS STREET",
+        "city": "CITY"
+      },
+      "52A": "DEUTDEFF",
+      "53A": "SBININBB",
+      "57A": "SBININBB",
+      "59": {
+        "account": "/3481367606",
+        "name": "TECH SOLUTIONS GMBH",
+        "address": "456 BENEFICIARY ROAD"
+      },
+      "70": "/INV/REF9996414/PAYMENT FOR SERVICES",
+      "71A": "SHA",
+      "72": "/ACC/REGULAR PAYMENT"
+    },
+    "raw_message": ":20:REF9996414\n:23B:CRED\n:32A:260823EUR6,057,074.01\n:33B:EUR6,057,074.01\n:50K:/1234567890\nORDERING COMPANY LTD\n123 BUSINESS STREET\n:52A:DEUTDEFF\n:57A:SBININBB\n:59:/0987654321\nTECH SOLUTIONS GMBH\n456 BENEFICIARY ROAD\n:70:/INV/REF9996414/PAYMENT\n:71A:SHA",
+    "synthetic": true
+  },
+  {
+    "header": {
+      "message_type": "MT103",
+      "sender_bic": "BARCGB22",
+      "receiver_bic": "ABORINBB",
+      "message_reference": "20260822771088",
+      "creation_date": "260822",
+      "creation_time": "2235"
+    },
+    "fields": {
+      "20": "REF5528972",
+      "23B": "CRED",
+      "32A": {
+        "value_date": "260822",
+        "currency": "GBP",
+        "amount": "7,304,811.64"
+      },
+      "33B": {
+        "currency": "GBP",
+        "amount": "7,304,811.64"
+      },
+      "50K": {
+        "account": "/6872032298",
+        "name": "COMPANY 422 LTD",
+        "address": "123 BUSINESS STREET",
+        "city": "CITY"
+      },
+      "52A": "BARCGB22",
+      "53A": "ABORINBB",
+      "57A": "ABORINBB",
+      "59": {
+        "account": "/2486117574",
+        "name": "TECH SOLUTIONS GMBH",
+        "address": "456 BENEFICIARY ROAD"
+      },
+      "70": "/INV/REF5528972/PAYMENT FOR SERVICES",
+      "71A": "SHA",
+      "72": "/ACC/REGULAR PAYMENT"
+    },
+    "raw_message": ":20:REF5528972\n:23B:CRED\n:32A:260823GBP7,304,811.64\n:33B:GBP7,304,811.64\n:50K:/1234567890\nORDERING COMPANY LTD\n123 BUSINESS STREET\n:52A:BARCGB22\n:57A:ABORINBB\n:59:/0987654321\nTECH SOLUTIONS GMBH\n456 BENEFICIARY ROAD\n:70:/INV/REF5528972/PAYMENT\n:71A:SHA",
+    "synthetic": true
+  },
+  {
+    "header": {
+      "message_type": "MT103",
+      "sender_bic": "BARCGB22",
+      "receiver_bic": "HDFCINBB",
+      "message_reference": "20260822195325",
+      "creation_date": "260822",
+      "creation_time": "0155"
+    },
+    "fields": {
+      "20": "REF9279821",
+      "23B": "CRED",
+      "32A": {
+        "value_date": "260822",
+        "currency": "GBP",
+        "amount": "4,024,035.03"
+      },
+      "33B": {
+        "currency": "GBP",
+        "amount": "4,024,035.03"
+      },
+      "50K": {
+        "account": "/1165354259",
+        "name": "COMPANY 796 LTD",
+        "address": "123 BUSINESS STREET",
+        "city": "CITY"
+      },
+      "52A": "BARCGB22",
+      "53A": "HDFCINBB",
+      "57A": "HDFCINBB",
+      "59": {
+        "account": "/7652614498",
+        "name": "ASIA PACIFIC TRADERS",
+        "address": "456 BENEFICIARY ROAD"
+      },
+      "70": "/INV/REF9279821/PAYMENT FOR SERVICES",
+      "71A": "SHA",
+      "72": "/ACC/REGULAR PAYMENT"
+    },
+    "raw_message": ":20:REF9279821\n:23B:CRED\n:32A:260823GBP4,024,035.03\n:33B:GBP4,024,035.03\n:50K:/1234567890\nORDERING COMPANY LTD\n123 BUSINESS STREET\n:52A:BARCGB22\n:57A:HDFCINBB\n:59:/0987654321\nASIA PACIFIC TRADERS\n456 BENEFICIARY ROAD\n:70:/INV/REF9279821/PAYMENT\n:71A:SHA",
+    "synthetic": true
+  },
+  {
+    "header": {
+      "message_type": "MT103",
+      "sender_bic": "DEUTDEFF",
+      "receiver_bic": "SBININBB",
+      "message_reference": "20260822982554",
+      "creation_date": "260822",
+      "creation_time": "2032"
+    },
+    "fields": {
+      "20": "REF6007072",
+      "23B": "CRED",
+      "32A": {
+        "value_date": "260822",
+        "currency": "EUR",
+        "amount": "9,720,286.58"
+      },
+      "33B": {
+        "currency": "EUR",
+        "amount": "9,720,286.58"
+      },
+      "50K": {
+        "account": "/1757503098",
+        "name": "COMPANY 951 LTD",
+        "address": "123 BUSINESS STREET",
+        "city": "CITY"
+      },
+      "52A": "DEUTDEFF",
+      "53A": "SBININBB",
+      "57A": "SBININBB",
+      "59": {
+        "account": "/8225078951",
+        "name": "GLOBAL TRADING CO LTD",
+        "address": "456 BENEFICIARY ROAD"
+      },
+      "70": "/INV/REF6007072/PAYMENT FOR SERVICES",
+      "71A": "SHA",
+      "72": "/ACC/REGULAR PAYMENT"
+    },
+    "raw_message": ":20:REF6007072\n:23B:CRED\n:32A:260823EUR9,720,286.58\n:33B:EUR9,720,286.58\n:50K:/1234567890\nORDERING COMPANY LTD\n123 BUSINESS STREET\n:52A:DEUTDEFF\n:57A:SBININBB\n:59:/0987654321\nGLOBAL TRADING CO LTD\n456 BENEFICIARY ROAD\n:70:/INV/REF6007072/PAYMENT\n:71A:SHA",
+    "synthetic": true
+  },
+  {
+    "header": {
+      "message_type": "MT103",
+      "sender_bic": "LOYDGB2L",
+      "receiver_bic": "HDFCINBB",
+      "message_reference": "20260822736059",
+      "creation_date": "260822",
+      "creation_time": "1313"
+    },
+    "fields": {
+      "20": "REF9852897",
+      "23B": "CRED",
+      "32A": {
+        "value_date": "260822",
+        "currency": "GBP",
+        "amount": "4,779,059.66"
+      },
+      "33B": {
+        "currency": "GBP",
+        "amount": "4,779,059.66"
+      },
+      "50K": {
+        "account": "/7363842005",
+        "name": "COMPANY 702 LTD",
+        "address": "123 BUSINESS STREET",
+        "city": "CITY"
+      },
+      "52A": "LOYDGB2L",
+      "53A": "HDFCINBB",
+      "57A": "HDFCINBB",
+      "59": {
+        "account": "/2062980262",
+        "name": "EXPORT SERVICES PVT LTD",
+        "address": "456 BENEFICIARY ROAD"
+      },
+      "70": "/INV/REF9852897/PAYMENT FOR SERVICES",
+      "71A": "SHA",
+      "72": "/ACC/REGULAR PAYMENT"
+    },
+    "raw_message": ":20:REF9852897\n:23B:CRED\n:32A:260823GBP4,779,059.66\n:33B:GBP4,779,059.66\n:50K:/1234567890\nORDERING COMPANY LTD\n123 BUSINESS STREET\n:52A:LOYDGB2L\n:57A:HDFCINBB\n:59:/0987654321\nEXPORT SERVICES PVT LTD\n456 BENEFICIARY ROAD\n:70:/INV/REF9852897/PAYMENT\n:71A:SHA",
+    "synthetic": true
+  },
+  {
+    "header": {
+      "message_type": "MT103",
+      "sender_bic": "BOFAUS3N",
+      "receiver_bic": "SBININBB",
+      "message_reference": "20260822922733",
+      "creation_date": "260822",
+      "creation_time": "1551"
+    },
+    "fields": {
+      "20": "REF5076817",
+      "23B": "CRED",
+      "32A": {
+        "value_date": "260823",
+        "currency": "USD",
+        "amount": "7,247,358.03"
+      },
+      "33B": {
+        "currency": "USD",
+        "amount": "7,247,358.03"
+      },
+      "50K": {
+        "account": "/1044476904",
+        "name": "COMPANY 447 LTD",
+        "address": "123 BUSINESS STREET",
+        "city": "CITY"
+      },
+      "52A": "BOFAUS3N",
+      "53A": "SBININBB",
+      "57A": "SBININBB",
+      "59": {
+        "account": "/8115114808",
+        "name": "TECH SOLUTIONS GMBH",
+        "address": "456 BENEFICIARY ROAD"
+      },
+      "70": "/INV/REF5076817/PAYMENT FOR SERVICES",
+      "71A": "SHA",
+      "72": "/ACC/REGULAR PAYMENT"
+    },
+    "raw_message": ":20:REF5076817\n:23B:CRED\n:32A:260823USD7,247,358.03\n:33B:USD7,247,358.03\n:50K:/1234567890\nORDERING COMPANY LTD\n123 BUSINESS STREET\n:52A:BOFAUS3N\n:57A:SBININBB\n:59:/0987654321\nTECH SOLUTIONS GMBH\n456 BENEFICIARY ROAD\n:70:/INV/REF5076817/PAYMENT\n:71A:SHA",
+    "synthetic": true
+  },
+  {
+    "header": {
+      "message_type": "MT103",
+      "sender_bic": "LOYDGB2L",
+      "receiver_bic": "SBININBB",
+      "message_reference": "20260822890170",
+      "creation_date": "260822",
+      "creation_time": "0710"
+    },
+    "fields": {
+      "20": "REF2564689",
+      "23B": "CRED",
+      "32A": {
+        "value_date": "260823",
+        "currency": "GBP",
+        "amount": "1,024,191.85"
+      },
+      "33B": {
+        "currency": "GBP",
+        "amount": "1,024,191.85"
+      },
+      "50K": {
+        "account": "/4240392744",
+        "name": "COMPANY 848 LTD",
+        "address": "123 BUSINESS STREET",
+        "city": "CITY"
+      },
+      "52A": "LOYDGB2L",
+      "53A": "SBININBB",
+      "57A": "SBININBB",
+      "59": {
+        "account": "/9571295570",
+        "name": "GLOBAL TRADING CO LTD",
+        "address": "456 BENEFICIARY ROAD"
+      },
+      "70": "/INV/REF2564689/PAYMENT FOR SERVICES",
+      "71A": "SHA",
+      "72": "/ACC/REGULAR PAYMENT"
+    },
+    "raw_message": ":20:REF2564689\n:23B:CRED\n:32A:260823GBP1,024,191.85\n:33B:GBP1,024,191.85\n:50K:/1234567890\nORDERING COMPANY LTD\n123 BUSINESS STREET\n:52A:LOYDGB2L\n:57A:SBININBB\n:59:/0987654321\nGLOBAL TRADING CO LTD\n456 BENEFICIARY ROAD\n:70:/INV/REF2564689/PAYMENT\n:71A:SHA",
+    "synthetic": true
+  },
+  {
+    "header": {
+      "message_type": "MT103",
+      "sender_bic": "LOYDGB2L",
+      "receiver_bic": "HDFCINBB",
+      "message_reference": "20260822184002",
+      "creation_date": "260822",
+      "creation_time": "0504"
+    },
+    "fields": {
+      "20": "REF9519948",
+      "23B": "CRED",
+      "32A": {
+        "value_date": "260822",
+        "currency": "GBP",
+        "amount": "4,794,045.75"
+      },
+      "33B": {
+        "currency": "GBP",
+        "amount": "4,794,045.75"
+      },
+      "50K": {
+        "account": "/6218256455",
+        "name": "COMPANY 367 LTD",
+        "address": "123 BUSINESS STREET",
+        "city": "CITY"
+      },
+      "52A": "LOYDGB2L",
+      "53A": "HDFCINBB",
+      "57A": "HDFCINBB",
+      "59": {
+        "account": "/2723623704",
+        "name": "GLOBAL TRADING CO LTD",
+        "address": "456 BENEFICIARY ROAD"
+      },
+      "70": "/INV/REF9519948/PAYMENT FOR SERVICES",
+      "71A": "SHA",
+      "72": "/ACC/REGULAR PAYMENT"
+    },
+    "raw_message": ":20:REF9519948\n:23B:CRED\n:32A:260823GBP4,794,045.75\n:33B:GBP4,794,045.75\n:50K:/1234567890\nORDERING COMPANY LTD\n123 BUSINESS STREET\n:52A:LOYDGB2L\n:57A:HDFCINBB\n:59:/0987654321\nGLOBAL TRADING CO LTD\n456 BENEFICIARY ROAD\n:70:/INV/REF9519948/PAYMENT\n:71A:SHA",
+    "synthetic": true
+  },
+  {
+    "header": {
+      "message_type": "MT103",
+      "sender_bic": "BARCGB22",
+      "receiver_bic": "SBININBB",
+      "message_reference": "20260822378082",
+      "creation_date": "260822",
+      "creation_time": "0459"
+    },
+    "fields": {
+      "20": "REF9487336",
+      "23B": "CRED",
+      "32A": {
+        "value_date": "260823",
+        "currency": "GBP",
+        "amount": "9,961,159.66"
+      },
+      "33B": {
+        "currency": "GBP",
+        "amount": "9,961,159.66"
+      },
+      "50K": {
+        "account": "/8831876960",
+        "name": "COMPANY 936 LTD",
+        "address": "123 BUSINESS STREET",
+        "city": "CITY"
+      },
+      "52A": "BARCGB22",
+      "53A": "SBININBB",
+      "57A": "SBININBB",
+      "59": {
+        "account": "/5918287122",
+        "name": "INTERNATIONAL SUPPLIERS INC",
+        "address": "456 BENEFICIARY ROAD"
+      },
+      "70": "/INV/REF9487336/PAYMENT FOR SERVICES",
+      "71A": "SHA",
+      "72": "/ACC/REGULAR PAYMENT"
+    },
+    "raw_message": ":20:REF9487336\n:23B:CRED\n:32A:260823GBP9,961,159.66\n:33B:GBP9,961,159.66\n:50K:/1234567890\nORDERING COMPANY LTD\n123 BUSINESS STREET\n:52A:BARCGB22\n:57A:SBININBB\n:59:/0987654321\nINTERNATIONAL SUPPLIERS INC\n456 BENEFICIARY ROAD\n:70:/INV/REF9487336/PAYMENT\n:71A:SHA",
+    "synthetic": true
+  }
+]

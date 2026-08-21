@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import client from "../api/client";
 import { Loading, EmptyState } from "../components/Common";
 
@@ -6,6 +6,7 @@ export default function Audit() {
   const [logs, setLogs] = useState(null);
   const [approvals, setApprovals] = useState(null);
   const [verify, setVerify] = useState(null);
+  const [expandedApproval, setExpandedApproval] = useState(null);
 
   async function load() {
     const [l, a, v] = await Promise.all([
@@ -75,20 +76,139 @@ export default function Audit() {
                   <th className="px-4 py-2.5">Run</th>
                   <th className="px-4 py-2.5">Decision</th>
                   <th className="px-4 py-2.5">Timestamp</th>
+                  <th className="px-4 py-2.5"></th>
                 </tr>
               </thead>
               <tbody>
                 {approvals?.map((a) => (
-                  <tr key={a.id} className="border-b border-border/60">
-                    <td className="px-4 py-2.5 font-mono">#{a.run_id}</td>
-                    <td className="px-4 py-2.5">{a.decision}</td>
-                    <td className="px-4 py-2.5 text-muted font-mono">{new Date(a.created_at).toLocaleString()}</td>
-                  </tr>
+                  <React.Fragment key={a.id}>
+                    <tr 
+                      className="border-b border-border/60 hover:bg-surface/50 cursor-pointer transition-colors"
+                      onClick={() => setExpandedApproval(expandedApproval === a.run_id ? null : a.run_id)}
+                    >
+                      <td className="px-4 py-2.5 font-mono text-teal">#{a.run_id}</td>
+                      <td className="px-4 py-2.5 font-medium">{a.decision}</td>
+                      <td className="px-4 py-2.5 text-muted font-mono">{new Date(a.created_at).toLocaleString()}</td>
+                      <td className="px-4 py-2.5 text-right text-teal">{expandedApproval === a.run_id ? "Hide details" : "View rationale"}</td>
+                    </tr>
+                    {expandedApproval === a.run_id && (
+                      <tr>
+                        <td colSpan="4" className="p-4 bg-bg/50">
+                          <DecisionRationale runId={a.run_id} />
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function DecisionRationale({ runId }) {
+  const [details, setDetails] = useState(null);
+  
+  useEffect(() => {
+    client.get(`/api/audit/decision-rationale/${runId}`)
+      .then(r => setDetails(r.data))
+      .catch(err => console.error(err));
+  }, [runId]);
+  
+  if (!details) return <div className="text-muted text-sm p-4">Loading rationale...</div>;
+  
+  return (
+    <div className="mt-4 bg-surface/50 p-6 rounded-md border border-border">
+      <h3 className="font-medium text-teal mb-3 flex items-center gap-2">
+        <span className="w-1.5 h-1.5 rounded-full bg-teal"></span>
+        Decision Rationale - Run #{details.runNumber}
+      </h3>
+      
+      <p className="text-sm text-muted mb-6">
+        This record documents why ${(details.capitalReleased / 1_000_000).toFixed(1)}M 
+        capital release was recommended and <span className="font-mono text-text">{details.status}</span> on {new Date(details.decidedAt).toLocaleString()}.
+      </p>
+      
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="space-y-3">
+          <div className="text-[11px] uppercase tracking-wide text-muted font-mono border-b border-border/50 pb-1">
+            Calculation Methodology
+          </div>
+          <p className="text-xs text-muted">
+            For each corridor, the minimum safe balance was calculated as:
+          </p>
+          <div className="bg-bg p-3 rounded font-mono text-xs border border-border/50 text-faint">
+            Minimum = P{details.confidenceLevel}(Historical Demand)<br/>
+            + Safety Buffer ({(details.safetyBuffer * 100).toFixed(0)}%)<br/>
+            + FX Volatility Reserve<br/>
+            + Correspondent Risk Margin
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <div className="text-[11px] uppercase tracking-wide text-muted font-mono border-b border-border/50 pb-1">
+            Example - {details.exampleCorridor.code}
+          </div>
+          <div className="bg-bg p-3 rounded text-xs border border-border/50 space-y-1.5 font-mono">
+            <div className="flex justify-between">
+              <span className="text-muted">P{details.confidenceLevel} Historical Demand</span>
+              <span>${(details.exampleCorridor.p95Demand / 1_000_000).toFixed(1)}M</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted">Safety Buffer ({(details.safetyBuffer * 100).toFixed(0)}%)</span>
+              <span>${(details.exampleCorridor.safetyBuffer / 1_000_000).toFixed(1)}M</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted">FX Reserve</span>
+              <span>${(details.exampleCorridor.fxReserve / 1_000_000).toFixed(1)}M</span>
+            </div>
+            <div className="flex justify-between border-b border-border/50 pb-1.5">
+              <span className="text-muted">Correspondent Margin</span>
+              <span>${(details.exampleCorridor.correspondentMargin / 1_000_000).toFixed(1)}M</span>
+            </div>
+            <div className="flex justify-between pt-0.5 font-medium">
+              <span className="text-teal">Minimum Required</span>
+              <span className="text-teal">${(details.exampleCorridor.minimumRequired / 1_000_000).toFixed(1)}M</span>
+            </div>
+            <div className="flex justify-between pt-2">
+              <span className="text-muted">Current Balance</span>
+              <span>${(details.exampleCorridor.currentBalance / 1_000_000).toFixed(1)}M</span>
+            </div>
+            <div className="flex justify-between pt-0.5 font-medium">
+              <span className="text-gold">Excess Capital</span>
+              <span className="text-gold">${(details.exampleCorridor.excess / 1_000_000).toFixed(1)}M</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {details.approverNotes && (
+        <div className="mt-6 pt-4 border-t border-border/50">
+          <div className="text-[11px] uppercase tracking-wide text-muted font-mono mb-2">
+            Approver Notes
+          </div>
+          <blockquote className="border-l-2 border-teal pl-3 text-sm italic text-muted">
+            "{details.approverNotes}"
+            <footer className="mt-1 text-xs not-italic font-mono text-faint">— {details.approvedBy}</footer>
+          </blockquote>
+        </div>
+      )}
+      
+      <div className="mt-6 p-4 rounded bg-bg border border-border/50">
+        <div className="text-[11px] uppercase tracking-wide text-muted font-mono mb-3">
+          Cryptographic Proof
+        </div>
+        <div className="grid grid-cols-[100px_1fr] gap-y-2 text-xs font-mono">
+          <div className="text-muted">Record Hash:</div>
+          <div className="text-teal truncate" title={details.hash}>{details.hash}</div>
+          <div className="text-muted">Prev Hash:</div>
+          <div className="text-faint truncate" title={details.previousHash}>{details.previousHash}</div>
+          <div className="text-muted">Timestamp:</div>
+          <div className="text-faint">{details.timestamp}</div>
+        </div>
       </div>
     </div>
   );

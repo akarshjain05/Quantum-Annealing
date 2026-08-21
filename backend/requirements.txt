@@ -16,3 +16,12 @@ psycopg2-binary==2.9.9
 # dev/test
 pytest==8.3.3
 httpx==0.27.2
+
+# Quantum libraries
+qiskit>=1.0.0
+qiskit-aer>=0.13.0
+qiskit-algorithms>=0.3.0
+qiskit-optimization>=0.6.0
+dimod>=0.12.0
+dwave-neal>=0.6.0
+matplotlib>=3.7.0

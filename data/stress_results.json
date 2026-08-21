@@ -1,0 +1,96 @@
+[
+  {
+    "id": "result_001",
+    "scenario_id": "stress_001",
+    "run_date": "2024-08-15",
+    "status": "completed",
+    "summary": {
+      "corridors_tested": 11,
+      "corridors_passed": 8,
+      "corridors_failed": 3,
+      "capital_shortfall": 12500000,
+      "remediation_required": true
+    },
+    "corridor_results": [
+      {
+        "corridor": "USD_INR",
+        "status": "fail",
+        "shortfall": 8200000,
+        "current_buffer": 0.15,
+        "required_buffer": 0.25
+      },
+      {
+        "corridor": "EUR_INR",
+        "status": "fail",
+        "shortfall": 3100000,
+        "current_buffer": 0.12,
+        "required_buffer": 0.2
+      },
+      {
+        "corridor": "GBP_INR",
+        "status": "fail",
+        "shortfall": 1200000,
+        "current_buffer": 0.1,
+        "required_buffer": 0.18
+      },
+      {
+        "corridor": "AED_INR",
+        "status": "pass",
+        "shortfall": 0,
+        "current_buffer": 0.18,
+        "required_buffer": 0.15
+      },
+      {
+        "corridor": "SGD_INR",
+        "status": "pass",
+        "shortfall": 0,
+        "current_buffer": 0.2,
+        "required_buffer": 0.15
+      }
+    ],
+    "recommendations": [
+      "Increase USD_INR buffer to 25% minimum",
+      "Review EUR_INR correspondent credit lines",
+      "Consider FX hedging for INR exposure"
+    ],
+    "approved_by": "R. Sharma",
+    "approval_date": "2024-08-16",
+    "synthetic": true
+  },
+  {
+    "id": "result_002",
+    "scenario_id": "stress_003",
+    "run_date": "2024-08-20",
+    "status": "completed",
+    "summary": {
+      "corridors_tested": 11,
+      "corridors_passed": 11,
+      "corridors_failed": 0,
+      "capital_shortfall": 0,
+      "remediation_required": false
+    },
+    "corridor_results": [
+      {
+        "corridor": "USD_INR",
+        "status": "pass",
+        "shortfall": 0,
+        "current_buffer": 0.22,
+        "required_buffer": 0.2
+      },
+      {
+        "corridor": "EUR_INR",
+        "status": "pass",
+        "shortfall": 0,
+        "current_buffer": 0.18,
+        "required_buffer": 0.18
+      }
+    ],
+    "recommendations": [
+      "Current buffers adequate for month-end stress",
+      "Continue monitoring month-end patterns"
+    ],
+    "approved_by": "R. Sharma",
+    "approval_date": "2024-08-21",
+    "synthetic": true
+  }
+]

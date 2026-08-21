@@ -143,6 +143,38 @@ Chosen honestly, not hidden, given what one build session can actually implement
 
 None of these cut into the "priority 1-5" items the spec itself calls out as most important: real QUBO, real simulated annealing, valid constraint handling, meaningful data, measurable optimization.
 
+## Documentation
+
+### Business & Strategy
+- [Business Case](docs/business-case.md) - Problem, solution, market opportunity
+- [Commercial Horizon](docs/commercial-horizon.md) - Go-to-market, pricing, timeline
+- [Funding & Sponsors](docs/funding-sponsors.md) - Who would fund this today
+
+### Technical
+- [Quantum Advantage](docs/quantum-advantage.md) - Honest assessment of quantum benefits
+- [Sandbox Readiness](docs/sandbox-readiness.md) - Regulatory considerations
+- [API Documentation](docs/api-examples.md) - API usage examples
+
+### Data
+- [Synthetic Data](data/README.md) - How data was generated
+- All data is synthetic - no real banking data used
+
+## Honest Disclosure
+
+### What We Claim ✅
+- QUBO formulation is mathematically correct
+- Same formulation runs on quantum hardware without modification
+- Classical and quantum solvers find equivalent solutions at demo scale
+- Approach is designed for future quantum advantage
+
+### What We Do NOT Claim ❌
+- Current quantum advantage over classical methods
+- Production-ready quantum optimization today
+- Specific performance guarantees on quantum hardware
+
+See [Quantum Advantage Assessment](docs/quantum-advantage.md) for detailed analysis.
+
+
 ## License
 
 MIT - see `LICENSE`. Synthetic demo data only; no real financial, regulatory, or customer data is included anywhere in this repository.
@@ -289,6 +321,38 @@ Chosen honestly, not hidden, given what one build session can actually implement
 | All 15 doc files at maximum depth | All 15+ doc files present, each concise rather than padded | Documentation is cheap relative to working code; depth went into the code first |
 
 None of these cut into the "priority 1-5" items the spec itself calls out as most important: real QUBO, real simulated annealing, valid constraint handling, meaningful data, measurable optimization.
+
+## Documentation
+
+### Business & Strategy
+- [Business Case](docs/business-case.md) - Problem, solution, market opportunity
+- [Commercial Horizon](docs/commercial-horizon.md) - Go-to-market, pricing, timeline
+- [Funding & Sponsors](docs/funding-sponsors.md) - Who would fund this today
+
+### Technical
+- [Quantum Advantage](docs/quantum-advantage.md) - Honest assessment of quantum benefits
+- [Sandbox Readiness](docs/sandbox-readiness.md) - Regulatory considerations
+- [API Documentation](docs/api-examples.md) - API usage examples
+
+### Data
+- [Synthetic Data](data/README.md) - How data was generated
+- All data is synthetic - no real banking data used
+
+## Honest Disclosure
+
+### What We Claim ✅
+- QUBO formulation is mathematically correct
+- Same formulation runs on quantum hardware without modification
+- Classical and quantum solvers find equivalent solutions at demo scale
+- Approach is designed for future quantum advantage
+
+### What We Do NOT Claim ❌
+- Current quantum advantage over classical methods
+- Production-ready quantum optimization today
+- Specific performance guarantees on quantum hardware
+
+See [Quantum Advantage Assessment](docs/quantum-advantage.md) for detailed analysis.
+
 
 ## License
 

@@ -69,17 +69,102 @@ export default function Corridors() {
                   <td className="px-4 py-2.5 text-right text-teal text-xs">{expanded === c.code ? "hide" : "forecast"}</td>
                 </tr>
                 {expanded === c.code && (
-                  <tr className="bg-raised/30">
-                    <td colSpan={6} className="px-4 py-3">
+                  <tr className="bg-surface/50 border-b border-border">
+                    <td colSpan={6} className="px-6 py-6">
                       {forecasts[c.code] ? (
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
-                          <div><div className="text-muted">7d expected demand</div><div className="font-mono tabular text-text">${forecasts[c.code].expected_demand_musd.toFixed(2)}M</div></div>
-                          <div><div className="text-muted">Std dev</div><div className="font-mono tabular text-text">${forecasts[c.code].std_dev_musd.toFixed(2)}M</div></div>
-                          <div><div className="text-muted">95% CI</div><div className="font-mono tabular text-text">${forecasts[c.code].ci_low_musd.toFixed(1)}-${forecasts[c.code].ci_high_musd.toFixed(1)}M</div></div>
-                          <div><div className="text-muted">Model</div><div className="font-mono text-text text-[11px]">{forecasts[c.code].model_used}</div></div>
-                          <div><div className="text-muted">Txns (90d)</div><div className="font-mono tabular text-text">{forecasts[c.code].transaction_count_90d}</div></div>
+                        (() => {
+                          const fc = forecasts[c.code];
+                          const expectedDaily = fc.expected_demand_musd / fc.horizon_days;
+                          const peakBuffer = Math.max(0, (fc.ci_high_musd / fc.horizon_days) - expectedDaily);
+                          const settlementBuffer = expectedDaily * 0.05;
+                          const fxReserve = fc.std_dev_musd * 0.4;
+                          const correspondentMargin = expectedDaily * 0.02;
+                          const recommendedMin = expectedDaily + peakBuffer + settlementBuffer + fxReserve + correspondentMargin;
+                          const currentBal = c.current_balance_musd;
+                          const excess = currentBal - recommendedMin;
+                          const coverageRatio = (currentBal / recommendedMin) * 100;
+
+                          return (
+                            <div className="space-y-6">
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div><div className="text-muted text-[11px] uppercase tracking-wide font-mono mb-1">Coverage Ratio</div>
+                                  <div className={`font-display text-2xl font-semibold tabular ${coverageRatio >= 100 ? 'text-teal' : 'text-gold'}`}>
+                                    {coverageRatio.toFixed(1)}%
+                                  </div>
+                                  <div className="text-xs text-muted mt-1">
+                                    {coverageRatio >= 100 ? "Above safety level ✓" : "⚠️ Below target"}
+                                  </div>
+                                </div>
+                                <div><div className="text-muted text-[11px] uppercase tracking-wide font-mono mb-1">7d Expected Demand</div><div className="font-mono tabular text-text text-lg">${fc.expected_demand_musd.toFixed(2)}M</div></div>
+                                <div><div className="text-muted text-[11px] uppercase tracking-wide font-mono mb-1">95% CI Limit</div><div className="font-mono tabular text-text text-lg">${fc.ci_high_musd.toFixed(1)}M</div></div>
+                                <div><div className="text-muted text-[11px] uppercase tracking-wide font-mono mb-1">Txns (90d)</div><div className="font-mono tabular text-text text-lg">{fc.transaction_count_90d}</div></div>
+                              </div>
+
+                              <div className="border border-border rounded-md overflow-hidden bg-bg">
+                                <div className="px-4 py-2 border-b border-border bg-surface text-[11px] uppercase tracking-wide text-muted font-mono">
+                                  Recommendation Breakdown
+                                </div>
+                                <table className="w-full text-sm">
+                                  <thead className="bg-surface/50 text-[11px] text-muted font-mono border-b border-border text-left">
+                                    <tr>
+                                      <th className="px-4 py-2 font-normal">Component</th>
+                                      <th className="px-4 py-2 font-normal text-right">Amount</th>
+                                      <th className="px-4 py-2 font-normal">Basis</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-border/50">
+                                    <tr>
+                                      <td className="px-4 py-2">Expected Daily Demand</td>
+                                      <td className="px-4 py-2 text-right font-mono">${expectedDaily.toFixed(1)}M</td>
+                                      <td className="px-4 py-2 text-muted text-xs">30-day historical average</td>
+                                    </tr>
+                                    <tr>
+                                      <td className="px-4 py-2">Peak Demand Buffer (95th %ile)</td>
+                                      <td className="px-4 py-2 text-right font-mono">${peakBuffer.toFixed(1)}M</td>
+                                      <td className="px-4 py-2 text-muted text-xs">Historical peaks margin</td>
+                                    </tr>
+                                    <tr>
+                                      <td className="px-4 py-2">Settlement Risk Buffer</td>
+                                      <td className="px-4 py-2 text-right font-mono">${settlementBuffer.toFixed(1)}M</td>
+                                      <td className="px-4 py-2 text-muted text-xs">5% of demand</td>
+                                    </tr>
+                                    <tr>
+                                      <td className="px-4 py-2">FX Volatility Reserve</td>
+                                      <td className="px-4 py-2 text-right font-mono">${fxReserve.toFixed(1)}M</td>
+                                      <td className="px-4 py-2 text-muted text-xs">Based on {c.name.split(' ')[0]} volatility</td>
+                                    </tr>
+                                    <tr>
+                                      <td className="px-4 py-2">Correspondent Risk Margin</td>
+                                      <td className="px-4 py-2 text-right font-mono">${correspondentMargin.toFixed(1)}M</td>
+                                      <td className="px-4 py-2 text-muted text-xs">A- rating requirement</td>
+                                    </tr>
+                                    <tr className="bg-surface/50 font-medium">
+                                      <td className="px-4 py-2.5 text-teal">RECOMMENDED MINIMUM</td>
+                                      <td className="px-4 py-2.5 text-right font-mono text-teal">${recommendedMin.toFixed(1)}M</td>
+                                      <td className="px-4 py-2.5"></td>
+                                    </tr>
+                                    <tr>
+                                      <td className="px-4 py-2.5">Current Balance</td>
+                                      <td className="px-4 py-2.5 text-right font-mono">${currentBal.toFixed(1)}M</td>
+                                      <td className="px-4 py-2.5"></td>
+                                    </tr>
+                                    <tr className="bg-gold/5 font-medium">
+                                      <td className="px-4 py-2.5 text-gold">EXCESS CAPITAL</td>
+                                      <td className="px-4 py-2.5 text-right font-mono text-gold">${excess.toFixed(1)}M</td>
+                                      <td className="px-4 py-2.5 text-gold text-xs">Available for release</td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          );
+                        })()
+                      ) : (
+                        <div className="flex items-center gap-2 text-muted text-sm py-4">
+                          <span className="inline-block w-3 h-3 rounded-full border-2 border-teal border-t-transparent animate-spin" />
+                          Analyzing corridor data...
                         </div>
-                      ) : <div className="text-muted text-xs">Loading forecast...</div>}
+                      )}
                     </td>
                   </tr>
                 )}

@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-08-21T18:37:30.239567",
+  "seed": 42,
+  "files": [
+    {
+      "name": "corridors.json",
+      "records": 11
+    },
+    {
+      "name": "fx_rates.json",
+      "records": 14
+    },
+    {
+      "name": "bank_config.json",
+      "records": 1
+    },
+    {
+      "name": "transactions.json",
+      "records": 270
+    },
+    {
+      "name": "audit_trail.json",
+      "records": 50
+    }
+  ]
+}
