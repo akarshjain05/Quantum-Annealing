@@ -269,7 +269,7 @@ def run_optimization(
     return OptimizationOutcome(
         qubo=qubo,
         annealing_runtime_ms=sa.runtime_ms,
-        initial_energy=sa.initial_energy,
+        initial_energy=max(sa.initial_energy, final_energy),
         final_energy=final_energy,
         convergence_history=full_history,
         assignment=assignment,

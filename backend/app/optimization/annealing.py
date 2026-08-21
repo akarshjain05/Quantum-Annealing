@@ -102,8 +102,15 @@ def simulated_annealing(
 
 from typing import Tuple, Dict, Any, List
 
-def decode_assignment(best_x: np.ndarray, block_sizes: List[int]) -> Tuple[Dict[int, int], bool]:
+def decode_assignment(best_x: np.ndarray, *args) -> Tuple[Dict[int, int], bool]:
     """Decode the flat binary vector into one bucket-index per block."""
+    if len(args) == 1 and isinstance(args[0], list):
+        block_sizes = args[0]
+    elif len(args) == 2 and isinstance(args[0], int) and isinstance(args[1], int):
+        block_sizes = [args[1]] * args[0]
+    else:
+        raise TypeError("decode_assignment expects either block_sizes: List[int] or num_corridors: int, num_buckets: int")
+    
     assignment = {}
     clean_onehot = True
     offset = 0
@@ -117,8 +124,20 @@ def decode_assignment(best_x: np.ndarray, block_sizes: List[int]) -> Tuple[Dict[
     return assignment, clean_onehot
 
 
-def local_search_refine(Q: np.ndarray, x: np.ndarray, block_sizes: List[int], max_sweeps: int = 5) -> Tuple[np.ndarray, bool]:
+def local_search_refine(Q: np.ndarray, x: np.ndarray, *args, **kwargs) -> Tuple[np.ndarray, bool]:
     """Post-SA coordinate-descent refinement over one-hot blocks."""
+    if len(args) == 1 and isinstance(args[0], list):
+        block_sizes = args[0]
+        max_sweeps = kwargs.get('max_sweeps', 5)
+    elif len(args) == 2 and isinstance(args[0], int) and isinstance(args[1], int):
+        block_sizes = [args[1]] * args[0]
+        max_sweeps = kwargs.get('max_sweeps', 5)
+    elif len(args) == 3 and isinstance(args[0], int) and isinstance(args[1], int) and isinstance(args[2], int):
+        block_sizes = [args[1]] * args[0]
+        max_sweeps = args[2]
+    else:
+        raise TypeError("Invalid arguments to local_search_refine")
+    
     x = x.copy()
     improved_any = False
     for sweep in range(max_sweeps):
@@ -146,68 +165,3 @@ def local_search_refine(Q: np.ndarray, x: np.ndarray, block_sizes: List[int], ma
             break
     return x, improved_any
 
-
-def solve_with_qaoa(Q: np.ndarray, num_vars: int, reps: int = 2, shots: int = 1024, optimizer_maxiter: int = 100, seed: Optional[int] = None) -> AnnealingResult:
-    """
-    Solves Q via QAOA on Qiskit's statevector/sampler simulator (NOT real hardware).
-    Only intended for small num_vars (<= ~16-18) -- caller is responsible for
-    restricting problem size before calling this.
-    """
-    import time
-    if num_vars > 18:
-        raise ValueError("QAOA path only supports small instances — reduce corridors/buckets before calling")
-
-    t0 = time.perf_counter()
-    
-    from qiskit_optimization import QuadraticProgram
-    from qiskit_algorithms import QAOA
-    from qiskit_algorithms.optimizers import COBYLA
-    from qiskit_optimization.algorithms import MinimumEigenOptimizer
-    from qiskit.primitives import StatevectorSampler as Sampler
-    
-    qp = QuadraticProgram()
-    for i in range(num_vars):
-        qp.binary_var(f"x_{i}")
-        
-    linear = {}
-    quadratic = {}
-    
-    for i in range(num_vars):
-        for j in range(num_vars):
-            w = Q[i, j]
-            if w == 0:
-                continue
-            name_i = f"x_{i}"
-            name_j = f"x_{j}"
-            if i == j:
-                linear[name_i] = linear.get(name_i, 0) + float(w)
-            else:
-                if i < j:
-                    quadratic[(name_i, name_j)] = quadratic.get((name_i, name_j), 0) + float(w)
-                else:
-                    quadratic[(name_j, name_i)] = quadratic.get((name_j, name_i), 0) + float(w)
-
-    qp.minimize(linear=linear, quadratic=quadratic)
-    
-    sampler = Sampler()
-    if seed is not None:
-        sampler.set_options(seed=seed)
-        
-    optimizer = COBYLA(maxiter=optimizer_maxiter)
-    qaoa = QAOA(sampler=sampler, optimizer=optimizer, reps=reps)
-    
-    optimizer_algo = MinimumEigenOptimizer(qaoa)
-    result = optimizer_algo.solve(qp)
-    
-    best_x = np.array([int(result.x[i]) for i in range(num_vars)], dtype=np.float64)
-    best_energy = float(result.fval)
-    runtime_ms = (time.perf_counter() - t0) * 1000.0
-    
-    return AnnealingResult(
-        best_x=best_x,
-        best_energy=best_energy,
-        initial_energy=best_energy,
-        history=[best_energy],
-        iterations=optimizer_maxiter,
-        runtime_ms=runtime_ms,
-    )
