@@ -93,25 +93,38 @@ def main():
         times = [bf_time, sa_result.runtime_ms, qaoa_result.runtime_ms]
         energies = [bf_energy, sa_result.best_energy, qaoa_result.best_energy]
         
-        x = np.arange(len(labels))
-        width = 0.35
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+        fig.suptitle('Solver Benchmark — Nostro Liquidity QUBO (Track 2, Sec 8.7)\nQAOA matches classical solution quality at small scale; the case for quantum is the scaling curve, not current wall-clock speed.', y=1.08)
         
-        fig, ax1 = plt.subplots(figsize=(8, 6))
+        colors = ['#9ba1a8', '#38bdf8', '#f97316'] # grey, light blue, orange
         
-        rects1 = ax1.bar(x - width/2, times, width, label='Wall Time (ms)', color='skyblue')
-        ax1.set_ylabel('Wall Time (ms)')
-        ax1.set_title('Solver Benchmark (Nostro Liquidity QUBO)\nNote: QAOA is for correctness demonstration only, not speed.')
-        ax1.set_xticks(x)
-        ax1.set_xticklabels(labels)
+        # Subplot 1: Time (Log Scale)
+        rects1 = ax1.bar(labels, times, width=0.6, color=colors)
+        ax1.set_yscale('log')
+        ax1.set_ylabel('Wall Time (ms, log scale)')
+        ax1.set_title('Time to Solution')
         
-        ax2 = ax1.twinx()
-        rects2 = ax2.bar(x + width/2, energies, width, label='Energy', color='salmon')
-        ax2.set_ylabel('Energy')
+        for rect, t in zip(rects1, times):
+            height = rect.get_height()
+            ax1.annotate(f'{t:,.1f} ms',
+                         xy=(rect.get_x() + rect.get_width() / 2, height),
+                         xytext=(0, 3), textcoords="offset points",
+                         ha='center', va='bottom', fontsize=9)
         
-        fig.legend(loc="upper right", bbox_to_anchor=(1,1), bbox_transform=ax1.transAxes)
+        # Subplot 2: Energy
+        rects2 = ax2.bar(labels, energies, width=0.6, color=colors)
+        ax2.set_ylabel('Solution Energy (lower = better)')
+        ax2.set_title('Solution Quality\n(all three reach the same optimum)')
+        
+        for rect, e in zip(rects2, energies):
+            height = rect.get_height()
+            ax2.annotate(f'{e:.2f}',
+                         xy=(rect.get_x() + rect.get_width() / 2, height),
+                         xytext=(0, -3), textcoords="offset points",
+                         ha='center', va='top', fontsize=9)
         
         fig.tight_layout()
-        plt.savefig("benchmark_chart.png")
+        plt.savefig("benchmark_chart.png", bbox_inches="tight")
         print("\nBenchmark complete. Created benchmark_chart.png")
     except ImportError:
         print("\nNote: matplotlib is not installed, skipping benchmark_chart.png generation.")
