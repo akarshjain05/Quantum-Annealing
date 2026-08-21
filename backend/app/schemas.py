@@ -50,3 +50,21 @@ class ApprovalRequest(BaseModel):
     run_id: int
     decision: str  # APPROVED | REJECTED | RECALCULATION_REQUESTED
     reason: Optional[str] = ""
+
+class OptimizationConfigRequest(BaseModel):
+    risk_appetite: str
+    corridors: Optional[List[str]] = None
+    iterations: Optional[int] = None
+    initial_temperature: Optional[float] = None
+    cooling_rate: Optional[float] = None
+
+class SubmitApprovalRequest(BaseModel):
+    submitted_by: str
+    notes: Optional[str] = None
+    confirmations: Optional[List[str]] = None
+
+class ApprovalDecisionRequest(BaseModel):
+    decision: str
+    decided_by: str
+    notes: Optional[str] = None
+    rejection_reason: Optional[str] = None

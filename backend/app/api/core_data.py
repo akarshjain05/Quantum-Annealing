@@ -33,6 +33,26 @@ def dashboard(db: Session = Depends(get_db), user=Depends(get_current_user)):
         } if latest_run else None,
     }
 
+@router.get("/dashboard/savings")
+def get_savings_metrics(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Calculate annual savings opportunity."""
+    accounts = db.query(models.NostroAccount).all()
+    total_liquidity = sum(a.current_balance_musd for a in accounts)
+    
+    latest_run = db.query(models.OptimizationRun).order_by(models.OptimizationRun.id.desc()).first()
+    capital_released = sum(r.capital_released_musd for r in latest_run.results) if latest_run else 0
+    
+    opportunity_cost_rate = 0.05  # Default 5%, should be configurable
+    
+    return {
+        "totalNostroLiquidity": total_liquidity,
+        "capitalReleased": capital_released,
+        "opportunityCostRate": opportunity_cost_rate,
+        "annualSavingsOpportunity": capital_released * opportunity_cost_rate,
+        "efficiencyImprovement": (capital_released / total_liquidity * 100) if total_liquidity > 0 else 0,
+        "operatingMode": "shadow"
+    }
+
 
 @router.get("/corridors")
 def list_corridors(db: Session = Depends(get_db), user=Depends(get_current_user)):

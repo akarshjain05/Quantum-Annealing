@@ -1,11 +1,15 @@
 from typing import List, Optional
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.config import settings
 from app.api.deps import get_current_user
-from app.schemas import OptimizationRunRequest, ApprovalRequest
+from app.schemas import (
+    OptimizationRunRequest, ApprovalRequest, OptimizationConfigRequest,
+    SubmitApprovalRequest, ApprovalDecisionRequest
+)
 from app.optimization.qubo import CorridorInput
 from app.optimization.engine import run_optimization, OptimizationOutcome
 from app.audit.chain import compute_hash, GENESIS_HASH
@@ -198,3 +202,81 @@ def approve_run(req: ApprovalRequest, db: Session = Depends(get_db), user=Depend
     db.add(audit)
     db.commit()
     return {"status": "recorded", "decision": req.decision, "note": "Decision-support prototype. No live financial transaction is executed."}
+
+@router.post("/configure")
+def configure_optimization(request: OptimizationConfigRequest):
+    """Convert risk appetite to technical parameters."""
+    RISK_MAP = {
+        "very_conservative": {"confidence": 0.99, "safety_buffer": 0.10},
+        "conservative": {"confidence": 0.95, "safety_buffer": 0.05},
+        "balanced": {"confidence": 0.90, "safety_buffer": 0.03},
+        "efficient": {"confidence": 0.85, "safety_buffer": 0.02},
+        "very_efficient": {"confidence": 0.80, "safety_buffer": 0.01},
+    }
+    params = RISK_MAP.get(request.risk_appetite, RISK_MAP["conservative"])
+    return {
+        "riskAppetite": request.risk_appetite,
+        "corridorsIncluded": request.corridors,
+        "technicalParams": {
+            "confidence_level": params["confidence"],
+            "safety_buffer": params["safety_buffer"],
+            "iterations": request.iterations or 8000,
+            "initial_temperature": request.initial_temperature or 1000,
+            "cooling_rate": request.cooling_rate or 0.995,
+        }
+    }
+
+@router.post("/runs/{run_id}/submit-for-approval")
+def submit_for_approval(run_id: str, request: SubmitApprovalRequest, db: Session = Depends(get_db)):
+    """Submit optimization run for human approval."""
+    prev_hash = _latest_audit_hash(db)
+    payload = {
+        "run_id": run_id,
+        "submitted_by": request.submitted_by,
+        "notes": request.notes,
+        "confirmations": request.confirmations
+    }
+    audit = models.AuditLog(
+        event_type="approval_submitted",
+        actor=request.submitted_by,
+        payload_json=payload,
+        prev_hash=prev_hash
+    )
+    audit.self_hash = compute_hash(prev_hash, payload)
+    db.add(audit)
+    db.commit()
+    
+    return {
+        "status": "pending_approval",
+        "runId": run_id,
+        "submittedAt": datetime.utcnow().isoformat(),
+        "auditHash": audit.self_hash
+    }
+
+@router.post("/runs/{run_id}/decide")
+def decide_approval_new(run_id: str, request: ApprovalDecisionRequest, db: Session = Depends(get_db)):
+    """Record approval decision."""
+    prev_hash = _latest_audit_hash(db)
+    payload = {
+        "run_id": run_id,
+        "decision": request.decision,
+        "decided_by": request.decided_by,
+        "notes": request.notes,
+        "rejection_reason": request.rejection_reason
+    }
+    audit = models.AuditLog(
+        event_type="approval_decided",
+        actor=request.decided_by,
+        payload_json=payload,
+        prev_hash=prev_hash
+    )
+    audit.self_hash = compute_hash(prev_hash, payload)
+    db.add(audit)
+    db.commit()
+    
+    return {
+        "status": request.decision,
+        "runId": run_id,
+        "decidedAt": datetime.utcnow().isoformat(),
+        "auditHash": audit.self_hash
+    }
