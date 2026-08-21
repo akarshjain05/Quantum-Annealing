@@ -35,10 +35,9 @@ export default function Dashboard() {
 
   const opportunityCostRate = 0.05;
   
-  // If we have a run, use actuals. If not, estimate potential at 18% (to match expected ~$68M on $378M liquidity).
   const isEstimate = !dash.latest_optimization_run;
   const capitalReleased = isEstimate 
-    ? dash.total_nostro_liquidity_musd * 0.18 
+    ? dash.capital_released_potential_musd 
     : dash.latest_optimization_run.capital_released_musd;
     
   const totalNostroLiquidity = dash.total_nostro_liquidity_musd;

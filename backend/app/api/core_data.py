@@ -18,6 +18,22 @@ def dashboard(db: Session = Depends(get_db), user=Depends(get_current_user)):
     for a in accounts:
         by_currency[a.currency] = by_currency.get(a.currency, 0.0) + a.current_balance_musd
 
+    # Calculate true potential release based on user spec
+    total_recommended = 0.0
+    for c in corridors:
+        txns = db.query(models.PaymentTransaction).filter(models.PaymentTransaction.corridor_id == c.id).all()
+        pairs = [(t.ts, t.amount_musd) for t in txns]
+        fc = compute_forecast(pairs, horizon_days=7)
+        expected7d = fc.expected_demand_musd
+        peakBuffer = max(0, fc.ci_high_musd - expected7d)
+        settlementBuffer = expected7d * 0.05
+        fxReserve = fc.std_dev_musd * 0.4
+        correspondentMargin = expected7d * 0.02
+        recommendedMin = expected7d + peakBuffer + settlementBuffer + fxReserve + correspondentMargin
+        total_recommended += recommendedMin
+
+    capital_released_potential = max(0.0, total_liquidity - total_recommended)
+
     latest_run = db.query(models.OptimizationRun).order_by(models.OptimizationRun.id.desc()).first()
 
     return {
@@ -27,6 +43,7 @@ def dashboard(db: Session = Depends(get_db), user=Depends(get_current_user)):
         "num_corridors": len(corridors),
         "num_nostro_accounts": len(accounts),
         "liquidity_by_currency_musd": {k: round(v, 2) for k, v in by_currency.items()},
+        "capital_released_potential_musd": round(capital_released_potential, 2),
         "latest_optimization_run": {
             "id": latest_run.id, "created_at": str(latest_run.created_at),
             "capital_released_musd": sum(r.capital_released_musd for r in latest_run.results) if latest_run else None,
