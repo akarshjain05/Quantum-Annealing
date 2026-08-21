@@ -33,6 +33,13 @@ export default function Dashboard() {
 
   const currencyData = Object.entries(dash.liquidity_by_currency_musd).map(([k, v]) => ({ currency: k, value: v }));
 
+  const opportunityCostRate = 0.05;
+  const capitalReleased = dash.latest_optimization_run ? dash.latest_optimization_run.capital_released_musd : 0;
+  const totalNostroLiquidity = dash.total_nostro_liquidity_musd;
+  const annualSavingsOpportunity = capitalReleased * opportunityCostRate;
+  const efficiencyImprovement = totalNostroLiquidity > 0 ? (capitalReleased / totalNostroLiquidity) * 100 : 0;
+  const operatingMode = 'shadow';
+
   return (
     <div className="space-y-6">
       <div>
@@ -40,15 +47,30 @@ export default function Dashboard() {
         <p className="text-sm text-muted mt-1">{dash.synthetic_data_notice}</p>
       </div>
 
+      {/* NEW: Operating Mode Banner */}
+      <div className="card p-3 bg-surface/50 border border-teal/20 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="w-2 h-2 rounded-full bg-teal animate-pulse"></div>
+          <span className="text-sm font-medium text-teal">
+            {operatingMode === 'shadow' 
+              ? 'SHADOW MODE - Recommendations only, no live execution' 
+              : 'PRODUCTION MODE - Live recommendations enabled'}
+          </span>
+        </div>
+        <span className="text-xs text-muted hover:text-teal transition-colors cursor-pointer">
+          Learn more
+        </span>
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Kpi label="Total nostro liquidity" value={`$${dash.total_nostro_liquidity_musd.toFixed(1)}M`} />
+        <Kpi label="Total nostro liquidity" value={`$${totalNostroLiquidity.toFixed(1)}M`} />
         <Kpi label="Corridors" value={dash.num_corridors} />
         <Kpi label="Nostro accounts" value={dash.num_nostro_accounts} />
         {dash.latest_optimization_run ? (
           <Kpi
             label="Capital released (latest run)"
-            value={`$${dash.latest_optimization_run.capital_released_musd.toFixed(1)}M`}
-            tone={dash.latest_optimization_run.capital_released_musd >= 0 ? "gold" : "red"}
+            value={`$${capitalReleased.toFixed(1)}M`}
+            tone={capitalReleased >= 0 ? "gold" : "red"}
           />
         ) : (
           <div className="card px-4 py-3.5 flex flex-col justify-between">
@@ -57,6 +79,22 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* NEW: Business Value Metrics Row */}
+      {dash.latest_optimization_run && (
+        <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
+          <Kpi
+            label="Annual Savings (5% rate)"
+            value={`$${annualSavingsOpportunity.toFixed(2)}M`}
+            tone="teal"
+          />
+          <Kpi
+            label="Efficiency Improvement"
+            value={`+${efficiencyImprovement.toFixed(1)}%`}
+            tone="teal"
+          />
+        </div>
+      )}
 
       <SettlementTimeline corridors={corridors} />
 
