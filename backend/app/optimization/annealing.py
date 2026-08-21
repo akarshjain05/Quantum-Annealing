@@ -145,14 +145,8 @@ def local_search_refine(Q: np.ndarray, x: np.ndarray, block_sizes: List[int], ma
         if not improved:
             break
     return x, improved_any
-def solve_with_qaoa(Q: np.ndarray, num_vars: int, reps: int = 2, shots: int = 1024, optimizer_maxiter: int = 100, seed: Optional[int] = None) -> AnnealingResult:
-    """
-    Solves Q via QAOA on Qiskit's statevector/sampler simulator (NOT real hardware).
-    Only intended for small num_vars (<= ~16-18) -- caller is responsible for
-    restricting problem size before calling this.
-    """
-    import time
-    if num_vars > 18:
+
+
 def solve_with_qaoa(Q: np.ndarray, num_vars: int, reps: int = 2, shots: int = 1024, optimizer_maxiter: int = 100, seed: Optional[int] = None) -> AnnealingResult:
     """
     Solves Q via QAOA on Qiskit's statevector/sampler simulator (NOT real hardware).
