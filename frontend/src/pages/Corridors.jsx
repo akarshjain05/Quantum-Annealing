@@ -80,12 +80,12 @@ export default function Corridors() {
                       {forecasts[c.code] ? (
                         (() => {
                           const fc = forecasts[c.code];
-                          const expectedDaily = fc.expected_demand_musd / fc.horizon_days;
-                          const peakBuffer = Math.max(0, (fc.ci_high_musd / fc.horizon_days) - expectedDaily);
-                          const settlementBuffer = expectedDaily * 0.05;
+                          const expected7d = fc.expected_demand_musd;
+                          const peakBuffer = Math.max(0, fc.ci_high_musd - expected7d);
+                          const settlementBuffer = expected7d * 0.05;
                           const fxReserve = fc.std_dev_musd * 0.4;
-                          const correspondentMargin = expectedDaily * 0.02;
-                          const recommendedMin = expectedDaily + peakBuffer + settlementBuffer + fxReserve + correspondentMargin;
+                          const correspondentMargin = expected7d * 0.02;
+                          const recommendedMin = expected7d + peakBuffer + settlementBuffer + fxReserve + correspondentMargin;
                           const currentBal = c.current_balance_musd;
                           const excess = currentBal - recommendedMin;
                           const coverageRatio = (currentBal / recommendedMin) * 100;
@@ -120,9 +120,9 @@ export default function Corridors() {
                                   </thead>
                                   <tbody className="divide-y divide-border/50">
                                     <tr>
-                                      <td className="px-4 py-2">Expected Daily Demand</td>
-                                      <td className="px-4 py-2 text-right font-mono">${expectedDaily.toFixed(1)}M</td>
-                                      <td className="px-4 py-2 text-muted text-xs">30-day historical average</td>
+                                      <td className="px-4 py-2">Expected 7-Day Demand</td>
+                                      <td className="px-4 py-2 text-right font-mono">${expected7d.toFixed(1)}M</td>
+                                      <td className="px-4 py-2 text-muted text-xs">7-day historical forecast</td>
                                     </tr>
                                     <tr>
                                       <td className="px-4 py-2">Peak Demand Buffer (95th %ile)</td>

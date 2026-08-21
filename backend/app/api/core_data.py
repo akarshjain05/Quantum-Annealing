@@ -65,12 +65,12 @@ def list_corridors(db: Session = Depends(get_db), user=Depends(get_current_user)
         txns = db.query(models.PaymentTransaction).filter(models.PaymentTransaction.corridor_id == c.id).all()
         pairs = [(t.ts, t.amount_musd) for t in txns]
         fc = compute_forecast(pairs, horizon_days=7)
-        expectedDaily = fc.expected_demand_musd / fc.horizon_days
-        peakBuffer = max(0, (fc.ci_high_musd / fc.horizon_days) - expectedDaily)
-        settlementBuffer = expectedDaily * 0.05
+        expected7d = fc.expected_demand_musd
+        peakBuffer = max(0, fc.ci_high_musd - expected7d)
+        settlementBuffer = expected7d * 0.05
         fxReserve = fc.std_dev_musd * 0.4
-        correspondentMargin = expectedDaily * 0.02
-        recommendedMin = expectedDaily + peakBuffer + settlementBuffer + fxReserve + correspondentMargin
+        correspondentMargin = expected7d * 0.02
+        recommendedMin = expected7d + peakBuffer + settlementBuffer + fxReserve + correspondentMargin
         
         efficiency_pct = (recommendedMin / current_balance) * 100 if current_balance > 0 else 100
         if efficiency_pct > 100:
