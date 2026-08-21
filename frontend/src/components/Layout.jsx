@@ -1,9 +1,5 @@
-<<<<<<< HEAD
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
-=======
-import { NavLink } from "react-router-dom";
->>>>>>> origin/main
 
 const NAV = [
   { to: "/", label: "Dashboard", end: true },
@@ -17,12 +13,8 @@ const NAV = [
 ];
 
 export default function Layout({ children }) {
-<<<<<<< HEAD
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-=======
->>>>>>> origin/main
   return (
     <div className="min-h-screen flex">
       <aside className="w-60 shrink-0 border-r border-border bg-surface flex flex-col">
@@ -54,7 +46,6 @@ export default function Layout({ children }) {
         </nav>
         <div className="px-3 py-4 border-t border-border">
           <div className="px-2 mb-2">
-<<<<<<< HEAD
             <div className="text-xs text-text truncate">{user?.full_name}</div>
             <div className="text-[11px] text-muted truncate">{user?.email}</div>
           </div>
@@ -67,11 +58,6 @@ export default function Layout({ children }) {
           >
             Sign out
           </button>
-=======
-            <div className="text-xs text-text truncate">Demo User</div>
-            <div className="text-[11px] text-muted truncate">treasury@demo-bank.com</div>
-          </div>
->>>>>>> origin/main
         </div>
       </aside>
       <main className="flex-1 min-w-0">
