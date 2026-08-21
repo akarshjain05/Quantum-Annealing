@@ -19,10 +19,15 @@ Directly: reduced opportunity cost on released capital (`AnnualOpportunityCostSa
 Treasury and correspondent-banking teams at banks and payment institutions operating multi-currency corridors; eventually, institutions operating through GIFT City's IFSC infrastructure specifically, where the regulatory environment is explicitly being built to support this kind of financial infrastructure innovation.
 
 ## Business model
-Not a consumer product - this is infrastructure software, most plausibly licensed to institutions (per-institution or per-corridor pricing) rather than sold per-seat. No pricing claims are made here; this prototype is not a commercial offering.
+NostroQ is **a software product, not a bespoke consulting service**. Our rate card scales cleanly with software usage—priced either by the number of active corridors optimized, total AUM passing through the engine, or per-seat licenses for treasury teams. We never bill hourly or per "report delivered." 
+
+The core value prop relies on self-service software operated by the customer:
+1. **Self-service configuration**: Banks configure their own corridors, weights, and risk tolerances directly in the **Optimizer** and **Scenarios** UI. We do not manually tune models per client.
+2. **Customer-driven execution**: The bank's treasury desk clicks "Optimize." The QUBO/SA/QAOA engine runs entirely within their tenant—we never touch their data or manually execute their runs.
+3. **Standardized onboarding**: Integration is handled via standard data connectors (e.g., Account Aggregator-style JSON schemas or standard SWIFT MT700 feeds), eliminating the need for bespoke integration engineering per bank.
 
 ## Implementation model
-On-premise or private-cloud deployment given the sensitivity of the underlying data (nostro balances, payment flows), consistent with how banks typically deploy treasury systems today. The current build's Docker/Postgres path is designed with this deployment shape in mind.
+On-premise or private-cloud deployment given the sensitivity of the underlying data (nostro balances, payment flows). Because NostroQ is a product, the IP compounds across the network: our QUBO formulations, the deterministic agent orchestrator, and the audit hash chain are reusable, ownable software assets. As the platform encounters more customer data in shadow mode or production, our baseline calibrations and solver configurations improve for all users. This compounding software value strictly separates NostroQ as a scalable product rather than a services shop.
 
 ## Risks
 - **Model risk** if a recommendation is acted on without the human review this system requires.
