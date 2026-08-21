@@ -84,5 +84,37 @@ def main():
     print("=" * 60)
     print("\nNote: QAOA execution time includes Qiskit circuit compilation and simulation overhead.")
 
+    # Mixed in from hackathon_solver: Plot Chart
+    try:
+        import matplotlib.pyplot as plt
+        import numpy as np
+        
+        labels = ["Brute-Force", "Classical SA", "QAOA (Qiskit Aer)"]
+        times = [bf_time, sa_result.runtime_ms, qaoa_result.runtime_ms]
+        energies = [bf_energy, sa_result.best_energy, qaoa_result.best_energy]
+        
+        x = np.arange(len(labels))
+        width = 0.35
+        
+        fig, ax1 = plt.subplots(figsize=(8, 6))
+        
+        rects1 = ax1.bar(x - width/2, times, width, label='Wall Time (ms)', color='skyblue')
+        ax1.set_ylabel('Wall Time (ms)')
+        ax1.set_title('Solver Benchmark (Nostro Liquidity QUBO)\nNote: QAOA is for correctness demonstration only, not speed.')
+        ax1.set_xticks(x)
+        ax1.set_xticklabels(labels)
+        
+        ax2 = ax1.twinx()
+        rects2 = ax2.bar(x + width/2, energies, width, label='Energy', color='salmon')
+        ax2.set_ylabel('Energy')
+        
+        fig.legend(loc="upper right", bbox_to_anchor=(1,1), bbox_transform=ax1.transAxes)
+        
+        fig.tight_layout()
+        plt.savefig("benchmark_chart.png")
+        print("\nBenchmark complete. Created benchmark_chart.png")
+    except ImportError:
+        print("\nNote: matplotlib is not installed, skipping benchmark_chart.png generation.")
+
 if __name__ == "__main__":
     main()

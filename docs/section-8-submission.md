@@ -23,6 +23,7 @@ A quantum-ready liquidity intelligence platform that models nostro pre-funding a
 
 ## 5. Who Pays & Why Now
 **Buyer Persona:** Treasury heads and correspondent-banking desk leads at IBU (IFSC Banking Unit) banks and cross-border payment institutions operating out of GIFT City. 
+**Business Model:** NostroQ is a self-serve software product, not a consulting service. Banks integrate via standardized data connectors (e.g. Account Aggregator APIs) and operate the optimizer themselves within their own tenant. Pricing scales with usage (per-corridor or AUM), while the core IP (QUBO models, agents, audit chains) compounds as an ownable asset across the network.
 **Why Now:** The academic groundwork for quantum financial optimization is mature (e.g., Veselý 2022 on QAOA FX portfolio optimization; Giron et al. 2023 on HSBC collateral optimization), proving the viability of these formulations. Concurrently, GIFT City's IFSC environment and the IFSCA's active push for fintech sandboxing (via GIFT IFIH) create the perfect near-term regulatory proving ground to safely evaluate quantum-inspired treasury infrastructure.
 
 ## 6. Regulatory Pathway
