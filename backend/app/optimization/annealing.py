@@ -38,6 +38,7 @@ def simulated_annealing(
     seed: int = 42,
     num_restarts: int = 3,
     record_every: int = 25,
+    initial_x: Optional[np.ndarray] = None,
 ) -> AnnealingResult:
     import time
 
@@ -49,7 +50,10 @@ def simulated_annealing(
 
     for restart in range(max(1, num_restarts)):
         rng = np.random.default_rng(seed + restart)
-        x = rng.integers(0, 2, size=num_vars).astype(np.float64)
+        if initial_x is not None:
+            x = initial_x.copy().astype(np.float64)
+        else:
+            x = rng.integers(0, 2, size=num_vars).astype(np.float64)
         Qx = Q @ x
         cur_energy = float(x @ Qx)
         if initial_energy_overall is None or restart == 0:

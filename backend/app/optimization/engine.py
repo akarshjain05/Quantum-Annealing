@@ -133,29 +133,53 @@ def run_optimization(
     cooling_rate = 0.99
     initial_temperature = 1000.0
 
+    # 1. Initial wide search
     sa = simulated_annealing(
         qubo.Q, qubo.num_vars,
         iterations=iterations, initial_temp=initial_temperature,
         cooling_rate=cooling_rate, seed=seed, num_restarts=3,
     )
-    refined_x, was_improved = local_search_refine(qubo.Q, sa.best_x, qubo.block_sizes)
     
+    # 2. Initial Refinement
+    current_x, _ = local_search_refine(qubo.Q, sa.best_x, qubo.block_sizes)
+    best_x, best_energy = current_x.copy(), qubo_energy(qubo.Q, current_x)
+    
+    full_history = sa.history + [best_energy]
+    
+    # 3. Reheating Loop (Iterated Local Search)
+    # The initial SA often gets stuck in fictional "dirty" energy basins when Cap/Netting is enabled.
+    # Reheating kicks the state out of local refined minimums with short bursts of thermal noise,
+    # then strictly refines it again, tracking the best valid one-hot state across all cycles.
+    num_reheats = 5
+    for cycle in range(num_reheats):
+        reheat_sa = simulated_annealing(
+            qubo.Q, qubo.num_vars,
+            iterations=1000, initial_temp=initial_temperature * 0.2,
+            cooling_rate=0.99, seed=seed + 100 + cycle, num_restarts=1,
+            initial_x=current_x
+        )
+        
+        refined_x, _ = local_search_refine(qubo.Q, reheat_sa.best_x, qubo.block_sizes)
+        e = qubo_energy(qubo.Q, refined_x)
+        
+        if e < best_energy:
+            best_energy = e
+            best_x = refined_x.copy()
+            
+        # Basin hopping: always continue from the newly refined state to explore new basins
+        current_x = refined_x.copy()
+        
+        full_history.extend(reheat_sa.history)
+        full_history.append(e)
+
+    # Sanity check the absolute best state found
     offset = 0
     for block_size in qubo.block_sizes:
-        active = sum(refined_x[offset:offset+block_size] > 0.5)
+        active = sum(best_x[offset:offset+block_size] > 0.5)
         assert active == 1, f"block at {offset} (size {block_size}) has {active} active bits after refinement!"
         offset += block_size
         
-    # refined_x is ALWAYS taken, unconditionally - never compared against
-    # sa.best_x on energy. sa.best_x is not guaranteed one-hot-valid, and once
-    # cross-corridor coupling terms exist (cap, netting), a multi/zero-hot
-    # state can report an energy that looks arbitrarily "better" by
-    # fictionally double-dipping or dodging a squared penalty term - that
-    # number doesn't correspond to any real liquidity allocation, so it must
-    # never be compared against a structurally valid one. See the incident
-    # writeup in docs/qubo-mathematics.md.
-    refined_energy = qubo_energy(qubo.Q, refined_x)
-    final_x, final_energy = refined_x, refined_energy
+    final_x, final_energy = best_x, best_energy
     
     assignment, onehot_clean = decode_assignment(final_x, qubo.block_sizes)
     violations = validate_solution(assignment, qubo, corridors, global_liquidity_cap_musd)
@@ -247,7 +271,7 @@ def run_optimization(
         annealing_runtime_ms=sa.runtime_ms,
         initial_energy=sa.initial_energy,
         final_energy=final_energy,
-        convergence_history=sa.history + [final_energy],
+        convergence_history=full_history,
         assignment=assignment,
         onehot_clean=onehot_clean,
         constraint_violations=violations,
