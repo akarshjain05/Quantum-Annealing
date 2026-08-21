@@ -47,9 +47,15 @@ Because liquidity is restricted to a **fixed, known set of buckets**, any cost f
 - **FX cost**: `(fx_cost_bps_i / 10000) * max(0, B_k - current_liquidity_i)`
 - **Operational cost**: a small penalty when `B_k` sits below expected demand (proxy for frequent top-ups)
 
-The **only** term requiring quadratic (off-diagonal) structure is the one-hot constraint itself, because it is the only thing that couples multiple `x_{i,k}` together.
+The one-hot constraint requires quadratic (off-diagonal) structure because it couples multiple `x_{i,k}` together within a single corridor.
 
-**Consequence**: with the current cost structure, the current Q matrix is **exactly block-diagonal across corridors** - no cross-corridor terms exist at all. This is a real, verifiable property of the current formulation (not a simplification we're hiding), and it directly motivated the refinement pass in §6. A future extension with genuinely coupled constraints (e.g. a shared collateral pool across corridors, or joint FX netting) would introduce real cross-block terms - see `docs/roadmap.md`.
+**Global Capital Cap (Cross-Corridor Coupling):**
+When the optional global capital cap (`global_liquidity_cap_musd`) is enabled, a real cross-corridor constraint is introduced. To ensure the total liquidity allocated across all corridors does not exceed a global cap `C`, we add an inequality constraint: `sum L_i <= C`.
+This inequality is converted to an equality constraint using a **slack variable** `S >= 0`:
+`sum L_i + S = C`
+Because the solver only accepts binary variables, the continuous slack `S` is discretized into a new "slack corridor" (a block of binary variables `x_{slack, k}`) using the same one-hot encoding mechanism. The resulting equality constraint `(sum L_i + S - C)^2` creates dense off-diagonal cross-coupling terms between every corridor's bucket variables and the slack variables.
+
+**Consequence**: When the global cap is disabled, the Q matrix remains **exactly block-diagonal across corridors** (motivating the exact refinement pass in §6). When the cap is enabled, the cross-corridor terms require the solver to use iterated local search (reheating) to escape local minima created by the dense coupling.
 
 ## 4. Demand uncertainty and the safety level
 
@@ -91,10 +97,10 @@ We're documenting this prominently rather than quietly patching it, because we t
 ## 7. Objective function, assembled
 
 ```
-Q_total = Q_cost + Q_shortfall + Q_risk + Q_fx + Q_operational + Q_onehot
+Q_total = Q_cost + Q_shortfall + Q_risk + Q_fx + Q_operational + Q_onehot + Q_cap
 ```
 
-with configurable weights `w_cost, w_shortfall, w_risk, w_fx, w_operational` and `P_onehot` (default 40.0), all exposed via the Optimizer UI and the `/api/optimization/run` request body.
+with configurable weights `w_cost, w_shortfall, w_risk, w_fx, w_operational` and `P_onehot` (default 40.0), all exposed via the Optimizer UI and the `/api/optimization/run` request body. The `Q_cap` penalty term is only included if `global_liquidity_cap_musd` is set.
 
 ## 8. Simulated annealing
 

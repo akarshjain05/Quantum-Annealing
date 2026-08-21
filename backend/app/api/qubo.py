@@ -26,7 +26,12 @@ def inspect_qubo(run_id: int, db: Session = Depends(get_db), user=Depends(get_cu
         demand_delta_pct=params.get("demand_delta_pct", 0.0),
         volatility_delta_pct=params.get("volatility_delta_pct", 0.0),
     )
-    qubo = build_qubo(inputs, weights=params.get("weights"), onehot_penalty=params.get("onehot_penalty"))
+    qubo = build_qubo(
+        inputs, 
+        weights=params.get("weights"), 
+        onehot_penalty=params.get("onehot_penalty"),
+        global_liquidity_cap_musd=params.get("global_liquidity_cap_musd")
+    )
 
     return {
         "run_id": run_id,

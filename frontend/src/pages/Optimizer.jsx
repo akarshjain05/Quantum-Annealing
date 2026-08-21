@@ -17,6 +17,7 @@ export default function Optimizer() {
   const [iterations, setIterations] = useState(8000);
   const [initialTemp, setInitialTemp] = useState(1000);
   const [coolingRate, setCoolingRate] = useState(0.995);
+  const [globalCap, setGlobalCap] = useState("");
   const [running, setRunning] = useState(false);
   const [stage, setStage] = useState(-1);
   const [result, setResult] = useState(null);
@@ -36,12 +37,17 @@ export default function Optimizer() {
     }, 220);
 
     try {
-      const res = await client.post("/api/optimization/run", {
+      const payload = {
         confidence_level: confidence,
         iterations,
         initial_temperature: initialTemp,
         cooling_rate: coolingRate,
-      });
+      };
+      if (globalCap && !isNaN(Number(globalCap))) {
+        payload.global_liquidity_cap_musd = Number(globalCap);
+      }
+      
+      const res = await client.post("/api/optimization/run", payload);
       clearInterval(stageTimer);
       setStage(STAGES.length - 1);
       setTimeout(() => {
@@ -74,7 +80,7 @@ export default function Optimizer() {
 
       <div className="card p-4">
         <div className="text-[11px] uppercase tracking-wide text-muted font-mono mb-3">Inputs</div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <Field label="Confidence level">
             <select value={confidence} onChange={(e) => setConfidence(Number(e.target.value))} className="input">
               <option value={0.90}>90%</option>
@@ -82,6 +88,9 @@ export default function Optimizer() {
               <option value={0.99}>99%</option>
               <option value={0.999}>99.9%</option>
             </select>
+          </Field>
+          <Field label="Global Cap ($M)">
+            <input type="number" placeholder="No limit" value={globalCap} onChange={(e) => setGlobalCap(e.target.value)} className="input" />
           </Field>
           <Field label="Iterations"><input type="number" value={iterations} onChange={(e) => setIterations(Number(e.target.value))} className="input" /></Field>
           <Field label="Initial temperature"><input type="number" value={initialTemp} onChange={(e) => setInitialTemp(Number(e.target.value))} className="input" /></Field>
@@ -113,7 +122,7 @@ export default function Optimizer() {
 
       {result && (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             <Kpi label="Current liquidity" value={`$${result.current_liquidity_musd.toFixed(1)}M`} />
             <Kpi label="Optimized liquidity" value={`$${result.optimized_liquidity_musd.toFixed(1)}M`} tone="teal" />
             <Kpi
@@ -121,7 +130,16 @@ export default function Optimizer() {
               value={`${result.capital_released_musd >= 0 ? "" : "-"}$${Math.abs(result.capital_released_musd).toFixed(1)}M`}
               tone={result.capital_released_musd >= 0 ? "gold" : "red"}
             />
-            <Kpi label="QUBO energy (final)" value={result.final_energy.toFixed(1)} sub={`from ${result.initial_energy.toFixed(0)}`} />
+            {result.global_liquidity_cap_musd ? (
+              <Kpi 
+                label="Capacity Utilized" 
+                value={`${((result.optimized_liquidity_musd / result.global_liquidity_cap_musd) * 100).toFixed(1)}%`} 
+                sub={`of $${result.global_liquidity_cap_musd}M cap`}
+              />
+            ) : (
+              <Kpi label="QUBO energy" value={result.final_energy.toFixed(1)} sub={`from ${result.initial_energy.toFixed(0)}`} />
+            )}
+            <Kpi label="Variables" value={result.qubo_variables} />
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

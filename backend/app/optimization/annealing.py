@@ -38,6 +38,7 @@ def simulated_annealing(
     seed: int = 42,
     num_restarts: int = 3,
     record_every: int = 25,
+    initial_x: Optional[np.ndarray] = None,
 ) -> AnnealingResult:
     import time
 
@@ -49,7 +50,10 @@ def simulated_annealing(
 
     for restart in range(max(1, num_restarts)):
         rng = np.random.default_rng(seed + restart)
-        x = rng.integers(0, 2, size=num_vars).astype(np.float64)
+        if initial_x is not None:
+            x = initial_x.copy().astype(np.float64)
+        else:
+            x = rng.integers(0, 2, size=num_vars).astype(np.float64)
         Qx = Q @ x
         cur_energy = float(x @ Qx)
         if initial_energy_overall is None or restart == 0:
@@ -96,67 +100,68 @@ def simulated_annealing(
     )
 
 
-def decode_assignment(best_x: np.ndarray, num_corridors: int, num_buckets: int):
-    """Decode the flat binary vector into one bucket-index per corridor.
-    Uses argmax within each corridor's K-slice, which is robust even if the
-    one-hot penalty didn't fully converge to a clean one-hot state (this is
-    exactly the case optimization/validate.py checks for and flags)."""
-    x = best_x.reshape(num_corridors, num_buckets)
+from typing import Tuple, Dict, Any, List
+
+def decode_assignment(best_x: np.ndarray, *args) -> Tuple[Dict[int, int], bool]:
+    """Decode the flat binary vector into one bucket-index per block."""
+    if len(args) == 1 and isinstance(args[0], list):
+        block_sizes = args[0]
+    elif len(args) == 2 and isinstance(args[0], int) and isinstance(args[1], int):
+        block_sizes = [args[1]] * args[0]
+    else:
+        raise TypeError("decode_assignment expects either block_sizes: List[int] or num_corridors: int, num_buckets: int")
+    
     assignment = {}
     clean_onehot = True
-    for i in range(num_corridors):
-        row = x[i]
+    offset = 0
+    for i, size in enumerate(block_sizes):
+        row = best_x[offset:offset+size]
         active = np.where(row > 0.5)[0]
         if len(active) != 1:
             clean_onehot = False
-        k = int(np.argmax(row))
-        assignment[i] = k
+        assignment[i] = int(np.argmax(row))
+        offset += size
     return assignment, clean_onehot
 
 
-def local_search_refine(Q: np.ndarray, x: np.ndarray, num_corridors: int, num_buckets: int, max_sweeps: int = 5):
-    """Post-SA coordinate-descent refinement over one-hot blocks.
-
-    Bit-flip Metropolis SA with a *penalty* one-hot constraint has a known
-    pathology: moving from one valid one-hot state to another requires
-    passing through a higher-energy two-hot intermediate (an energy barrier
-    of roughly 2x the one-hot penalty weight), which the cooling schedule
-    may already be too cold to cross by the time it matters. The result is
-    a solution that is one-hot-VALID per block but not block-optimal.
-
-    Because each corridor's block of K variables is independent in this
-    formulation (no cross-corridor terms in Q), the true optimum for a
-    one-hot-valid solution is simply argmin_k of each block's diagonal
-    term - exact, not approximate, for the current QUBO. Implemented as a
-    general coordinate-descent sweep (rather than a one-shot argmin) so it
-    still behaves sensibly if a future version adds cross-corridor coupling
-    terms (e.g. a shared collateral pool - see docs/roadmap.md).
-    """
+def local_search_refine(Q: np.ndarray, x: np.ndarray, *args, **kwargs) -> Tuple[np.ndarray, bool]:
+    """Post-SA coordinate-descent refinement over one-hot blocks."""
+    if len(args) == 1 and isinstance(args[0], list):
+        block_sizes = args[0]
+        max_sweeps = kwargs.get('max_sweeps', 5)
+    elif len(args) == 2 and isinstance(args[0], int) and isinstance(args[1], int):
+        block_sizes = [args[1]] * args[0]
+        max_sweeps = kwargs.get('max_sweeps', 5)
+    elif len(args) == 3 and isinstance(args[0], int) and isinstance(args[1], int) and isinstance(args[2], int):
+        block_sizes = [args[1]] * args[0]
+        max_sweeps = args[2]
+    else:
+        raise TypeError("Invalid arguments to local_search_refine")
+    
     x = x.copy()
-    xr = x.reshape(num_corridors, num_buckets)
     improved_any = False
     for sweep in range(max_sweeps):
         improved = False
-        for i in range(num_corridors):
-            base = i * num_buckets
-            best_k = int(np.argmax(xr[i]))
+        offset = 0
+        for i, size in enumerate(block_sizes):
+            row = x[offset:offset+size]
+            best_k = int(np.argmax(row))
             best_energy = None
-            for k in range(num_buckets):
-                trial = xr[i].copy()
-                trial[:] = 0
-                trial[k] = 1
-                x_full = x.copy().reshape(num_corridors, num_buckets)
-                x_full[i] = trial
-                flat = x_full.reshape(-1)
-                e = float(flat @ (Q @ flat))
+            for k in range(size):
+                trial = x.copy()
+                trial[offset:offset+size] = 0
+                trial[offset+k] = 1
+                e = float(trial @ (Q @ trial))
                 if best_energy is None or e < best_energy:
                     best_energy = e
                     best_k = k
-            if best_k != int(np.argmax(xr[i])):
+            if best_k != int(np.argmax(x[offset:offset+size])):
                 improved = True
                 improved_any = True
-            xr[i] = 0
-            xr[i][best_k] = 1
+            x[offset:offset+size] = 0
+            x[offset+best_k] = 1
+            offset += size
         if not improved:
             break
-    return x.reshape(-1), improved_any
+    return x, improved_any
+

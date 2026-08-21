@@ -52,3 +52,34 @@ def test_safety_level_increases_with_confidence():
     low_conf, _ = safety_liquidity_level(mu=10, sigma=2, confidence_level=0.90)
     high_conf, _ = safety_liquidity_level(mu=10, sigma=2, confidence_level=0.999)
     assert high_conf > low_conf
+
+
+def test_capital_cap_reduces_total_liquidity():
+    from app.optimization.engine import run_optimization
+    
+    # 2 corridors, each needing around 50M
+    corridors = [make_corridor(1, code="USD_GBP", mu=50, sigma=5, current=100), 
+                 make_corridor(2, code="USD_EUR", mu=50, sigma=5, current=100)]
+    qubo_uncapped = build_qubo(corridors)
+    qubo_capped = build_qubo(corridors, global_liquidity_cap_musd=30.0)
+    
+    # Slack block is slack_K=32
+    assert qubo_capped.num_vars == qubo_uncapped.num_vars + 32
+    
+    # Run the optimization end to end
+    outcome_uncapped = run_optimization(corridors)
+    total_uncapped = outcome_uncapped.aggregate["total_optimized_liquidity_musd"]
+    assert total_uncapped >= 100.0, f"Uncapped should be around 100M, got {total_uncapped}"
+    
+    # Run capped to 30.0
+    outcome_capped = run_optimization(corridors, global_liquidity_cap_musd=30.0)
+    total_capped = outcome_capped.aggregate["total_optimized_liquidity_musd"]
+    
+    assert total_capped <= 50.0, f"Capped should be heavily reduced, got {total_capped}"
+    assert total_capped < total_uncapped
+    
+    # Check that validate_solution didn't mask the violation 
+    # (since we capped to 30 but need ~100+, it SHOULD flag a severe shortfall)
+    assert any(v["severity"] == "high" for v in outcome_capped.constraint_violations), \
+        "Expected validate_solution to flag a high severity shortfall violation due to the tight cap, but it was masked."
+
