@@ -59,13 +59,31 @@ def list_corridors(db: Session = Depends(get_db), user=Depends(get_current_user)
     out = []
     for c in db.query(models.Corridor).all():
         accounts = db.query(models.NostroAccount).filter(models.NostroAccount.corridor_id == c.id).all()
+        current_balance = sum(a.current_balance_musd for a in accounts)
+        
+        # Calculate recommended minimum to derive efficiency
+        txns = db.query(models.PaymentTransaction).filter(models.PaymentTransaction.corridor_id == c.id).all()
+        pairs = [(t.ts, t.amount_musd) for t in txns]
+        fc = compute_forecast(pairs, horizon_days=7)
+        expectedDaily = fc.expected_demand_musd / fc.horizon_days
+        peakBuffer = max(0, (fc.ci_high_musd / fc.horizon_days) - expectedDaily)
+        settlementBuffer = expectedDaily * 0.05
+        fxReserve = fc.std_dev_musd * 0.4
+        correspondentMargin = expectedDaily * 0.02
+        recommendedMin = expectedDaily + peakBuffer + settlementBuffer + fxReserve + correspondentMargin
+        
+        efficiency_pct = (recommendedMin / current_balance) * 100 if current_balance > 0 else 100
+        if efficiency_pct > 100:
+            efficiency_pct = 100.0
+
         out.append({
             "id": c.id, "code": c.code, "name": c.name,
             "source_currency": c.source_currency, "dest_currency": c.dest_currency,
             "settlement_window_utc": [c.settlement_window_start_hour_utc, c.settlement_window_end_hour_utc],
             "cutoff_hour_utc": c.cutoff_hour_utc,
-            "current_balance_musd": round(sum(a.current_balance_musd for a in accounts), 2),
+            "current_balance_musd": round(current_balance, 2),
             "num_nostro_accounts": len(accounts),
+            "efficiency_pct": round(efficiency_pct, 1),
         })
     return out
 
