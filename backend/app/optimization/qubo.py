@@ -190,7 +190,7 @@ def build_qubo(
                     grouped.add(j)
 
     from app.forecasting.forecast import compute_correlation
-    P_netting = 10.0  # Derived to punish 5M deviation with ~250 energy
+    P_netting = 1.0  # Derived to punish 5M deviation with ~250 energy
 
     for G in netting_groups:
         # compute Req_G
