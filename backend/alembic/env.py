@@ -27,7 +27,14 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 target_metadata = Base.metadata
 
+<<<<<<< HEAD
 
+=======
+# other values from the config, defined by the needs of env.py,
+# can be acquired:
+# my_important_option = config.get_main_option("my_important_option")
+# ... etc.
+>>>>>>> origin/main
 
 
 def run_migrations_offline() -> None:

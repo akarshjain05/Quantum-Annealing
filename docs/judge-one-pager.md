@@ -4,7 +4,11 @@
 
 **Solution.** Model liquidity allocation as a QUBO. Solve it today with a real, from-scratch simulated annealing implementation. Pair it with a deterministic agent that keeps regulation, observed settlement practice, and model assumptions honestly separated - never merged, never hallucinated.
 
+<<<<<<< HEAD
 **Why now.** GIFT City's IFSC environment and the IFSCA's stated interest in fintech sandboxing make this a plausible near-term evaluation environment for exactly this kind of infrastructure. Furthermore, the academic groundwork is now mature: Veselý (Czech National Bank, 2022) recently demonstrated QAOA on IBM Qiskit for near-identical FX portfolio optimization, Giron et al. (HSBC, 2023) established the quantum analog for collateral optimization, and canonical formulations like Glover et al. (2018) provide rigorous grounding for our one-hot QUBO penalties.
+=======
+**Why now.** GIFT City's IFSC environment and the IFSCA's stated interest in fintech sandboxing make this a plausible near-term evaluation environment for exactly this kind of infrastructure.
+>>>>>>> origin/main
 
 **Technology.** FastAPI + SQLAlchemy + Alembic backend, React/Vite/Tailwind frontend, a real QUBO builder and bit-flip simulated annealing solver (not a rebranded generic optimizer), independent post-hoc validation, a tamper-evident SHA-256 audit hash chain, and a tool-calling agent that requires zero LLM API keys to function.
 
