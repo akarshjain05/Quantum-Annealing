@@ -28,7 +28,7 @@ import warnings
 import logging
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.getLogger("qiskit").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 # =============================================================================
@@ -686,7 +686,7 @@ class DWaveExactSolver(BaseSolver):
     
     MAX_VARIABLES = 20
     
-    def __init__(self):
+    def __init__(self, seed: Optional[int] = None):
         if not DWAVE_AVAILABLE:
             raise ImportError("D-Wave dimod not installed. Run: pip install dimod")
     
@@ -1210,10 +1210,10 @@ class QuantumBenchmark:
         quantum_times = []
         
         for solver_type, result in results.items():
-            if best_energy != 0:
-                quality = min(100.0, abs(best_energy / result.energy) * 100)
+            if result.energy == 0:
+                quality = 100.0 if best_energy == 0 else 0.0
             else:
-                quality = 100.0 if result.energy == 0 else 0.0
+                quality = min(100.0, abs(best_energy / result.energy) * 100)
             
             is_quantum = result.solver_category in [
                 SolverCategory.QUANTUM_SIMULATION,
