@@ -81,7 +81,10 @@ def build_qubo(
     buckets: Optional[List[float]] = None,
     weights: Optional[Dict[str, float]] = None,
     onehot_penalty: Optional[float] = None,
+<<<<<<< HEAD
+=======
     capital_cap_musd: Optional[float] = None,
+>>>>>>> origin/main
 ) -> QuboModel:
     buckets = buckets or DEFAULT_BUCKETS_MUSD
     weights = {
@@ -93,6 +96,12 @@ def build_qubo(
         **(weights or {}),
     }
     P = onehot_penalty if onehot_penalty is not None else 40.0
+<<<<<<< HEAD
+
+    N = len(corridors)
+    K = len(buckets)
+    num_vars = N * K
+=======
     P_cap = 50.0  # Penalty multiplier for the global capital cap
 
     N = len(corridors)
@@ -100,15 +109,19 @@ def build_qubo(
     has_cap = capital_cap_musd is not None
     num_blocks = N + (1 if has_cap else 0)
     num_vars = num_blocks * K
+>>>>>>> origin/main
     Q = np.zeros((num_vars, num_vars))
     var_meta: List[Dict[str, Any]] = [None] * num_vars
     corridor_index: Dict[int, int] = {}
     requirements: Dict[int, float] = {}
     z_scores: Dict[int, float] = {}
+<<<<<<< HEAD
+=======
     energy_offset = 0.0
 
     # 1. Map values for all variables (corridors + slack)
     var_values = np.zeros(num_vars)
+>>>>>>> origin/main
 
     for i, c in enumerate(corridors):
         corridor_index[c.corridor_id] = i
@@ -118,7 +131,10 @@ def build_qubo(
 
         for k, B_k in enumerate(buckets):
             idx = i * K + k
+<<<<<<< HEAD
+=======
             var_values[idx] = B_k
+>>>>>>> origin/main
             var_meta[idx] = {
                 "var_name": f"x_{c.code}_{k}",
                 "corridor_id": c.corridor_id,
@@ -145,6 +161,9 @@ def build_qubo(
             diag += -P  # one-hot penalty diagonal contribution
             Q[idx, idx] += diag
 
+<<<<<<< HEAD
+        # one-hot penalty off-diagonal terms (within corridor i only)
+=======
     # 2. Add Slack block if capital cap is enabled
     if has_cap:
         slack_buckets = np.linspace(0, capital_cap_musd, K).tolist()
@@ -164,12 +183,15 @@ def build_qubo(
     # 3. Add one-hot penalty off-diagonal terms for ALL blocks (corridors + slack)
     for i in range(num_blocks):
         energy_offset += P
+>>>>>>> origin/main
         for k1 in range(K):
             for k2 in range(k1 + 1, K):
                 a, b = i * K + k1, i * K + k2
                 Q[a, b] += P
                 Q[b, a] += P
 
+<<<<<<< HEAD
+=======
     # 4. Add Capital Cap Penalty Terms: P_cap * (sum L_i + Sl - C_total)^2
     if has_cap:
         C_total = capital_cap_musd
@@ -185,6 +207,7 @@ def build_qubo(
                 Q[idx, jdx] += cross_term / 2.0
                 Q[jdx, idx] += cross_term / 2.0
 
+>>>>>>> origin/main
     return QuboModel(
         Q=Q,
         num_vars=num_vars,
@@ -194,7 +217,11 @@ def build_qubo(
         corridor_index=corridor_index,
         penalty_onehot=P,
         weights=weights,
+<<<<<<< HEAD
+        energy_offset=N * P,
+=======
         energy_offset=energy_offset,
+>>>>>>> origin/main
         requirements=requirements,
         z_scores=z_scores,
     )

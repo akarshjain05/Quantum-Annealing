@@ -5,6 +5,8 @@ services:
       POSTGRES_USER: nostroq
       POSTGRES_PASSWORD: nostroq
       POSTGRES_DB: nostroq
+    ports:
+      - "5432:5432"
     volumes:
       - nostroq_pg_data:/var/lib/postgresql/data
     healthcheck:
@@ -15,6 +17,8 @@ services:
 
   redis:
     image: redis:7-alpine
+    ports:
+      - "6379:6379"
     # Provisioned for future async job scaling. Not required by the current
     # synchronous, demo-scale optimization path - see docs/limitations.md.
 
@@ -32,14 +36,14 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - "8001:8000"
+      - "8000:8000"
 
   frontend:
     build:
       context: .
       dockerfile: docker/frontend.Dockerfile
       args:
-        VITE_API_URL: http://localhost:8001
+        VITE_API_URL: http://localhost:8000
     depends_on:
       - backend
     ports:

@@ -152,7 +152,10 @@ def run_optimization_endpoint(req: OptimizationRunRequest, db: Session = Depends
     outcome = run_optimization(
         inputs, iterations=req.iterations, initial_temperature=req.initial_temperature,
         cooling_rate=req.cooling_rate, seed=seed, onehot_penalty=req.onehot_penalty, weights=req.weights,
+<<<<<<< HEAD
+=======
         capital_cap_musd=req.capital_cap_musd,
+>>>>>>> origin/main
     )
     run = persist_optimization_run(
         db, outcome, params=req.model_dump(), run_type=req.run_type, solver=req.solver, seed=seed,
