@@ -42,12 +42,15 @@ structured, deterministic]
     H --> I[Audit hash chain entry]
 ```
 
-Future (not implemented - see `roadmap.md`):
+## Dual-Solver Architecture
+
+The system employs a dual-solver architecture, safely scaling between quantum simulation and classical heuristics based on problem size (qubit ceiling):
 
 ```mermaid
 flowchart LR
-    QM[Same QUBO Model] --> QA[Quantum Annealer Adapter]
-    QA --> QH[Quantum Hardware]
+    QM[Same QUBO Model] --> Routing{Qubit Ceiling Check}
+    Routing -->|<= 16 qubits| QAOA[QAOA Quantum Simulator via Qiskit Aer]
+    Routing -->|> 16 qubits| SA[Classical Simulated Annealing]
 ```
 
 ## Agent pipeline detail
@@ -67,13 +70,13 @@ REGULATION / SETTLEMENT_PRACTICE / MODEL_ASSUMPTION]
 
 ## Solver abstraction
 
-`OptimizationSolver` is not a literal Python interface class in this build, but the calling contract in `optimization/engine.py::run_optimization()` is deliberately solver-agnostic: it takes a `QuboModel` and returns an assignment. Swapping `simulated_annealing()` for a future `quantum_annealing_solve()` would not require touching the QUBO construction, validation, baseline comparison, or explanation generation - only the solver call itself.
+`OptimizationSolver` is not a literal Python interface class in this build, but the calling contract in `optimization/engine.py::run_optimization()` is deliberately solver-agnostic. The `SolverRegistry` dynamically evaluates the `QuboModel` dimension and routes execution: swapping `simulated_annealing()` for `solve_qaoa()` happens transparently.
 
 ```
-Optimization Request -> QUBO Builder -> QUBO Model -> Solver -> Solution -> Validation -> Recommendation
-                                                          |
-                                              [today: SimulatedAnnealingSolver]
-                                              [future: QuantumAnnealingSolver]
+Optimization Request -> QUBO Builder -> QUBO Model -> SolverRegistry -> Solution -> Validation
+                                                           |
+                                               [<= 16 vars: QAOA via Qiskit]
+                                               [> 16 vars: Classical SA]
 ```
 
 ## Payment rail connector abstraction
