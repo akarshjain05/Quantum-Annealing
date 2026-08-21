@@ -1,7 +1,15 @@
+import { useState, useEffect } from "react";
+
 const HOUR_LABELS = [0, 4, 8, 12, 16, 20];
 
 export default function SettlementTimeline({ corridors }) {
-  const now = new Date();
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60000); // Update every minute
+    return () => clearInterval(timer);
+  }, []);
+
   const nowPct = ((now.getUTCHours() * 60 + now.getUTCMinutes()) / (24 * 60)) * 100;
 
   return (
