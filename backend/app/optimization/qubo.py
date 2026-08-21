@@ -56,6 +56,7 @@ class CorridorInput:
     fx_cost_bps: float
     operational_cost_rate: float
     confidence_level: float = 0.95
+    transactions: Optional[List[Any]] = None
 
 
 @dataclass
@@ -71,6 +72,7 @@ class QuboModel:
     energy_offset: float
     requirements: Dict[int, float]  # corridor_id -> Req_i (safety level)
     z_scores: Dict[int, float]
+    block_sizes: List[int] = field(default_factory=list)
 
     def num_nonzero(self) -> int:
         return int(np.count_nonzero(self.Q))
@@ -81,31 +83,36 @@ def build_qubo(
     buckets: Optional[List[float]] = None,
     weights: Optional[Dict[str, float]] = None,
     onehot_penalty: Optional[float] = None,
-    capital_cap_musd: Optional[float] = None,
+    global_liquidity_cap_musd: Optional[float] = None,
+    cap_penalty: float = 200000.0,
 ) -> QuboModel:
     buckets = buckets or DEFAULT_BUCKETS_MUSD
-    weights = {
+    default_weights = {
         "cost": 1.0,
         "risk": 1.0,
         "shortfall": 1.0,
         "fx": 0.3,
         "operational": 0.2,
-        **(weights or {}),
     }
+    if weights is not None:
+        default_weights.update(weights)
+    weights = default_weights
     P = onehot_penalty if onehot_penalty is not None else 40.0
-    P_cap = 50.0  # Penalty multiplier for the global capital cap
+    P_cap = cap_penalty  # Penalty multiplier for the global capital cap
 
     N = len(corridors)
     K = len(buckets)
-    has_cap = capital_cap_musd is not None
+    has_cap = global_liquidity_cap_musd is not None
+    slack_K = 32 if has_cap else 0
     num_blocks = N + (1 if has_cap else 0)
-    num_vars = num_blocks * K
+    num_vars = (N * K) + slack_K
     Q = np.zeros((num_vars, num_vars))
     var_meta: List[Dict[str, Any]] = [None] * num_vars
     corridor_index: Dict[int, int] = {}
     requirements: Dict[int, float] = {}
     z_scores: Dict[int, float] = {}
     energy_offset = 0.0
+    block_sizes = [K] * N
 
     # 1. Map values for all variables (corridors + slack)
     var_values = np.zeros(num_vars)
@@ -125,6 +132,7 @@ def build_qubo(
                 "corridor_code": c.code,
                 "bucket_index": k,
                 "bucket_value_musd": B_k,
+                "block_type": "corridor",
             }
 
             capital_cost = c.opportunity_cost_rate * B_k
@@ -147,10 +155,11 @@ def build_qubo(
 
     # 2. Add Slack block if capital cap is enabled
     if has_cap:
-        slack_buckets = np.linspace(0, capital_cap_musd, K).tolist()
-        i = N
+        block_sizes.append(slack_K)
+        slack_buckets = np.linspace(0, global_liquidity_cap_musd, slack_K).tolist()
+        base_idx = N * K
         for k, S_k in enumerate(slack_buckets):
-            idx = i * K + k
+            idx = base_idx + k
             var_values[idx] = S_k
             var_meta[idx] = {
                 "var_name": f"s_slack_{k}",
@@ -158,30 +167,95 @@ def build_qubo(
                 "corridor_code": "SLACK",
                 "bucket_index": k,
                 "bucket_value_musd": S_k,
+                "block_type": "slack",
             }
             Q[idx, idx] += -P  # one-hot penalty diagonal contribution for slack
 
+    # 2.5 FX Netting Groups
+    # Group by mirror pairs sharing currency leg (e.g. USD_EUR / EUR_USD)
+    code_to_idx = {c.code: i for i, c in enumerate(corridors)}
+    grouped = set()
+    netting_groups = []
+    for i, c in enumerate(corridors):
+        if i in grouped:
+            continue
+        parts = c.code.split('_')
+        if len(parts) == 2:
+            mirror = f"{parts[1]}_{parts[0]}"
+            if mirror in code_to_idx:
+                j = code_to_idx[mirror]
+                if j not in grouped:
+                    netting_groups.append([i, j])
+                    grouped.add(i)
+                    grouped.add(j)
+
+    from app.forecasting.forecast import compute_correlation
+    P_netting = 10.0  # Derived to punish 5M deviation with ~250 energy
+
+    for G in netting_groups:
+        # compute Req_G
+        mu_G = sum(corridors[i].mu for i in G)
+        sigma_sq = 0.0
+        for i in G:
+            sigma_sq += corridors[i].sigma ** 2
+        for i_idx in range(len(G)):
+            for j_idx in range(i_idx + 1, len(G)):
+                i, j = G[i_idx], G[j_idx]
+                tx1 = corridors[i].transactions or []
+                tx2 = corridors[j].transactions or []
+                rho = compute_correlation(tx1, tx2)
+                sigma_sq += 2 * rho * corridors[i].sigma * corridors[j].sigma
+        sigma_G = np.sqrt(max(0.0, sigma_sq))
+        
+        # We use a combined z-score, approximating it as max or average. Let's just use 1.96 (95%)
+        # or average of the group's z-scores.
+        z = sum(z_scores[corridors[i].corridor_id] for i in G) / len(G)
+        Req_G = mu_G + z * sigma_G
+        
+        energy_offset += P_netting * (Req_G ** 2)
+
+        # Apply QUBO terms for this group
+        for i in G:
+            for k in range(K):
+                idx = i * K + k
+                B_k = buckets[k]
+                Q[idx, idx] += P_netting * (B_k ** 2 - 2 * Req_G * B_k)
+                
+        for i_idx in range(len(G)):
+            for j_idx in range(i_idx + 1, len(G)):
+                i, j = G[i_idx], G[j_idx]
+                for k1 in range(K):
+                    for k2 in range(K):
+                        idx1 = i * K + k1
+                        idx2 = j * K + k2
+                        cross_term = 2.0 * P_netting * buckets[k1] * buckets[k2]
+                        Q[idx1, idx2] += cross_term / 2.0
+                        Q[idx2, idx1] += cross_term / 2.0
+
     # 3. Add one-hot penalty off-diagonal terms for ALL blocks (corridors + slack)
-    for i in range(num_blocks):
+    base_idx = 0
+    for block_size in block_sizes:
         energy_offset += P
-        for k1 in range(K):
-            for k2 in range(k1 + 1, K):
-                a, b = i * K + k1, i * K + k2
+        for k1 in range(block_size):
+            for k2 in range(k1 + 1, block_size):
+                a, b = base_idx + k1, base_idx + k2
                 Q[a, b] += P
                 Q[b, a] += P
+        base_idx += block_size
 
-    # 4. Add Capital Cap Penalty Terms: P_cap * (sum L_i + Sl - C_total)^2
+    # 4. Add Normalized Capital Cap Penalty Terms: P_cap * ((sum L_i + Sl - C_total) / C_total)^2
     if has_cap:
-        C_total = capital_cap_musd
-        energy_offset += P_cap * (C_total ** 2)
+        C_total = global_liquidity_cap_musd
+        energy_offset += P_cap * 1.0  # (C_total/C_total)^2 = 1.0
         
+        # P_cap * (v / C)^2 - 2 * P_cap * 1.0 * (v / C)
         for idx in range(num_vars):
-            # Diagonal: P_cap * val^2 - 2 * P_cap * C_total * val
-            Q[idx, idx] += P_cap * (var_values[idx] ** 2) - 2.0 * P_cap * C_total * var_values[idx]
+            v_norm = var_values[idx] / C_total
+            Q[idx, idx] += P_cap * (v_norm ** 2) - 2.0 * P_cap * v_norm
             
-            # Off-diagonal: 2 * P_cap * val_i * val_j
+            # Off-diagonal: 2 * P_cap * (v_i / C) * (v_j / C)
             for jdx in range(idx + 1, num_vars):
-                cross_term = 2.0 * P_cap * var_values[idx] * var_values[jdx]
+                cross_term = 2.0 * P_cap * (var_values[idx] / C_total) * (var_values[jdx] / C_total)
                 Q[idx, jdx] += cross_term / 2.0
                 Q[jdx, idx] += cross_term / 2.0
 
@@ -197,4 +271,5 @@ def build_qubo(
         energy_offset=energy_offset,
         requirements=requirements,
         z_scores=z_scores,
+        block_sizes=block_sizes,
     )

@@ -147,6 +147,7 @@ class OptimizationRun(Base):
     qubo_version = Column(String)
     forecast_version = Column(String)
     knowledge_version = Column(String)
+    global_liquidity_cap_musd = Column(Float, nullable=True)
     convergence_json = Column(JSON, default=list)
     constraint_violations_json = Column(JSON, default=list)
     onehot_clean = Column(Boolean, default=True)

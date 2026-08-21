@@ -45,6 +45,7 @@ def corridor_inputs_from_db(
             fx_cost_bps=risk.fx_cost_bps if risk else 8.0,
             operational_cost_rate=risk.operational_cost_rate if risk else 0.02,
             confidence_level=confidence_level,
+            transactions=pairs,
         ))
     return inputs
 
@@ -70,6 +71,7 @@ def persist_optimization_run(
         convergence_json=outcome.convergence_history,
         constraint_violations_json=outcome.constraint_violations,
         onehot_clean=outcome.onehot_clean,
+        global_liquidity_cap_musd=params.get("global_liquidity_cap_musd"),
         prev_hash=prev_hash,
     )
     db.add(run)
@@ -134,6 +136,7 @@ def run_to_response(run: models.OptimizationRun, outcome: Optional[OptimizationO
         "current_liquidity_musd": round(total_current, 2),
         "optimized_liquidity_musd": round(total_optimized, 2),
         "capital_released_musd": round(total_current - total_optimized, 2),
+        "global_liquidity_cap_musd": run.global_liquidity_cap_musd,
         "constraint_violations": run.constraint_violations_json,
         "onehot_clean": run.onehot_clean,
         "corridor_results": corridor_results,
@@ -152,7 +155,7 @@ def run_optimization_endpoint(req: OptimizationRunRequest, db: Session = Depends
     outcome = run_optimization(
         inputs, iterations=req.iterations, initial_temperature=req.initial_temperature,
         cooling_rate=req.cooling_rate, seed=seed, onehot_penalty=req.onehot_penalty, weights=req.weights,
-        capital_cap_musd=req.capital_cap_musd,
+        global_liquidity_cap_musd=req.global_liquidity_cap_musd,
     )
     run = persist_optimization_run(
         db, outcome, params=req.model_dump(), run_type=req.run_type, solver=req.solver, seed=seed,

@@ -36,15 +36,17 @@ def greedy_liquidity(mu: float, sigma: float, z: float, buckets: List[float]) ->
     return min(feasible) if feasible else max(buckets)
 
 
-def validate_solution(assignment: Dict[int, int], qubo: QuboModel, corridors: List[CorridorInput]) -> List[Dict[str, Any]]:
+def validate_solution(assignment: Dict[int, int], qubo: QuboModel, corridors: List[CorridorInput], global_cap_musd: Optional[float] = None) -> List[Dict[str, Any]]:
     """Independent post-hoc validation (spec §31) - never trust the solver
     blindly. Flags one-hot violations and severe shortfalls."""
     violations = []
     id_to_corridor = {c.corridor_id: c for c in corridors}
+    total_selected = 0.0
     for cid, i in qubo.corridor_index.items():
         c = id_to_corridor[cid]
         k = assignment[i]
         L = qubo.buckets[k]
+        total_selected += L
         req = qubo.requirements[cid]
         if L < req * 0.5:
             violations.append({
@@ -63,6 +65,16 @@ def validate_solution(assignment: Dict[int, int], qubo: QuboModel, corridors: Li
                 "severity": "low",
                 "note": "Nearest available discrete bucket is below the exact safety level; consider finer bucket granularity.",
             })
+            
+    if global_cap_musd is not None and total_selected > global_cap_musd:
+        violations.append({
+            "corridor_code": "GLOBAL",
+            "type": "GLOBAL_CAP_EXCEEDED",
+            "required_musd": global_cap_musd,
+            "selected_musd": round(total_selected, 2),
+            "severity": "high",
+            "note": "The total assigned liquidity exceeds the bank-wide capital ceiling.",
+        })
     return violations
 
 
@@ -114,24 +126,39 @@ def run_optimization(
     seed: int = 42,
     onehot_penalty: Optional[float] = None,
     weights: Optional[Dict[str, float]] = None,
-    capital_cap_musd: Optional[float] = None,
+    global_liquidity_cap_musd: Optional[float] = None,
 ) -> OptimizationOutcome:
-    qubo = build_qubo(corridors, weights=weights, onehot_penalty=onehot_penalty, capital_cap_musd=capital_cap_musd)
+    qubo = build_qubo(corridors, weights=weights, onehot_penalty=onehot_penalty, global_liquidity_cap_musd=global_liquidity_cap_musd)
+    iterations = 5000 if not global_liquidity_cap_musd else 12000
+    cooling_rate = 0.99
+    initial_temperature = 1000.0
+
     sa = simulated_annealing(
         qubo.Q, qubo.num_vars,
         iterations=iterations, initial_temp=initial_temperature,
         cooling_rate=cooling_rate, seed=seed, num_restarts=3,
     )
-    K = len(qubo.buckets)
-    num_blocks = qubo.num_vars // K
-    refined_x, was_improved = local_search_refine(qubo.Q, sa.best_x, num_blocks, K)
+    refined_x, was_improved = local_search_refine(qubo.Q, sa.best_x, qubo.block_sizes)
+    
+    offset = 0
+    for block_size in qubo.block_sizes:
+        active = sum(refined_x[offset:offset+block_size] > 0.5)
+        assert active == 1, f"block at {offset} (size {block_size}) has {active} active bits after refinement!"
+        offset += block_size
+        
+    # refined_x is ALWAYS taken, unconditionally - never compared against
+    # sa.best_x on energy. sa.best_x is not guaranteed one-hot-valid, and once
+    # cross-corridor coupling terms exist (cap, netting), a multi/zero-hot
+    # state can report an energy that looks arbitrarily "better" by
+    # fictionally double-dipping or dodging a squared penalty term - that
+    # number doesn't correspond to any real liquidity allocation, so it must
+    # never be compared against a structurally valid one. See the incident
+    # writeup in docs/qubo-mathematics.md.
     refined_energy = qubo_energy(qubo.Q, refined_x)
-    if refined_energy <= sa.best_energy:
-        final_x, final_energy = refined_x, refined_energy
-    else:
-        final_x, final_energy = sa.best_x, sa.best_energy
-    assignment, onehot_clean = decode_assignment(final_x, num_blocks, K)
-    violations = validate_solution(assignment, qubo, corridors)
+    final_x, final_energy = refined_x, refined_energy
+    
+    assignment, onehot_clean = decode_assignment(final_x, qubo.block_sizes)
+    violations = validate_solution(assignment, qubo, corridors, global_liquidity_cap_musd)
 
     corridor_results = []
     total_current = 0.0
@@ -199,6 +226,21 @@ def run_optimization(
         },
         "num_corridors": len(corridors),
     }
+
+    if global_liquidity_cap_musd is not None:
+        slack_k = assignment[qubo.num_corridors]
+        slack_offset = sum(qubo.block_sizes[:qubo.num_corridors])
+        chosen_slack_value = qubo.var_meta[slack_offset + slack_k]["bucket_value_musd"]
+        cap = global_liquidity_cap_musd
+        P_cap = 200000.0  # as defined in qubo.py
+        cap_residual = total_optimized + chosen_slack_value - cap
+        cap_penalty_contribution = P_cap * ((cap_residual / cap) ** 2)
+
+        print(f"[CAP DEBUG] sum(L_i)          = {total_optimized}")
+        print(f"[CAP DEBUG] chosen_slack      = {chosen_slack_value}")
+        print(f"[CAP DEBUG] sum + slack       = {total_optimized + chosen_slack_value}   (target: {cap})")
+        print(f"[CAP DEBUG] cap penalty       = {cap_penalty_contribution}")
+        print(f"[CAP DEBUG] total final energy = {final_energy}")
 
     return OptimizationOutcome(
         qubo=qubo,

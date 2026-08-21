@@ -29,7 +29,7 @@ class OptimizationRunRequest(BaseModel):
     cutoff_delta_hours: float = 0.0
     run_type: str = "standard"
     scenario_name: Optional[str] = None
-    capital_cap_musd: Optional[float] = None
+    global_liquidity_cap_musd: Optional[float] = None
 
 
 class ScenarioRunRequest(BaseModel):

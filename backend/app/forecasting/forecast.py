@@ -27,10 +27,7 @@ def _daily_totals(transactions: List[Tuple[dt.datetime, float]]) -> np.ndarray:
     filling any gap days with 0."""
     if not transactions:
         return np.array([])
-    by_day = {}
-    for ts, amt in transactions:
-        day = ts.date()
-        by_day[day] = by_day.get(day, 0.0) + abs(amt)
+    by_day = daily_totals_dict(transactions)
     days = sorted(by_day.keys())
     start, end = days[0], days[-1]
     n = (end - start).days + 1
@@ -38,6 +35,38 @@ def _daily_totals(transactions: List[Tuple[dt.datetime, float]]) -> np.ndarray:
     for day, total in by_day.items():
         series[(day - start).days] = total
     return series
+
+def daily_totals_dict(transactions: List[Tuple[dt.datetime, float]]) -> dict:
+    by_day = {}
+    for ts, amt in transactions:
+        day = ts.date()
+        by_day[day] = by_day.get(day, 0.0) + abs(amt)
+    return by_day
+
+def compute_correlation(tx1: List[Tuple[dt.datetime, float]], tx2: List[Tuple[dt.datetime, float]]) -> float:
+    d1 = daily_totals_dict(tx1)
+    d2 = daily_totals_dict(tx2)
+    if not d1 or not d2:
+        return 0.0
+    all_days = set(d1.keys()) | set(d2.keys())
+    if len(all_days) < 2:
+        return 0.0
+    
+    days = sorted(list(all_days))
+    start, end = days[0], days[-1]
+    n = (end - start).days + 1
+    
+    s1 = np.zeros(n)
+    s2 = np.zeros(n)
+    for i in range(n):
+        d = start + dt.timedelta(days=i)
+        s1[i] = d1.get(d, 0.0)
+        s2[i] = d2.get(d, 0.0)
+        
+    std1, std2 = np.std(s1), np.std(s2)
+    if std1 == 0 or std2 == 0:
+        return 0.0
+    return float(np.corrcoef(s1, s2)[0, 1])
 
 
 def exponentially_weighted_mean(series: np.ndarray, alpha: float = 0.3) -> float:
