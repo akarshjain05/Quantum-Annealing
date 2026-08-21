@@ -1,0 +1,105 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background: #0A0E13;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(79, 184, 174, 0.08), transparent),
+    linear-gradient(180deg, #0A0E13 0%, #0B1017 100%);
+  color: #E7ECF3;
+  font-family: "IBM Plex Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .font-display {
+  font-family: "Space Grotesk", sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.font-mono, .tabular {
+  font-family: "IBM Plex Mono", monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background: rgba(79, 184, 174, 0.35);
+}
+
+/* visible keyboard focus, respected per accessibility floor */
+:focus-visible {
+  outline: 2px solid #4FB8AE;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+.card {
+  background: #10151C;
+  border: 1px solid #263041;
+  border-radius: 10px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+}
+
+.tag-regulation { color: #6E8FE0; background: rgba(110,143,224,0.08); }
+.tag-practice { color: #C7A24C; background: rgba(199,162,76,0.08); }
+.tag-assumption { color: #8B8698; background: rgba(139,134,152,0.08); }
+
+/* Settlement timeline signature component */
+.timeline-track {
+  position: relative;
+  height: 3rem;
+  background: #0D1219;
+  border: 1px solid #263041;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.timeline-hour-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+}
+.timeline-hour-grid > div {
+  border-left: 1px solid rgba(38, 48, 65, 0.6);
+}
+.timeline-hour-grid > div:first-child { border-left: none; }
+.timeline-now-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #D66B56;
+  box-shadow: 0 0 8px rgba(214, 107, 86, 0.8);
+}
+
+.scrollbar-thin::-webkit-scrollbar { height: 6px; width: 6px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #263041; border-radius: 3px; }
