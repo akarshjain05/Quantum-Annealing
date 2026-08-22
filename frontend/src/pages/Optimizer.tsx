@@ -337,7 +337,7 @@ const ResultsStep: React.FC<{
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <SummaryCard
           label="Capital Released"
           value={`$${result.capital_released.toFixed(1)}M`}
@@ -354,11 +354,6 @@ const ResultsStep: React.FC<{
           label="Corridors Optimized"
           value={result.num_corridors.toString()}
           sublabel="all safety requirements met"
-        />
-        <SummaryCard
-          label="QUBO Size"
-          value={result.qubo_info.num_variables.toString()}
-          sublabel={`${result.qubo_info.sparsity} sparse`}
         />
       </div>
 

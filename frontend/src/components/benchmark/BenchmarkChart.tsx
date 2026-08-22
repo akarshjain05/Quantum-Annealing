@@ -134,28 +134,10 @@ const BenchmarkSummary: React.FC<{ data: BenchmarkData }> = ({ data }) => {
   const quantumSolvers = data.solvers.filter(s => s.is_quantum);
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">
-          Problem Size
-        </div>
-        <div className="text-2xl font-bold text-white">
-          {data.problem_size}
-        </div>
-        <div className="text-xs text-gray-400">variables</div>
-      </div>
+    <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mb-6">
       
-      <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">
-          Best Energy
-        </div>
-        <div className="text-2xl font-bold text-green-400">
-          {formatEnergy(data.best_energy)}
-        </div>
-        <div className="text-xs text-gray-400">
-          by {getDisplayName(data.best_solver || '')}
-        </div>
-      </div>
+      
+      
       
       <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
         <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">
