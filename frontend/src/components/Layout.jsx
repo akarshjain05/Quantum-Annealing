@@ -6,14 +6,12 @@ const NAV = [
   { to: "/", label: "Executive Summary", end: true },
   { to: "/corridors", label: "Corridor Management" },
   { to: "/optimizer", label: "Liquidity Optimizer" },
-  { to: "/scenarios", label: "What-If Analysis" },
   { to: "/stress-tests", label: "Stress Testing" },
   { to: "/agent", label: "Decision Pipeline" },
   { to: "/audit", label: "Compliance & Audit" },
 ];
 
 export default function Layout({ children }) {
-
   return (
     <div className="min-h-screen flex">
       <aside className="w-60 shrink-0 border-r border-border bg-surface flex flex-col">
@@ -28,7 +26,12 @@ export default function Layout({ children }) {
         <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
           {NAV.map((item, idx) => {
             if (item.type === "divider") {
-              return <div key={`div-${idx}`} className="my-3 border-t border-border/50 mx-2" />;
+              return (
+                <div
+                  key={`div-${idx}`}
+                  className="my-3 border-t border-border/50 mx-2"
+                />
+              );
             }
             return (
               <NavLink
@@ -56,7 +59,9 @@ export default function Layout({ children }) {
         <div className="px-3 py-4 border-t border-border">
           <div className="px-2 mb-2">
             <div className="text-xs text-text truncate">Demo User</div>
-            <div className="text-[11px] text-muted truncate">treasury@demo-bank.com</div>
+            <div className="text-[11px] text-muted truncate">
+              treasury@demo-bank.com
+            </div>
           </div>
         </div>
       </aside>

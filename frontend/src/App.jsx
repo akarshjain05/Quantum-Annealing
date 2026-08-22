@@ -4,7 +4,6 @@ import Dashboard from "./pages/Dashboard";
 import Corridors from "./pages/Corridors";
 import Optimizer from "./pages/Optimizer";
 import QuboInspector from "./pages/QuboInspector";
-import Scenarios from "./pages/Scenarios";
 import StressTests from "./pages/StressTests";
 import Agent from "./pages/Agent";
 import Audit from "./pages/Audit";
@@ -17,7 +16,6 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/corridors" element={<Corridors />} />
           <Route path="/optimizer" element={<Optimizer />} />
-          <Route path="/scenarios" element={<Scenarios />} />
           <Route path="/stress-tests" element={<StressTests />} />
           <Route path="/agent" element={<Agent />} />
           <Route path="/audit" element={<Audit />} />
