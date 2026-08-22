@@ -771,12 +771,15 @@ class ChunkedQAOA(BaseSolver):
             logger.warning("No block sizes provided for Chunked QAOA, failing back to classical")
             from app.optimization.annealing import simulated_annealing
             res = simulated_annealing(problem.Q, problem.n)
+            solution_dict = {problem.variable_names[i]: int(res.best_x[i]) for i in range(problem.n)}
             return SolverResult(
-                solver_type=self.solver_type.value,
-                best_x=res.best_x.tolist(),
-                best_energy=res.best_energy,
+                solver_type=self.solver_type,
+                solver_category=self.solver_category,
+                solution=solution_dict,
+                solution_vector=[int(v) for v in res.best_x],
+                energy=res.best_energy,
                 execution_time_ms=(time.perf_counter() - start_time) * 1000,
-                is_optimal=False,
+                metadata={"fallback": True}
             )
             
         chunks = build_chunks(problem.Q, problem.block_sizes)
@@ -784,12 +787,15 @@ class ChunkedQAOA(BaseSolver):
             # Fallback
             from app.optimization.annealing import simulated_annealing
             res = simulated_annealing(problem.Q, problem.n)
+            solution_dict = {problem.variable_names[i]: int(res.best_x[i]) for i in range(problem.n)}
             return SolverResult(
-                solver_type=self.solver_type.value,
-                best_x=res.best_x.tolist(),
-                best_energy=res.best_energy,
+                solver_type=self.solver_type,
+                solver_category=self.solver_category,
+                solution=solution_dict,
+                solution_vector=[int(v) for v in res.best_x],
+                energy=res.best_energy,
                 execution_time_ms=(time.perf_counter() - start_time) * 1000,
-                is_optimal=False,
+                metadata={"fallback": True}
             )
             
         chunk_results = [solve_chunk(c) for c in chunks]
@@ -801,12 +807,14 @@ class ChunkedQAOA(BaseSolver):
         
         stitched_energy = qubo_energy(problem.Q, x_global)
         
+        solution_dict = {problem.variable_names[i]: int(x_global[i]) for i in range(problem.n)}
         return SolverResult(
-            solver_type=self.solver_type.value,
-            best_x=x_global.tolist(),
-            best_energy=stitched_energy,
+            solver_type=self.solver_type,
+            solver_category=self.solver_category,
+            solution=solution_dict,
+            solution_vector=[int(v) for v in x_global],
+            energy=stitched_energy,
             execution_time_ms=(time.perf_counter() - start_time) * 1000,
-            is_optimal=True,
             metadata={
                 "num_chunks": len(chunks),
                 "qaoa_chunks": sum(1 for r in chunk_results if r["method"] == "qaoa")
@@ -855,9 +863,10 @@ class QAOACustom(BaseSolver):
             solution_dict = {problem.variable_names[i]: int(best_sample[i]) for i in range(problem.n)}
             execution_time = (time.perf_counter() - start_time) * 1000 + 4500
             return SolverResult(
-                solver_type=self.solver_type.value,
-                solver_category=self.solver_category.value,
+                solver_type=self.solver_type,
+                solver_category=self.solver_category,
                 solution=solution_dict,
+                solution_vector=[int(best_sample[i]) for i in range(problem.n)],
                 energy=float(best.energy),
                 execution_time_ms=execution_time,
                 metadata={"mocked_chunked_qaoa": True}
@@ -1162,6 +1171,7 @@ if DWAVE_AVAILABLE:
     SolverRegistry.register(DWaveExactSolver)
 if QISKIT_AVAILABLE:
     SolverRegistry.register(QAOACustom)
+    SolverRegistry.register(ChunkedQAOA)
 if QISKIT_AVAILABLE and QISKIT_OPTIMIZATION_AVAILABLE and QISKIT_ALGORITHMS_AVAILABLE:
     SolverRegistry.register(QiskitQAOA)
 

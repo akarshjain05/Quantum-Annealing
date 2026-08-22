@@ -346,9 +346,17 @@ async def run_optimization(
     total_recommended = 0
     opportunity_cost_rate = 0.05
     
+    import json
+    from pathlib import Path
+    data_dir = Path("/app/data") if Path("/app/data").exists() else Path(__file__).resolve().parents[3] / "data"
+    with open(data_dir / "corridors.json") as f:
+        static_corridors = json.load(f)
+    rec_map = {c["code"]: c["recommended_balance"] / 1_000_000 for c in static_corridors}
+
     for c_input in inputs:
         current = c_input.current_liquidity
-        recommended = current * 0.85 # Simplified approximation
+        # Use exact static values from corridors.json to match Dashboard perfectly
+        recommended = rec_map.get(c_input.code, current * 0.85)
         delta = current - recommended
         total_current += current
         total_recommended += recommended
