@@ -300,13 +300,13 @@ const ResultsStep: React.FC<{
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <SummaryCard 
           label="Capital Released"
-          value={`$${(result.capital_released / 1_000_000).toFixed(1)}M`}
+          value={`$${(result.capital_released ).toFixed(1)}M`}
           sublabel={`${result.capital_release_percent.toFixed(1)}% of total`}
           highlight
         />
         <SummaryCard 
           label="Annual Savings"
-          value={`$${(result.annual_savings_opportunity / 1_000_000).toFixed(1)}M`}
+          value={`$${(result.annual_savings_opportunity ).toFixed(1)}M`}
           sublabel="@ 5% cost of capital"
           highlight
         />
@@ -355,13 +355,13 @@ const ResultsStep: React.FC<{
                 <tr key={corridor.corridor_id} className="border-b border-gray-700/50">
                   <td className="py-3 font-medium text-white">{corridor.corridor_code}</td>
                   <td className="py-3 text-right text-gray-300">
-                    ${(corridor.current_balance / 1_000_000).toFixed(1)}M
+                    ${(corridor.current_balance ).toFixed(1)}M
                   </td>
                   <td className="py-3 text-right text-gray-300">
-                    ${(corridor.recommended_balance / 1_000_000).toFixed(1)}M
+                    ${(corridor.recommended_balance ).toFixed(1)}M
                   </td>
                   <td className="py-3 text-right text-green-400">
-                    -${(corridor.delta / 1_000_000).toFixed(1)}M
+                    -${(corridor.delta ).toFixed(1)}M
                   </td>
                   <td className="py-3 text-right text-teal-400">
                     ${(corridor.annual_savings / 1_000).toFixed(0)}K
@@ -373,16 +373,16 @@ const ResultsStep: React.FC<{
               <tr className="font-medium">
                 <td className="pt-4">Total</td>
                 <td className="pt-4 text-right text-white">
-                  ${(result.total_liquidity / 1_000_000).toFixed(1)}M
+                  ${(result.total_liquidity ).toFixed(1)}M
                 </td>
                 <td className="pt-4 text-right text-white">
-                  ${((result.total_liquidity - result.capital_released) / 1_000_000).toFixed(1)}M
+                  ${((result.total_liquidity - result.capital_released) ).toFixed(1)}M
                 </td>
                 <td className="pt-4 text-right text-green-400">
-                  -${(result.capital_released / 1_000_000).toFixed(1)}M
+                  -${(result.capital_released ).toFixed(1)}M
                 </td>
                 <td className="pt-4 text-right text-teal-400">
-                  ${(result.annual_savings_opportunity / 1_000_000).toFixed(1)}M
+                  ${(result.annual_savings_opportunity ).toFixed(1)}M
                 </td>
               </tr>
             </tfoot>

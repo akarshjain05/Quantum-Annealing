@@ -6,24 +6,13 @@ const NAV = [
   { to: "/", label: "Executive Summary", end: true },
   { to: "/corridors", label: "Corridor Management" },
   { to: "/optimizer", label: "Liquidity Optimizer" },
-  { to: "/approvals", label: "Approvals Center", hasBadge: true },
   { to: "/scenarios", label: "What-If Analysis" },
   { to: "/stress-tests", label: "Stress Testing" },
   { to: "/agent", label: "Decision Pipeline" },
   { to: "/audit", label: "Compliance & Audit" },
-  { type: "divider" },
-  { to: "/settings", label: "Settings" },
-  { to: "/settings/model", label: "Model Transparency", indent: true },
 ];
 
 export default function Layout({ children }) {
-  const [pendingCount, setPendingCount] = useState(0);
-
-  useEffect(() => {
-    client.get("/api/optimization/approvals/pending")
-      .then(r => setPendingCount(r.data.length))
-      .catch(err => console.error("Failed to fetch pending approvals count", err));
-  }, []);
 
   return (
     <div className="min-h-screen flex">
