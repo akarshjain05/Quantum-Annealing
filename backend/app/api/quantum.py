@@ -336,7 +336,7 @@ async def run_optimization(
             solvers_to_run.append(SolverType.QAOA_CUSTOM)
     
     benchmark = QuantumBenchmark(seed=solver_config.seed)
-    benchmark_result = benchmark.run_benchmark(problem=problem, solvers=solvers_to_run, skip_large_quantum=True)
+    benchmark_result = benchmark.run_benchmark(problem=problem, solvers=solvers_to_run, skip_large_quantum=False)
     chart_data = benchmark.generate_chart_data(benchmark_result)
     
     corridor_results = []
