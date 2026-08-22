@@ -61,14 +61,6 @@ export default function Layout({ children }) {
         </div>
       </aside>
       <main className="flex-1 min-w-0">
-        <div className="border-b border-border bg-bg/80 backdrop-blur px-6 py-2.5 flex items-center justify-between">
-          <span className="text-[11px] text-muted font-mono">
-            Decision-support prototype - no live financial transactions are executed.
-          </span>
-          <span className="text-[11px] text-gold font-mono">
-            Synthetic demonstration data
-          </span>
-        </div>
         <div className="p-6 max-w-[1400px]">{children}</div>
       </main>
     </div>
