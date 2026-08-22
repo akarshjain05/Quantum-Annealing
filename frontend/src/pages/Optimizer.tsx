@@ -227,46 +227,6 @@ const ConfigureStep: React.FC<{
     <div className="space-y-6">
       {/* Quantum Status */}
 
-      {/* Risk Appetite */}
-      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
-          Risk Appetite
-        </h3>
-        <p className="text-sm text-gray-400 mb-4">
-          Select how much settlement risk is acceptable:
-        </p>
-
-        <div className="space-y-2">
-          {(Object.keys(RISK_DESCRIPTIONS) as RiskAppetite[]).map((risk) => (
-            <label
-              key={risk}
-              className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                config.riskAppetite === risk
-                  ? "bg-teal-500/10 border border-teal-500/30"
-                  : "bg-gray-700/30 border border-transparent hover:bg-gray-700/50"
-              }`}
-            >
-              <input
-                type="radio"
-                name="riskAppetite"
-                value={risk}
-                checked={config.riskAppetite === risk}
-                onChange={() => onChange({ ...config, riskAppetite: risk })}
-                className="mt-1"
-              />
-              <div>
-                <div className="font-medium text-white">
-                  {RISK_DESCRIPTIONS[risk].label}
-                </div>
-                <div className="text-sm text-gray-400">
-                  {RISK_DESCRIPTIONS[risk].description}
-                </div>
-              </div>
-            </label>
-          ))}
-        </div>
-      </div>
-
       {/* Solver Configuration */}
       <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
         <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
