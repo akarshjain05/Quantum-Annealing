@@ -22,7 +22,7 @@
     "current_balance": 72300000.0,
     "current_balance_local": 8074367712.73,
     "minimum_required": 82270303.07,
-    "recommended_balance": 58100000.0,
+    "recommended_balance": 57000000.0,
     "statistics": {
       "avg_daily_volume": 42386793.56511111,
       "median_daily_volume": 46875813.31,
@@ -985,7 +985,7 @@
     "current_balance": 45100000.0,
     "current_balance_local": 6623014002.34,
     "minimum_required": 61302242.64,
-    "recommended_balance": 38200000.0,
+    "recommended_balance": 37500000,
     "statistics": {
       "avg_daily_volume": 30632781.013777774,
       "median_daily_volume": 32817323.310000002,
@@ -1948,7 +1948,7 @@
     "current_balance": 34200000.0,
     "current_balance_local": 7726768371.35,
     "minimum_required": 56865165.96,
-    "recommended_balance": 28500000.0,
+    "recommended_balance": 28000000,
     "statistics": {
       "avg_daily_volume": 28387037.212222215,
       "median_daily_volume": 27996787.505000003,
@@ -2911,7 +2911,7 @@
     "current_balance": 28700000.0,
     "current_balance_local": 1080022314.24,
     "minimum_required": 36258350.29,
-    "recommended_balance": 24100000.0,
+    "recommended_balance": 23700000,
     "statistics": {
       "avg_daily_volume": 20696309.777888887,
       "median_daily_volume": 24119920.245,
@@ -3874,7 +3874,7 @@
     "current_balance": 24100000.0,
     "current_balance_local": 2534458522.12,
     "minimum_required": 30168176.27,
-    "recommended_balance": 20300000.0,
+    "recommended_balance": 19900000,
     "statistics": {
       "avg_daily_volume": 16908506.026444443,
       "median_daily_volume": 19040642.895,
@@ -4837,7 +4837,7 @@
     "current_balance": 18900000.0,
     "current_balance_local": 20282944.57,
     "minimum_required": 30840329.06,
-    "recommended_balance": 15800000.0,
+    "recommended_balance": 15500000,
     "statistics": {
       "avg_daily_volume": 14133331.785444442,
       "median_daily_volume": 14400986.95,
@@ -5800,7 +5800,7 @@
     "current_balance": 52300000.0,
     "current_balance_local": 101700876.72,
     "minimum_required": 88500299.46,
-    "recommended_balance": 44100000.0,
+    "recommended_balance": 43300000,
     "statistics": {
       "avg_daily_volume": 49107360.46455555,
       "median_daily_volume": 54987074.74,
@@ -6763,7 +6763,7 @@
     "current_balance": 41200000.0,
     "current_balance_local": 119069189.98,
     "minimum_required": 83801277.75,
-    "recommended_balance": 34800000.0,
+    "recommended_balance": 34200000,
     "statistics": {
       "avg_daily_volume": 45777860.48977777,
       "median_daily_volume": 49383432.004999995,
@@ -7726,7 +7726,7 @@
     "current_balance": 38400000.0,
     "current_balance_local": 76678894.73,
     "minimum_required": 70726440.96,
-    "recommended_balance": 32100000.0,
+    "recommended_balance": 31500000,
     "statistics": {
       "avg_daily_volume": 37229309.762,
       "median_daily_volume": 41455521.275000006,
@@ -8689,7 +8689,7 @@
     "current_balance": 15200000.0,
     "current_balance_local": 44027342.07,
     "minimum_required": 28214186.96,
-    "recommended_balance": 12800000.0,
+    "recommended_balance": 12600000,
     "statistics": {
       "avg_daily_volume": 14875272.247,
       "median_daily_volume": 16902276.744999997,
@@ -9652,7 +9652,7 @@
     "current_balance": 8100000.0,
     "current_balance_local": 14794658.99,
     "minimum_required": 13915834.57,
-    "recommended_balance": 6900000.0,
+    "recommended_balance": 6800000,
     "statistics": {
       "avg_daily_volume": 7513701.837333334,
       "median_daily_volume": 8539074.04,
