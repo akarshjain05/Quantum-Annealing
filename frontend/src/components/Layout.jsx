@@ -6,7 +6,6 @@ const NAV = [
   { to: "/", label: "Executive Summary", end: true },
   { to: "/corridors", label: "Corridor Management" },
   { to: "/optimizer", label: "Liquidity Optimizer" },
-  { to: "/stress-tests", label: "Stress Testing" },
   { to: "/agent", label: "Decision Pipeline" },
   { to: "/audit", label: "Compliance & Audit" },
 ];
