@@ -171,9 +171,9 @@ const StepIndicator: React.FC<{ step: number; current: number; label: string }> 
     <div className="flex items-center gap-2">
       <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
         isComplete 
-          ? 'bg-teal-500 text-white' 
+          ? 'bg-teal-500 text-black' 
           : isActive 
-            ? 'bg-teal-500/20 text-teal-400 border-2 border-teal-500' 
+            ? 'bg-teal-500/20 text-teal-600 border-2 border-teal-500' 
             : 'bg-gray-700 text-gray-400'
       }`}>
         {isComplete ? '✓' : step}
@@ -268,7 +268,7 @@ const ConfigureStep: React.FC<{
       <div className="flex justify-end">
         <button
           onClick={onRun}
-          className="px-6 py-3 bg-teal-600 hover:bg-teal-500 text-white font-medium rounded-lg transition-colors"
+          className="px-6 py-3 bg-teal-600 hover:bg-teal-500 text-black font-medium rounded-lg transition-colors"
         >
           Run Optimization →
         </button>
@@ -411,7 +411,7 @@ const ResultsStep: React.FC<{
           ← Run Another Optimization
         </button>
         <button
-          className="px-6 py-3 bg-teal-600 hover:bg-teal-500 text-white font-medium rounded-lg transition-colors"
+          className="px-6 py-3 bg-teal-600 hover:bg-teal-500 text-black font-medium rounded-lg transition-colors"
         >
           Submit for Approval →
         </button>
