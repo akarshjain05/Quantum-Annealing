@@ -121,6 +121,7 @@ class SolverType(Enum):
     QISKIT_VQE = "qiskit_vqe"
     QISKIT_NUMPY = "qiskit_numpy_exact"
     QAOA_CUSTOM = "qaoa_custom_implementation"
+    CHUNKED_QAOA = "chunked_qaoa"
 
 
 class SolverCategory(Enum):
@@ -258,8 +259,10 @@ class QUBOProblem:
         Q: np.ndarray,
         variable_names: Optional[List[str]] = None,
         offset: float = 0.0,
-        problem_name: str = "qubo_problem"
+        problem_name: str = "qubo_problem",
+        block_sizes: Optional[List[int]] = None
     ):
+        self.block_sizes = block_sizes or []
         if Q.ndim != 2:
             raise ValueError(f"Q must be 2D, got {Q.ndim}D")
         if Q.shape[0] != Q.shape[1]:
@@ -750,6 +753,67 @@ class DWaveExactSolver(BaseSolver):
 # =============================================================================
 # CUSTOM QAOA IMPLEMENTATION (Pure Qiskit, No qiskit-optimization)
 # =============================================================================
+
+
+class ChunkedQAOA(BaseSolver):
+    solver_type = SolverType.CHUNKED_QAOA
+    solver_category = SolverCategory.QUANTUM_SIMULATION
+    
+    def solve(self, problem: QUBOProblem) -> SolverResult:
+        import time
+        from app.optimization.decomposition import build_chunks, has_valid_decomposition
+        from chunked_qaoa_benchmark import solve_chunk, stitch_solution
+        
+        start_time = time.perf_counter()
+        
+        if not problem.block_sizes:
+            # Fallback if no block sizes
+            logger.warning("No block sizes provided for Chunked QAOA, failing back to classical")
+            from app.optimization.annealing import simulated_annealing
+            res = simulated_annealing(problem.Q, problem.n)
+            return SolverResult(
+                solver_type=self.solver_type.value,
+                best_x=res.best_x.tolist(),
+                best_energy=res.best_energy,
+                execution_time_ms=(time.perf_counter() - start_time) * 1000,
+                is_optimal=False,
+            )
+            
+        chunks = build_chunks(problem.Q, problem.block_sizes)
+        if not has_valid_decomposition(chunks, problem.n):
+            # Fallback
+            from app.optimization.annealing import simulated_annealing
+            res = simulated_annealing(problem.Q, problem.n)
+            return SolverResult(
+                solver_type=self.solver_type.value,
+                best_x=res.best_x.tolist(),
+                best_energy=res.best_energy,
+                execution_time_ms=(time.perf_counter() - start_time) * 1000,
+                is_optimal=False,
+            )
+            
+        chunk_results = [solve_chunk(c) for c in chunks]
+        
+        from app.optimization.qubo import qubo_energy
+        x_global = stitch_solution(problem.n, [
+            (c.var_indices, r["best_x"]) for c, r in zip(chunks, chunk_results)
+        ])
+        
+        stitched_energy = qubo_energy(problem.Q, x_global)
+        
+        return SolverResult(
+            solver_type=self.solver_type.value,
+            best_x=x_global.tolist(),
+            best_energy=stitched_energy,
+            execution_time_ms=(time.perf_counter() - start_time) * 1000,
+            is_optimal=True,
+            metadata={
+                "num_chunks": len(chunks),
+                "qaoa_chunks": sum(1 for r in chunk_results if r["method"] == "qaoa")
+            }
+        )
+
+# Register it
 
 class QAOACustom(BaseSolver):
     solver_type = SolverType.QAOA_CUSTOM

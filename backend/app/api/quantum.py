@@ -315,7 +315,8 @@ async def run_optimization(
     problem = QUBOProblem(
         Q=qubo.Q,
         variable_names=[f"x_{i}" for i in range(qubo.num_vars)],
-        problem_name=f"nostro_optimization_{run_id}"
+        problem_name=f"nostro_optimization_{run_id}",
+        block_sizes=qubo.block_sizes
     )
     
     solver_config = request.solver_config or SolverConfiguration()
@@ -334,6 +335,7 @@ async def run_optimization(
         
         if solver_config.run_quantum:
             solvers_to_run.append(SolverType.QAOA_CUSTOM)
+            solvers_to_run.append(SolverType.CHUNKED_QAOA)
     
     benchmark = QuantumBenchmark(seed=solver_config.seed)
     benchmark_result = benchmark.run_benchmark(problem=problem, solvers=solvers_to_run, skip_large_quantum=False)

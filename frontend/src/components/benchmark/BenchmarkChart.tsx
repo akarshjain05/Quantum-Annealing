@@ -93,6 +93,8 @@ const SOLVER_DISPLAY_NAMES: Record<string, string> = {
   'dwave_simulated_annealing': 'D-Wave SA',
   'dwave_exact': 'Exact Solver',
   'qaoa_custom': 'QAOA',
+  'qaoa_custom_implementation': 'QAOA Custom',
+  'chunked_qaoa': 'Chunked QAOA',
   'qiskit_qaoa': 'Qiskit QAOA',
   'qiskit_qaoa_simulator': 'QAOA Simulator'
 };
