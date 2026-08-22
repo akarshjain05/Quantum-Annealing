@@ -52,20 +52,7 @@ export default function Dashboard() {
         <p className="text-sm text-muted mt-1">{dash.synthetic_data_notice}</p>
       </div>
 
-      {/* NEW: Operating Mode Banner */}
-      <div className="card p-3 bg-surface/50 border border-teal/20 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="w-2 h-2 rounded-full bg-teal animate-pulse"></div>
-          <span className="text-sm font-medium text-teal">
-            {operatingMode === 'shadow' 
-              ? 'SHADOW MODE - Recommendations only, no live execution' 
-              : 'PRODUCTION MODE - Live recommendations enabled'}
-          </span>
-        </div>
-        <span className="text-xs text-muted hover:text-teal transition-colors cursor-pointer">
-          Learn more
-        </span>
-      </div>
+
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Kpi label="Total nostro liquidity" value={`$${totalNostroLiquidity.toFixed(1)}M`} />
