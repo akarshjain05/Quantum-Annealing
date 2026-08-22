@@ -54,14 +54,6 @@ export default function Layout({ children }) {
             );
           })}
         </nav>
-        <div className="px-3 py-4 border-t border-border">
-          <div className="px-2 mb-2">
-            <div className="text-xs text-text truncate">Demo User</div>
-            <div className="text-[11px] text-muted truncate">
-              treasury@demo-bank.com
-            </div>
-          </div>
-        </div>
       </aside>
       <main className="flex-1 min-w-0">
         <div className="p-6 max-w-[1400px]">{children}</div>
