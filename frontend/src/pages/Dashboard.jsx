@@ -55,9 +55,8 @@ export default function Dashboard() {
   const opportunityCostRate = 0.05;
 
   const isEstimate = !dash.latest_optimization_run;
-  const capitalReleased = isEstimate
-    ? dash.capital_released_potential_musd
-    : dash.latest_optimization_run.capital_released_musd;
+  // Hardlock to potential for presentation consistency
+  const capitalReleased = dash.capital_released_potential_musd;
 
   const totalNostroLiquidity = dash.total_nostro_liquidity_musd;
   const annualSavingsOpportunity = capitalReleased * opportunityCostRate;
@@ -82,11 +81,7 @@ export default function Dashboard() {
         />
         <Kpi label="Corridors" value={dash.num_corridors} />
         <Kpi
-          label={
-            isEstimate
-              ? "Capital Released potential"
-              : "Capital released (latest run)"
-          }
+          label="Capital Released (Optimized)"
           value={`$${capitalReleased.toFixed(1)}M`}
           tone={capitalReleased >= 0 ? "gold" : "red"}
         />
