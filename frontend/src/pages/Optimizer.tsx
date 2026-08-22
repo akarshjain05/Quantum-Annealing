@@ -226,7 +226,6 @@ const ConfigureStep: React.FC<{
   return (
     <div className="space-y-6">
       {/* Quantum Status */}
-      <BenchmarkStatus status={quantumStatus} loading={statusLoading} />
 
       {/* Risk Appetite */}
       <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
