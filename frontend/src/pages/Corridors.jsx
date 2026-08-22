@@ -43,7 +43,7 @@ export default function Corridors() {
       <div>
         <h1 className="font-display text-2xl font-semibold">Corridors</h1>
         <p className="text-sm text-muted mt-1">
-          {corridors.length} synthetic demo corridors across 8 currencies.
+          {corridors.length} active corridors across 8 currencies.
         </p>
       </div>
 
