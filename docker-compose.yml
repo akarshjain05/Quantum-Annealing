@@ -30,6 +30,8 @@ services:
       DATABASE_URL: postgresql+psycopg2://nostroq:nostroq@postgres:5432/nostroq
       SECRET_KEY: ${SECRET_KEY:-dev-only-secret-CHANGE-ME-before-any-real-deployment}
       ENV: development
+      IBM_QUANTUM_TOKEN: ${IBM_QUANTUM_TOKEN:-}
+
       LLM_PROVIDER: ${LLM_PROVIDER:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     depends_on:

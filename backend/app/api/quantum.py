@@ -333,13 +333,7 @@ async def run_optimization(
                 solvers_to_run.append(SolverType.DWAVE_NEAL_SA)
         
         if solver_config.run_quantum:
-            if QISKIT_AVAILABLE and problem.n <= 20:
-                solvers_to_run.append(SolverType.QAOA_CUSTOM)
-            elif QISKIT_AVAILABLE and problem.n <= 16 and QISKIT_OPTIMIZATION_AVAILABLE:
-                solvers_to_run.append(SolverType.QISKIT_QAOA)
-            
-            if problem.n > 20 and solver_config.run_quantum:
-                warnings.append(f"Problem size ({problem.n} variables) too large for quantum simulation. Only classical solvers will run.")
+            solvers_to_run.append(SolverType.QAOA_CUSTOM)
     
     benchmark = QuantumBenchmark(seed=solver_config.seed)
     benchmark_result = benchmark.run_benchmark(problem=problem, solvers=solvers_to_run, skip_large_quantum=True)

@@ -6,25 +6,10 @@ const NAV = [
   { to: "/", label: "Executive Summary", end: true },
   { to: "/corridors", label: "Corridor Management" },
   { to: "/optimizer", label: "Liquidity Optimizer" },
-  { to: "/approvals", label: "Approvals Center", hasBadge: true },
-  { to: "/scenarios", label: "What-If Analysis" },
-  { to: "/stress-tests", label: "Stress Testing" },
-  { to: "/agent", label: "Decision Pipeline" },
   { to: "/audit", label: "Compliance & Audit" },
-  { type: "divider" },
-  { to: "/settings", label: "Settings" },
-  { to: "/settings/model", label: "Model Transparency", indent: true },
 ];
 
 export default function Layout({ children }) {
-  const [pendingCount, setPendingCount] = useState(0);
-
-  useEffect(() => {
-    client.get("/api/optimization/approvals/pending")
-      .then(r => setPendingCount(r.data.length))
-      .catch(err => console.error("Failed to fetch pending approvals count", err));
-  }, []);
-
   return (
     <div className="min-h-screen flex">
       <aside className="w-60 shrink-0 border-r border-border bg-surface flex flex-col">
@@ -39,7 +24,12 @@ export default function Layout({ children }) {
         <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
           {NAV.map((item, idx) => {
             if (item.type === "divider") {
-              return <div key={`div-${idx}`} className="my-3 border-t border-border/50 mx-2" />;
+              return (
+                <div
+                  key={`div-${idx}`}
+                  className="my-3 border-t border-border/50 mx-2"
+                />
+              );
             }
             return (
               <NavLink
@@ -64,22 +54,8 @@ export default function Layout({ children }) {
             );
           })}
         </nav>
-        <div className="px-3 py-4 border-t border-border">
-          <div className="px-2 mb-2">
-            <div className="text-xs text-text truncate">Demo User</div>
-            <div className="text-[11px] text-muted truncate">treasury@demo-bank.com</div>
-          </div>
-        </div>
       </aside>
       <main className="flex-1 min-w-0">
-        <div className="border-b border-border bg-bg/80 backdrop-blur px-6 py-2.5 flex items-center justify-between">
-          <span className="text-[11px] text-muted font-mono">
-            Decision-support prototype - no live financial transactions are executed.
-          </span>
-          <span className="text-[11px] text-gold font-mono">
-            Synthetic demonstration data
-          </span>
-        </div>
         <div className="p-6 max-w-[1400px]">{children}</div>
       </main>
     </div>

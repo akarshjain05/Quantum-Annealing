@@ -3,16 +3,23 @@
  * Optimizer Page with Quantum Benchmark Integration
  */
 
-import React, { useState } from 'react';
-import { 
-  BenchmarkComparisonChart, 
+import React, { useState } from "react";
+import client from "../api/client";
+
+import {
+  BenchmarkComparisonChart,
   BenchmarkStatus,
   useBenchmark,
-  useQuantumStatus
-} from '../components/benchmark';
+  useQuantumStatus,
+} from "../components/benchmark";
 
 // Types
-type RiskAppetite = 'very_conservative' | 'conservative' | 'balanced' | 'efficient' | 'very_efficient';
+type RiskAppetite =
+  | "very_conservative"
+  | "conservative"
+  | "balanced"
+  | "efficient"
+  | "very_efficient";
 
 interface OptimizerConfig {
   riskAppetite: RiskAppetite;
@@ -23,67 +30,72 @@ interface OptimizerConfig {
 }
 
 const DEFAULT_CONFIG: OptimizerConfig = {
-  riskAppetite: 'conservative',
+  riskAppetite: "conservative",
   confidenceLevel: 0.95,
   safetyBuffer: 0.05,
   runQuantum: true,
-  seed: 42
+  seed: 42,
 };
 
-const RISK_DESCRIPTIONS: Record<RiskAppetite, { label: string; description: string }> = {
+const RISK_DESCRIPTIONS: Record<
+  RiskAppetite,
+  { label: string; description: string }
+> = {
   very_conservative: {
-    label: 'Very Conservative',
-    description: '99th percentile coverage, 10% safety buffer, minimal risk'
+    label: "Very Conservative",
+    description: "99th percentile coverage, 10% safety buffer, minimal risk",
   },
   conservative: {
-    label: 'Conservative',
-    description: '95th percentile coverage, 5% safety buffer, low risk'
+    label: "Conservative",
+    description: "95th percentile coverage, 5% safety buffer, low risk",
   },
   balanced: {
-    label: 'Balanced',
-    description: '90th percentile coverage, 3% safety buffer, moderate risk'
+    label: "Balanced",
+    description: "90th percentile coverage, 3% safety buffer, moderate risk",
   },
   efficient: {
-    label: 'Efficient',
-    description: '85th percentile coverage, 2% safety buffer, higher efficiency'
+    label: "Efficient",
+    description:
+      "85th percentile coverage, 2% safety buffer, higher efficiency",
   },
   very_efficient: {
-    label: 'Very Efficient',
-    description: '80th percentile coverage, 1% safety buffer, maximum efficiency'
-  }
+    label: "Very Efficient",
+    description:
+      "80th percentile coverage, 1% safety buffer, maximum efficiency",
+  },
 };
 
 export default function Optimizer() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [config, setConfig] = useState<OptimizerConfig>(DEFAULT_CONFIG);
-  
+
   const { status: quantumStatus, loading: statusLoading } = useQuantumStatus();
-  const { 
-    result, 
-    loading: optimizing, 
-    error, 
+  const {
+    result,
+    loading: optimizing,
+    error,
     runOptimization,
-    clearError 
+    clearError,
   } = useBenchmark();
 
   const handleRunOptimization = async () => {
     setStep(2);
     clearError();
-    
+
     try {
       await runOptimization({
         risk_config: {
           risk_appetite: config.riskAppetite,
           confidence_level: config.confidenceLevel,
-          safety_buffer: config.safetyBuffer
+          safety_buffer: config.safetyBuffer,
         },
         solver_config: {
           run_classical: true,
           run_quantum: config.runQuantum,
-          seed: config.seed
+          seed: config.seed,
         },
         run_benchmark: true,
-        save_results: true
+        save_results: true,
       });
       setStep(3);
     } catch (err) {
@@ -100,7 +112,8 @@ export default function Optimizer() {
           Liquidity Optimizer
         </h1>
         <p className="text-gray-400">
-          Configure, run, and review liquidity optimization with quantum benchmark comparison.
+          Configure, run, and review liquidity optimization with quantum
+          benchmark comparison.
         </p>
       </div>
 
@@ -121,7 +134,7 @@ export default function Optimizer() {
             <span className="text-red-400 font-medium">Error</span>
           </div>
           <p className="text-sm text-gray-300 mt-1">{error}</p>
-          <button 
+          <button
             onClick={clearError}
             className="text-sm text-red-400 hover:underline mt-2"
           >
@@ -132,7 +145,7 @@ export default function Optimizer() {
 
       {/* Step Content */}
       {step === 1 && (
-        <ConfigureStep 
+        <ConfigureStep
           config={config}
           onChange={setConfig}
           quantumStatus={quantumStatus}
@@ -141,14 +154,30 @@ export default function Optimizer() {
         />
       )}
 
-      {step === 2 && (
-        <RunningStep loading={optimizing} />
-      )}
+      {step === 2 && <RunningStep loading={optimizing} />}
 
       {step === 3 && result && (
-        <ResultsStep 
+        <ResultsStep
           result={result}
           onBack={() => setStep(1)}
+          onSubmit={async () => {
+            try {
+              await client.post(
+                `/api/optimization/runs/${result.run_id}/submit-for-approval`,
+                {
+                  submitted_by: "Demo User",
+                  notes: "Submitted from Optimizer dashboard",
+                },
+              );
+              alert(
+                "Optimization submitted! This has been recorded on the immutable Audit Trail.",
+              );
+              // Optionally redirect to audit page: window.location.href = "/audit";
+            } catch (err) {
+              console.error(err);
+              alert("Error submitting for approval");
+            }
+          }}
         />
       )}
     </div>
@@ -159,26 +188,28 @@ export default function Optimizer() {
 // SUB-COMPONENTS
 // =============================================================================
 
-const StepIndicator: React.FC<{ step: number; current: number; label: string }> = ({
-  step,
-  current,
-  label
-}) => {
+const StepIndicator: React.FC<{
+  step: number;
+  current: number;
+  label: string;
+}> = ({ step, current, label }) => {
   const isActive = step === current;
   const isComplete = step < current;
 
   return (
     <div className="flex items-center gap-2">
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-        isComplete 
-          ? 'bg-teal-500 text-white' 
-          : isActive 
-            ? 'bg-teal-500/20 text-teal-400 border-2 border-teal-500' 
-            : 'bg-gray-700 text-gray-400'
-      }`}>
-        {isComplete ? '✓' : step}
+      <div
+        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+          isComplete
+            ? "bg-teal-500 text-[#FFFFFF]"
+            : isActive
+              ? "bg-teal-500/20 text-teal-600 border-2 border-teal-500"
+              : "bg-gray-700 text-gray-400"
+        }`}
+      >
+        {isComplete ? "✓" : step}
       </div>
-      <span className={isActive ? 'text-white font-medium' : 'text-gray-400'}>
+      <span className={isActive ? "text-white font-medium" : "text-gray-400"}>
         {label}
       </span>
     </div>
@@ -205,15 +236,15 @@ const ConfigureStep: React.FC<{
         <p className="text-sm text-gray-400 mb-4">
           Select how much settlement risk is acceptable:
         </p>
-        
+
         <div className="space-y-2">
-          {(Object.keys(RISK_DESCRIPTIONS) as RiskAppetite[]).map(risk => (
-            <label 
+          {(Object.keys(RISK_DESCRIPTIONS) as RiskAppetite[]).map((risk) => (
+            <label
               key={risk}
               className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                config.riskAppetite === risk 
-                  ? 'bg-teal-500/10 border border-teal-500/30' 
-                  : 'bg-gray-700/30 border border-transparent hover:bg-gray-700/50'
+                config.riskAppetite === risk
+                  ? "bg-teal-500/10 border border-teal-500/30"
+                  : "bg-gray-700/30 border border-transparent hover:bg-gray-700/50"
               }`}
             >
               <input
@@ -242,25 +273,30 @@ const ConfigureStep: React.FC<{
         <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
           Solver Configuration
         </h3>
-        
+
         <label className="flex items-center gap-3 cursor-pointer">
           <input
             type="checkbox"
             checked={config.runQuantum}
-            onChange={(e) => onChange({ ...config, runQuantum: e.target.checked })}
+            onChange={(e) =>
+              onChange({ ...config, runQuantum: e.target.checked })
+            }
             className="w-4 h-4 rounded"
             disabled={!quantumStatus?.quantum_ready}
           />
           <div>
             <span className="text-white">Include Quantum Solvers</span>
             {!quantumStatus?.quantum_ready && (
-              <span className="text-yellow-400 text-sm ml-2">(not available)</span>
+              <span className="text-yellow-400 text-sm ml-2">
+                (not available)
+              </span>
             )}
           </div>
         </label>
-        
+
         <p className="text-sm text-gray-500 mt-2 ml-7">
-          Run QAOA and other quantum algorithms for comparison (slower but provides benchmark data)
+          Run QAOA and other quantum algorithms for comparison (slower but
+          provides benchmark data)
         </p>
       </div>
 
@@ -268,7 +304,8 @@ const ConfigureStep: React.FC<{
       <div className="flex justify-end">
         <button
           onClick={onRun}
-          className="px-6 py-3 bg-teal-600 hover:bg-teal-500 text-white font-medium rounded-lg transition-colors"
+          className="px-6 py-3 bg-teal-600 hover:bg-teal-500 font-medium rounded-lg transition-colors"
+          style={{ color: "#FFFFFF" }}
         >
           Run Optimization →
         </button>
@@ -281,7 +318,9 @@ const RunningStep: React.FC<{ loading: boolean }> = ({ loading }) => {
   return (
     <div className="flex flex-col items-center justify-center py-16">
       <div className="w-16 h-16 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin mb-6" />
-      <h3 className="text-xl font-medium text-white mb-2">Running Optimization</h3>
+      <h3 className="text-xl font-medium text-white mb-2">
+        Running Optimization
+      </h3>
       <p className="text-gray-400 text-center max-w-md">
         Building QUBO formulation and running classical and quantum solvers.
         This may take a few moments...
@@ -293,29 +332,30 @@ const RunningStep: React.FC<{ loading: boolean }> = ({ loading }) => {
 const ResultsStep: React.FC<{
   result: any;
   onBack: () => void;
-}> = ({ result, onBack }) => {
+  onSubmit: () => void;
+}> = ({ result, onBack, onSubmit }) => {
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <SummaryCard 
+        <SummaryCard
           label="Capital Released"
-          value={`$${(result.capital_released / 1_000_000).toFixed(1)}M`}
+          value={`$${result.capital_released.toFixed(1)}M`}
           sublabel={`${result.capital_release_percent.toFixed(1)}% of total`}
           highlight
         />
-        <SummaryCard 
+        <SummaryCard
           label="Annual Savings"
-          value={`$${(result.annual_savings_opportunity / 1_000_000).toFixed(1)}M`}
+          value={`$${result.annual_savings_opportunity.toFixed(1)}M`}
           sublabel="@ 5% cost of capital"
           highlight
         />
-        <SummaryCard 
+        <SummaryCard
           label="Corridors Optimized"
           value={result.num_corridors.toString()}
           sublabel="all safety requirements met"
         />
-        <SummaryCard 
+        <SummaryCard
           label="QUBO Size"
           value={result.qubo_info.num_variables.toString()}
           sublabel={`${result.qubo_info.sparsity} sparse`}
@@ -328,7 +368,7 @@ const ResultsStep: React.FC<{
           <h2 className="text-xl font-semibold text-white mb-4">
             Classical vs Quantum Comparison
           </h2>
-          <BenchmarkComparisonChart 
+          <BenchmarkComparisonChart
             data={result.benchmark}
             showConvergence={true}
             showDetails={true}
@@ -338,7 +378,9 @@ const ResultsStep: React.FC<{
 
       {/* Corridor Results Table */}
       <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h3 className="text-lg font-medium text-white mb-4">Corridor Results</h3>
+        <h3 className="text-lg font-medium text-white mb-4">
+          Corridor Results
+        </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -352,19 +394,24 @@ const ResultsStep: React.FC<{
             </thead>
             <tbody>
               {result.corridor_results.map((corridor: any) => (
-                <tr key={corridor.corridor_id} className="border-b border-gray-700/50">
-                  <td className="py-3 font-medium text-white">{corridor.corridor_code}</td>
-                  <td className="py-3 text-right text-gray-300">
-                    ${(corridor.current_balance / 1_000_000).toFixed(1)}M
+                <tr
+                  key={corridor.corridor_id}
+                  className="border-b border-gray-700/50"
+                >
+                  <td className="py-3 font-medium text-white">
+                    {corridor.corridor_code}
                   </td>
                   <td className="py-3 text-right text-gray-300">
-                    ${(corridor.recommended_balance / 1_000_000).toFixed(1)}M
+                    ${corridor.current_balance.toFixed(1)}M
+                  </td>
+                  <td className="py-3 text-right text-gray-300">
+                    ${corridor.recommended_balance.toFixed(1)}M
                   </td>
                   <td className="py-3 text-right text-green-400">
-                    -${(corridor.delta / 1_000_000).toFixed(1)}M
+                    -${corridor.delta.toFixed(1)}M
                   </td>
                   <td className="py-3 text-right text-teal-400">
-                    ${(corridor.annual_savings / 1_000).toFixed(0)}K
+                    ${(corridor.annual_savings * 1_000).toFixed(0)}K
                   </td>
                 </tr>
               ))}
@@ -373,16 +420,20 @@ const ResultsStep: React.FC<{
               <tr className="font-medium">
                 <td className="pt-4">Total</td>
                 <td className="pt-4 text-right text-white">
-                  ${(result.total_liquidity / 1_000_000).toFixed(1)}M
+                  ${result.total_liquidity.toFixed(1)}M
                 </td>
                 <td className="pt-4 text-right text-white">
-                  ${((result.total_liquidity - result.capital_released) / 1_000_000).toFixed(1)}M
+                  $
+                  {(result.total_liquidity - result.capital_released).toFixed(
+                    1,
+                  )}
+                  M
                 </td>
                 <td className="pt-4 text-right text-green-400">
-                  -${(result.capital_released / 1_000_000).toFixed(1)}M
+                  -${result.capital_released.toFixed(1)}M
                 </td>
                 <td className="pt-4 text-right text-teal-400">
-                  ${(result.annual_savings_opportunity / 1_000_000).toFixed(1)}M
+                  ${result.annual_savings_opportunity.toFixed(1)}M
                 </td>
               </tr>
             </tfoot>
@@ -411,7 +462,9 @@ const ResultsStep: React.FC<{
           ← Run Another Optimization
         </button>
         <button
-          className="px-6 py-3 bg-teal-600 hover:bg-teal-500 text-white font-medium rounded-lg transition-colors"
+          onClick={onSubmit}
+          className="px-6 py-3 bg-teal-600 hover:bg-teal-500 font-medium rounded-lg transition-colors"
+          style={{ color: "#FFFFFF" }}
         >
           Submit for Approval →
         </button>
@@ -426,13 +479,19 @@ const SummaryCard: React.FC<{
   sublabel?: string;
   highlight?: boolean;
 }> = ({ label, value, sublabel, highlight }) => (
-  <div className={`rounded-lg p-4 border ${
-    highlight 
-      ? 'bg-teal-500/10 border-teal-500/30' 
-      : 'bg-gray-800 border-gray-700'
-  }`}>
-    <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">{label}</div>
-    <div className={`text-2xl font-bold ${highlight ? 'text-teal-400' : 'text-white'}`}>
+  <div
+    className={`rounded-lg p-4 border ${
+      highlight
+        ? "bg-teal-500/10 border-teal-500/30"
+        : "bg-gray-800 border-gray-700"
+    }`}
+  >
+    <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">
+      {label}
+    </div>
+    <div
+      className={`text-2xl font-bold ${highlight ? "text-teal-400" : "text-white"}`}
+    >
       {value}
     </div>
     {sublabel && <div className="text-xs text-gray-400 mt-1">{sublabel}</div>}
