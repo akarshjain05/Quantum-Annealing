@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html, body, #root {
@@ -13,11 +13,9 @@ html, body, #root {
 }
 
 body {
-  background: #0A0E13;
-  background-image:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(79, 184, 174, 0.08), transparent),
-    linear-gradient(180deg, #0A0E13 0%, #0B1017 100%);
-  color: #E7ECF3;
+  background: #F8FAFC;
+  background-image: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+  color: #0F172A;
   font-family: "IBM Plex Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -33,12 +31,12 @@ h1, h2, h3, .font-display {
 }
 
 ::selection {
-  background: rgba(79, 184, 174, 0.35);
+  background: rgba(30, 58, 138, 0.2);
 }
 
 /* visible keyboard focus, respected per accessibility floor */
 :focus-visible {
-  outline: 2px solid #4FB8AE;
+  outline: 2px solid #1E3A8A;
   outline-offset: 2px;
 }
 
@@ -51,9 +49,10 @@ h1, h2, h3, .font-display {
 }
 
 .card {
-  background: #10151C;
-  border: 1px solid #263041;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
   border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .tag {
@@ -77,8 +76,8 @@ h1, h2, h3, .font-display {
 .timeline-track {
   position: relative;
   height: 3rem;
-  background: #0D1219;
-  border: 1px solid #263041;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
   border-radius: 6px;
   overflow: hidden;
 }
@@ -89,7 +88,7 @@ h1, h2, h3, .font-display {
   grid-template-columns: repeat(24, 1fr);
 }
 .timeline-hour-grid > div {
-  border-left: 1px solid rgba(38, 48, 65, 0.6);
+  border-left: 1px solid rgba(203, 213, 225, 0.6);
 }
 .timeline-hour-grid > div:first-child { border-left: none; }
 .timeline-now-marker {
@@ -102,4 +101,4 @@ h1, h2, h3, .font-display {
 }
 
 .scrollbar-thin::-webkit-scrollbar { height: 6px; width: 6px; }
-.scrollbar-thin::-webkit-scrollbar-thumb { background: #263041; border-radius: 3px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
