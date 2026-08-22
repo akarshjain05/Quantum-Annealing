@@ -28,7 +28,6 @@ export default function Audit() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="font-display text-2xl font-semibold">Audit Trail</h1>
-          <p className="text-sm text-muted mt-1">Tamper-evident hash chain - not a blockchain, an append-only signed log.</p>
         </div>
         {verify && (
           <div className={`tag ${verify.valid ? "tag-practice" : ""}`} style={!verify.valid ? { color: "#D66B56", borderColor: "#D66B56" } : {}}>
