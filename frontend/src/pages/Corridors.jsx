@@ -86,13 +86,7 @@ export default function Corridors() {
                       {c.efficiency_pct.toFixed(1)}%
                     </span>
                   </td>
-                  <td className="px-4 py-2.5">
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-semibold ${c.status === "Optimal" ? "bg-teal/20 text-teal border border-teal/30" : "bg-gold/20 text-gold border border-gold/30"}`}
-                    >
-                      {c.status || "Unknown"}
-                    </span>
-                  </td>
+
                   <td className="px-4 py-2.5 text-right font-mono text-muted">
                     {c.cutoff_hour_utc}:00
                   </td>
