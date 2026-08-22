@@ -411,7 +411,7 @@ const ResultsStep: React.FC<{
                     -${corridor.delta.toFixed(1)}M
                   </td>
                   <td className="py-3 text-right text-teal-400">
-                    ${(corridor.annual_savings / 1_000).toFixed(0)}K
+                    ${(corridor.annual_savings * 1_000).toFixed(0)}K
                   </td>
                 </tr>
               ))}
