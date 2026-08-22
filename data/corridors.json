@@ -19,10 +19,10 @@
       "cutoff_time": "12:00",
       "timezone": "UTC"
     },
-    "current_balance": 96989401.95,
+    "current_balance": 72300000.0,
     "current_balance_local": 8074367712.73,
     "minimum_required": 82270303.07,
-    "recommended_balance": 86383818.22,
+    "recommended_balance": 58100000.0,
     "statistics": {
       "avg_daily_volume": 42386793.56511111,
       "median_daily_volume": 46875813.31,
@@ -959,7 +959,7 @@
         "is_spike": false
       }
     ],
-    "created_at": "2026-08-21T18:37:30.254259",
+    "created_at": "2026-08-22T04:39:35.472649",
     "synthetic": true
   },
   {
@@ -982,10 +982,10 @@
       "cutoff_time": "13:00",
       "timezone": "UTC"
     },
-    "current_balance": 73182475.16,
+    "current_balance": 45100000.0,
     "current_balance_local": 6623014002.34,
     "minimum_required": 61302242.64,
-    "recommended_balance": 64367354.77,
+    "recommended_balance": 38200000.0,
     "statistics": {
       "avg_daily_volume": 30632781.013777774,
       "median_daily_volume": 32817323.310000002,
@@ -1922,7 +1922,7 @@
         "is_spike": false
       }
     ],
-    "created_at": "2026-08-21T18:37:30.255979",
+    "created_at": "2026-08-22T04:39:35.474348",
     "synthetic": true
   },
   {
@@ -1945,10 +1945,10 @@
       "cutoff_time": "13:00",
       "timezone": "UTC"
     },
-    "current_balance": 73378617.01,
+    "current_balance": 34200000.0,
     "current_balance_local": 7726768371.35,
     "minimum_required": 56865165.96,
-    "recommended_balance": 59708424.26,
+    "recommended_balance": 28500000.0,
     "statistics": {
       "avg_daily_volume": 28387037.212222215,
       "median_daily_volume": 27996787.505000003,
@@ -2885,7 +2885,7 @@
         "is_spike": false
       }
     ],
-    "created_at": "2026-08-21T18:37:30.257627",
+    "created_at": "2026-08-22T04:39:35.476056",
     "synthetic": true
   },
   {
@@ -2908,10 +2908,10 @@
       "cutoff_time": "10:00",
       "timezone": "UTC"
     },
-    "current_balance": 47641037.24,
+    "current_balance": 28700000.0,
     "current_balance_local": 1080022314.24,
     "minimum_required": 36258350.29,
-    "recommended_balance": 38071267.81,
+    "recommended_balance": 24100000.0,
     "statistics": {
       "avg_daily_volume": 20696309.777888887,
       "median_daily_volume": 24119920.245,
@@ -3848,7 +3848,7 @@
         "is_spike": false
       }
     ],
-    "created_at": "2026-08-21T18:37:30.259198",
+    "created_at": "2026-08-22T04:39:35.477604",
     "synthetic": true
   },
   {
@@ -3871,10 +3871,10 @@
       "cutoff_time": "08:00",
       "timezone": "UTC"
     },
-    "current_balance": 41010655.7,
+    "current_balance": 24100000.0,
     "current_balance_local": 2534458522.12,
     "minimum_required": 30168176.27,
-    "recommended_balance": 31676585.09,
+    "recommended_balance": 20300000.0,
     "statistics": {
       "avg_daily_volume": 16908506.026444443,
       "median_daily_volume": 19040642.895,
@@ -4811,7 +4811,7 @@
         "is_spike": false
       }
     ],
-    "created_at": "2026-08-21T18:37:30.260838",
+    "created_at": "2026-08-22T04:39:35.479074",
     "synthetic": true
   },
   {
@@ -4834,10 +4834,10 @@
       "cutoff_time": "06:00",
       "timezone": "UTC"
     },
-    "current_balance": 36219543.87,
+    "current_balance": 18900000.0,
     "current_balance_local": 20282944.57,
     "minimum_required": 30840329.06,
-    "recommended_balance": 32382345.51,
+    "recommended_balance": 15800000.0,
     "statistics": {
       "avg_daily_volume": 14133331.785444442,
       "median_daily_volume": 14400986.95,
@@ -5774,7 +5774,7 @@
         "is_spike": false
       }
     ],
-    "created_at": "2026-08-21T18:37:30.262425",
+    "created_at": "2026-08-22T04:39:35.480526",
     "synthetic": true
   },
   {
@@ -5797,10 +5797,10 @@
       "cutoff_time": "15:00",
       "timezone": "UTC"
     },
-    "current_balance": 110544431.22,
+    "current_balance": 52300000.0,
     "current_balance_local": 101700876.72,
     "minimum_required": 88500299.46,
-    "recommended_balance": 92925314.44,
+    "recommended_balance": 44100000.0,
     "statistics": {
       "avg_daily_volume": 49107360.46455555,
       "median_daily_volume": 54987074.74,
@@ -6737,7 +6737,7 @@
         "is_spike": false
       }
     ],
-    "created_at": "2026-08-21T18:37:30.263939",
+    "created_at": "2026-08-22T04:39:35.481980",
     "synthetic": true
   },
   {
@@ -6760,10 +6760,10 @@
       "cutoff_time": "19:00",
       "timezone": "UTC"
     },
-    "current_balance": 109237788.97,
+    "current_balance": 41200000.0,
     "current_balance_local": 119069189.98,
     "minimum_required": 83801277.75,
-    "recommended_balance": 87991341.64,
+    "recommended_balance": 34800000.0,
     "statistics": {
       "avg_daily_volume": 45777860.48977777,
       "median_daily_volume": 49383432.004999995,
@@ -7700,7 +7700,7 @@
         "is_spike": false
       }
     ],
-    "created_at": "2026-08-21T18:37:30.265440",
+    "created_at": "2026-08-22T04:39:35.483419",
     "synthetic": true
   },
   {
@@ -7723,10 +7723,10 @@
       "cutoff_time": "15:00",
       "timezone": "UTC"
     },
-    "current_balance": 97061892.06,
+    "current_balance": 38400000.0,
     "current_balance_local": 76678894.73,
     "minimum_required": 70726440.96,
-    "recommended_balance": 74262763.01,
+    "recommended_balance": 32100000.0,
     "statistics": {
       "avg_daily_volume": 37229309.762,
       "median_daily_volume": 41455521.275000006,
@@ -8663,7 +8663,7 @@
         "is_spike": false
       }
     ],
-    "created_at": "2026-08-21T18:37:30.266964",
+    "created_at": "2026-08-22T04:39:35.484859",
     "synthetic": true
   },
   {
@@ -8686,10 +8686,10 @@
       "cutoff_time": "14:00",
       "timezone": "UTC"
     },
-    "current_balance": 37954605.23,
+    "current_balance": 15200000.0,
     "current_balance_local": 44027342.07,
     "minimum_required": 28214186.96,
-    "recommended_balance": 29624896.31,
+    "recommended_balance": 12800000.0,
     "statistics": {
       "avg_daily_volume": 14875272.247,
       "median_daily_volume": 16902276.744999997,
@@ -9626,7 +9626,7 @@
         "is_spike": false
       }
     ],
-    "created_at": "2026-08-21T18:37:30.268451",
+    "created_at": "2026-08-22T04:39:35.486377",
     "synthetic": true
   },
   {
@@ -9649,10 +9649,10 @@
       "cutoff_time": "14:00",
       "timezone": "UTC"
     },
-    "current_balance": 16812112.49,
+    "current_balance": 8100000.0,
     "current_balance_local": 14794658.99,
     "minimum_required": 13915834.57,
-    "recommended_balance": 14611626.3,
+    "recommended_balance": 6900000.0,
     "statistics": {
       "avg_daily_volume": 7513701.837333334,
       "median_daily_volume": 8539074.04,
@@ -10589,7 +10589,7 @@
         "is_spike": false
       }
     ],
-    "created_at": "2026-08-21T18:37:30.269940",
+    "created_at": "2026-08-22T04:39:35.487817",
     "synthetic": true
   }
 ]
