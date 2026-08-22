@@ -49,7 +49,7 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="font-display text-2xl font-semibold">{dash.organization}</h1>
-        <p className="text-sm text-muted mt-1">{dash.synthetic_data_notice}</p>
+
       </div>
 
 
