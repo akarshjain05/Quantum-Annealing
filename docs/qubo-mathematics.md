@@ -121,3 +121,13 @@ Every run also computes:
 ## 10. Quantum-readiness
 
 The solver is accessed through a `run_optimization()` interface that is agnostic to what actually solves `min x^T Q x`. Today: `simulated_annealing()`. The QUBO construction itself (§1-§3) has no dependency on the solver - the same `Q` matrix this code builds today is exactly the input format a quantum annealer (D-Wave-style) or a QAOA circuit would need. We are not claiming quantum execution anywhere in this codebase; see `docs/limitations.md`.
+
+## 7. The Loss-Given-Shortfall Assumption
+
+Currently, the loss penalty (`Loss_i`) is modeled via three explicit, auditable components:
+1. `correspondent_penalty_fee` (Contractual / overdraft costs)
+2. `operational_remediation_cost` (Manual ops interventions)
+3. `reputational_risk_proxy` (Tagged as a pure `MODEL_ASSUMPTION`)
+
+**Practitioner Calibration Flag:** Real calibration for this parameter cannot come from any transactional dataset. It must come from asking a Treasury/Ops domain expert: *"What does a settlement shortfall actually cost you in manual remediation hours, penalty fees, and correspondent relationship damage?"*
+Until we obtain real Tier-2 bank operational data, we handle this uncertainty via **Sensitivity Analysis**, sweeping the assumed loss multiplier from 0.5x to 3.0x to prove the quantum recommendation's robustness under varying severity assumptions.
