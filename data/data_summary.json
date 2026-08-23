@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-08-21T18:37:30.239567",
+  "generated_at": "2026-08-23T14:56:00.541708+00:00",
   "seed": 42,
+  "history_days": 90,
+  "date_range": {
+    "start": "2026-05-25",
+    "end": "2026-08-22"
+  },
   "files": [
     {
       "name": "corridors.json",
@@ -16,7 +21,7 @@
     },
     {
       "name": "transactions.json",
-      "records": 270
+      "records": 3928
     },
     {
       "name": "audit_trail.json",
