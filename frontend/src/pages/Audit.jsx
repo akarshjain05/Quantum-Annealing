@@ -7,6 +7,17 @@ export default function Audit() {
   const [approvals, setApprovals] = useState(null);
   const [verify, setVerify] = useState(null);
   const [expandedApproval, setExpandedApproval] = useState(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  async function reVerify() {
+    setIsVerifying(true);
+    // simulate a small delay for dramatic effect in demo
+    await new Promise(r => setTimeout(r, 800));
+    const v = await client.get("/api/audit/verify");
+    setVerify(v.data);
+    setIsVerifying(false);
+  }
+
 
   async function load() {
     const [l, a, v] = await Promise.all([

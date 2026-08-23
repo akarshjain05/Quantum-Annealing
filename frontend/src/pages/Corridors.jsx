@@ -38,6 +38,14 @@ export default function Corridors() {
   if (error) return <ErrorState message={error} onRetry={load} />;
   if (!corridors) return <Loading label="Loading corridors" />;
 
+
+  // Sort by opportunity size (current - recommended) biggest first
+  const sortedCorridors = [...corridors].sort((a, b) => {
+    const oppA = (a.current_balance_musd || 0) - (a.recommended_musd || 0);
+    const oppB = (b.current_balance_musd || 0) - (b.recommended_musd || 0);
+    return oppB - oppA;
+  });
+
   return (
     <div className="space-y-6">
       <div>
@@ -65,7 +73,7 @@ export default function Corridors() {
             </tr>
           </thead>
           <tbody>
-            {corridors.map((c) => (
+            {sortedCorridors.map((c) => (
               <Fragment key={c.code}>
                 <tr
                   className="border-b border-border/60 hover:bg-raised/40 cursor-pointer transition-colors"
