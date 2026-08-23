@@ -22,7 +22,21 @@ def load_data():
         
     return txs, corridors
 
-def run_backtest_phase2(horizon_days: int = 1, confidence_level: float = 0.95):
+# Hardcoded for Phase 3 test (Aug 15 is a major holiday in INR/EUR)
+HOLIDAYS = {
+    "INR": {dt.date(2026, 8, 15)},
+    "EUR": {dt.date(2026, 8, 15)}
+}
+
+def is_holiday_adjacent(date: dt.date, currency1: str, currency2: str) -> bool:
+    # Check if date, date-1, or date+1 is a holiday for either currency
+    dates_to_check = [date - dt.timedelta(days=1), date, date + dt.timedelta(days=1)]
+    for d in dates_to_check:
+        if d in HOLIDAYS.get(currency1, set()) or d in HOLIDAYS.get(currency2, set()):
+            return True
+    return False
+
+def run_backtest_phase3(horizon_days: int = 1, confidence_level: float = 0.95):
     txs, corridors_data = load_data()
     
     corridor_txs = defaultdict(list)
@@ -32,10 +46,10 @@ def run_backtest_phase2(horizon_days: int = 1, confidence_level: float = 0.95):
         
     z_score = 1.96 if confidence_level == 0.95 else 1.645
     
-    # We will test two methods: 'gaussian' and 'empirical'
     results = {
         'gaussian': {'breaches': 0, 'windows': 0},
-        'empirical': {'breaches': 0, 'windows': 0}
+        'empirical_unified': {'breaches': 0, 'windows': 0},
+        'empirical_holiday_split': {'breaches': 0, 'windows': 0}
     }
     
     for code, history in corridor_txs.items():
@@ -43,6 +57,7 @@ def run_backtest_phase2(horizon_days: int = 1, confidence_level: float = 0.95):
         if not history:
             continue
             
+        c1, c2 = code.split('_')
         min_date = history[0][0].date()
         max_date = history[-1][0].date()
         total_days = (max_date - min_date).days + 1
@@ -50,14 +65,9 @@ def run_backtest_phase2(horizon_days: int = 1, confidence_level: float = 0.95):
         if total_days <= horizon_days:
             continue
             
-        # To compute empirical residuals, we need to track past predictions vs actuals
-        # Since we are doing a rolling origin, we can simulate what the model would have predicted
-        # at each point in the past to build the residual history.
-        # For simplicity in this script, we will just use the naive error of previous days 
-        # as a proxy for the residual distribution.
-        
         for t_offset in range(1, total_days - horizon_days + 1):
             t = min_date + dt.timedelta(days=t_offset)
+            is_holiday_regime = is_holiday_adjacent(t, c1, c2)
             
             hist_t = [(ts, amt) for ts, amt in history if ts.date() < t]
             if not hist_t:
@@ -70,7 +80,6 @@ def run_backtest_phase2(horizon_days: int = 1, confidence_level: float = 0.95):
             act_t_musd = act_t / 1e6
             
             fcst = compute_forecast(hist_t_musd, horizon_days=horizon_days, model_type="baseline")
-            
             mu = fcst.expected_demand_musd
             sigma = fcst.std_dev_musd
             
@@ -80,48 +89,74 @@ def run_backtest_phase2(horizon_days: int = 1, confidence_level: float = 0.95):
                 results['gaussian']['breaches'] += 1
             results['gaussian']['windows'] += 1
             
-            # 2. Empirical Historical Simulation
-            # Build empirical residuals by testing every single day in hist_t 
-            # against its own trailing history.
-            residuals = []
+            # Build empirical residuals
+            residuals_all = []
+            residuals_holiday = []
+            residuals_normal = []
+            
             for past_t_offset in range(1, t_offset):
                 past_t = min_date + dt.timedelta(days=past_t_offset)
+                past_is_holiday = is_holiday_adjacent(past_t, c1, c2)
+                
                 past_hist = [(ts, amt) for ts, amt in history if ts.date() < past_t]
                 if not past_hist:
                     continue
                 past_end = past_t + dt.timedelta(days=horizon_days)
                 past_act = sum(amt for ts, amt in history if past_t <= ts.date() < past_end) / 1e6
                 past_fcst = compute_forecast([(ts, amt/1e6) for ts, amt in past_hist], horizon_days=horizon_days, model_type="baseline")
-                residuals.append(past_act - past_fcst.expected_demand_musd)
-            
-            # If we don't have residuals, fall back to gaussian for this step
-            if residuals:
-                # Instead of 60 threshold, we use what we have to see if it works
-                emp_margin = float(np.quantile(residuals, confidence_level))
-                ci_high_empirical = mu + max(0, emp_margin) # margin can't be negative for safety
-            else:
-                ci_high_empirical = ci_high_gaussian
                 
-            if act_t_musd > ci_high_empirical:
-                results['empirical']['breaches'] += 1
-            results['empirical']['windows'] += 1
+                res = past_act - past_fcst.expected_demand_musd
+                residuals_all.append(res)
+                if past_is_holiday:
+                    residuals_holiday.append(res)
+                else:
+                    residuals_normal.append(res)
+            
+            # 2. Empirical Unified
+            if residuals_all:
+                emp_margin = float(np.quantile(residuals_all, confidence_level))
+                ci_high_unified = mu + max(0, emp_margin)
+            else:
+                ci_high_unified = ci_high_gaussian
+                
+            if act_t_musd > ci_high_unified:
+                results['empirical_unified']['breaches'] += 1
+            results['empirical_unified']['windows'] += 1
+            
+            # 3. Empirical Holiday Split
+            target_residuals = residuals_holiday if is_holiday_regime else residuals_normal
+            if target_residuals:
+                emp_split_margin = float(np.quantile(target_residuals, confidence_level))
+                ci_high_split = mu + max(0, emp_split_margin)
+            elif residuals_all: # fallback to unified if regime pool is empty
+                emp_split_margin = float(np.quantile(residuals_all, confidence_level))
+                ci_high_split = mu + max(0, emp_split_margin)
+            else:
+                ci_high_split = ci_high_gaussian
+                
+            if act_t_musd > ci_high_split:
+                results['empirical_holiday_split']['breaches'] += 1
+            results['empirical_holiday_split']['windows'] += 1
             
     return results
 
 if __name__ == "__main__":
-    print("Running Phase 2 Calibration Backtest...")
-    res = run_backtest_phase2(horizon_days=1)
+    print("Running Phase 3 Holiday Calibration Backtest...")
+    res = run_backtest_phase3(horizon_days=1)
     
-    g_breach = res['gaussian']['breaches'] / res['gaussian']['windows'] if res['gaussian']['windows'] > 0 else 0
-    e_breach = res['empirical']['breaches'] / res['empirical']['windows'] if res['empirical']['windows'] > 0 else 0
+    g_breach = res['gaussian']['breaches'] / res['gaussian']['windows']
+    eu_breach = res['empirical_unified']['breaches'] / res['empirical_unified']['windows']
+    es_breach = res['empirical_holiday_split']['breaches'] / res['empirical_holiday_split']['windows']
     
     print("\nBreach Rate Comparison (Target: 5.0%):")
-    print(f"Gaussian Parametric: {g_breach:.1%} (Breaches: {res['gaussian']['breaches']}/{res['gaussian']['windows']})")
-    print(f"Empirical Simulation: {e_breach:.1%} (Breaches: {res['empirical']['breaches']}/{res['empirical']['windows']})")
+    print(f"Gaussian Parametric:       {g_breach:.1%} (Breaches: {res['gaussian']['breaches']}/{res['gaussian']['windows']})")
+    print(f"Empirical Unified:         {eu_breach:.1%} (Breaches: {res['empirical_unified']['breaches']}/{res['empirical_unified']['windows']})")
+    print(f"Empirical Holiday-Split:   {es_breach:.1%} (Breaches: {res['empirical_holiday_split']['breaches']}/{res['empirical_holiday_split']['windows']})")
     
-    if e_breach < g_breach:
-        print("\n=> Empirical simulation improved calibration!")
+    if es_breach < eu_breach and es_breach < g_breach:
+        print("\n=> Splitting holiday regimes improved calibration!")
     else:
-        print("\n=> Empirical simulation DID NOT improve calibration on this dataset.")
-        print("=> As per instructions: this is real information, do not ship it.")
+        print("\n=> Holiday-splitting failed to improve calibration on this sparse dataset.")
+        print("=> Splitting a 7-day dataset into two even smaller pools destroys statistical significance.")
+        print("=> As per instructions: this is real information, do not ship the code to production.")
 
