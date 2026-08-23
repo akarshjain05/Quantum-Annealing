@@ -106,7 +106,11 @@ class RiskParameter(Base):
     id = Column(Integer, primary_key=True)
     corridor_id = Column(Integer, ForeignKey("corridors.id"), unique=True)
     opportunity_cost_rate_annual = Column(Float, default=0.05)  # r_i
-    loss_given_shortfall_musd = Column(Float, default=5.0)  # Loss_i
+    loss_given_shortfall_musd = Column(Float, default=5.0)  # Total Loss_i
+    # Phase A: Decomposed Loss Parameters
+    correspondent_penalty_fee = Column(Float, default=1.0)
+    operational_remediation_cost = Column(Float, default=0.1)
+    reputational_risk_proxy = Column(Float, default=3.9)
     fx_cost_bps = Column(Float, default=8.0)
     operational_cost_rate = Column(Float, default=0.02)
 

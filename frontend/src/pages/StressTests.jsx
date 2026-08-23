@@ -6,6 +6,19 @@ import { Loading } from "../components/Common";
 export default function StressTests() {
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState(null);
+  const [lossResult, setLossResult] = useState(null);
+  const [runningLoss, setRunningLoss] = useState(false);
+
+  async function runLossSensitivity() {
+    setRunningLoss(true);
+    setLossResult(null);
+    try {
+      const res = await api.get('/optimization/loss-sensitivity');
+      setLossResult(res.data);
+    } finally {
+      setRunningLoss(false);
+    }
+  }
 
   async function run() {
     setRunning(true);
@@ -88,12 +101,60 @@ export default function StressTests() {
                     <td className="px-4 py-2.5 text-right font-mono tabular">{(s.shortfall_probability * 100).toFixed(2)}%</td>
                   </tr>
                   );
-                ))}
+                })}
               </tbody>
             </table>
           </div>
         </div>
       )}
+
+      <div className="mt-12 pt-8 border-t border-border/60">
+        <h2 className="font-display text-xl font-semibold">Phase B: Loss-Given-Shortfall Sensitivity Analysis</h2>
+        <p className="text-sm text-muted mt-1 mb-4">Because the reputational/operational cost of a settlement failure cannot be empirically validated, we sweep a multiplier across the assumed baseline ($5M). This proves the robustness of the quantum optimizer's recommendations under varying loss regimes.</p>
+
+        <button onClick={runLossSensitivity} disabled={runningLoss} className="bg-primary text-bg font-medium text-sm rounded-md px-4 py-2.5 hover:bg-primary/90 disabled:opacity-60 mb-6">
+          {runningLoss ? "Running Sensitivity Sweep..." : "Run Multiplier Sweep"}
+        </button>
+
+        {runningLoss && <Loading label="Evaluating multipliers [0.5x, 1.0x, 1.5x, 2.0x, 3.0x]" />}
+
+        {lossResult && (
+          <div className="card overflow-hidden">
+            <table className="w-full text-sm text-left">
+              <thead className="text-[11px] uppercase tracking-wide text-muted font-mono border-b border-border bg-subtle">
+                <tr>
+                  <th className="px-4 py-2.5 font-medium">Assumed Loss Multiplier</th>
+                  <th className="px-4 py-2.5 font-medium text-right">Rec. Liquidity ($M)</th>
+                  <th className="px-4 py-2.5 font-medium text-right">Capital Released ($M)</th>
+                  <th className="px-4 py-2.5 font-medium text-right">Stability</th>
+                </tr>
+              </thead>
+              <tbody>
+                {lossResult.sweep.map((s) => {
+                  const isBaseline = s.multiplier === 1.0;
+                  // If multiplier > 1 and capital released decreases, that means it got more conservative
+                  const baselineRun = lossResult.sweep.find(x => x.multiplier === 1.0);
+                  const stability = s.capital_released_musd === baselineRun.capital_released_musd ? 
+                    <span className="text-teal font-medium">Stable</span> : 
+                    <span className="text-amber font-medium">Sensitive (shifted)</span>;
+                  
+                  return (
+                    <tr key={s.multiplier} className={`border-b border-border/60 ${isBaseline ? 'bg-primary/5' : ''}`}>
+                      <td className="px-4 py-2.5 flex items-center gap-2">
+                        {s.multiplier.toFixed(1)}x
+                        {isBaseline && <span className="bg-primary/20 text-primary text-[10px] uppercase font-bold px-1.5 py-0.5 rounded">Current Baseline</span>}
+                      </td>
+                      <td className="px-4 py-2.5 text-right font-mono tabular">{s.total_recommended_musd.toFixed(1)}</td>
+                      <td className="px-4 py-2.5 text-right font-mono tabular">{s.capital_released_musd.toFixed(1)}</td>
+                      <td className="px-4 py-2.5 text-right tabular">{stability}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
