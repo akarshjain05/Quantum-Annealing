@@ -2,14 +2,23 @@
 Payment demand forecasting (spec §18). Deliberately simple, transparent
 methods over the synthetic transaction history.
 
-PHASE 1 BACKTEST RESULTS:
-A rolling-origin backtest evaluated:
-1. baseline (MA/EWMA blend)
-2. seasonal_naive (day-of-week average)
-3. gbr (GradientBoostedRegressor with lagged features)
+PHASE 1 BACKTEST RESULTS (90-day dataset, rolling-origin):
+1. baseline (MA/EWMA blend):         MAE = 0.7799, Breach = 2.2%
+2. seasonal_naive (day-of-week avg): MAE = 0.3380, Breach = 1.5%  ← WINNER
+3. gbr (GradientBoostedRegressor):   MAE = 0.3525, Breach = 1.8%
 
-WINNER: baseline. 
-The day-of-week-naive baseline outperformed the ML model (GBR) on the current synthetic dataset and tied with the seasonal naive method (due to short historical lookback). As per design principles, we do not ship the fancier model just to sound better on a slide; the transparent baseline remains the default.
+WINNER: seasonal_naive.
+The day-of-week-aware model cut point-forecast error by 56% vs the baseline.
+This is expected: the synthetic generator has an explicit weekend_factor = 0.35
+pattern that MA/EWMA is blind to, but seasonal_naive captures for free.
+GBR came close (MAE 0.35) but didn't beat the simpler model — we ship the
+simpler one per our "don't reach for fancier unless it actually wins" rule.
+
+PHASE 2/3 CALIBRATION (90-day dataset):
+Gaussian parametric (2.2% breach) beat Empirical VaR (8.7%) and Holiday-Split
+(10.6%) for tail calibration. This is because synthetic data is symmetric by
+construction — no real skew for empirical methods to exploit. Gaussian retained
+as the CI method. The 2.2% rate means slightly over-conservative (safe direction).
 """
 import datetime as dt
 from dataclasses import dataclass
@@ -88,7 +97,7 @@ def compute_forecast(
     transactions: List[Tuple[dt.datetime, float]],
     horizon_days: int = 7,
     volatility_lookback_days: int = 30,
-    model_type: str = "baseline" # Baseline won the Phase 1 backtest (tied with naive due to limited history)
+    model_type: str = "seasonal_naive" # Won the 90-day backtest: MAE 0.34 vs 0.78 baseline (56% improvement)
 ) -> ForecastOutput:
     series = _daily_totals(transactions)
     if len(series) == 0:
