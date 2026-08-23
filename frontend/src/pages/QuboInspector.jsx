@@ -88,9 +88,17 @@ export default function QuboInspector() {
 
           <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-4">
             <div className="card p-4">
+              
+              <div className="text-[11px] uppercase tracking-wide text-muted font-mono mb-1">
+                Coupling Status
+              </div>
+              <div className="mb-4 text-xs font-medium text-[#C7A24C] bg-[#C7A24C]/10 px-2 py-1 rounded inline-block border border-[#C7A24C]/20">
+                Global Cap: $310.0M Active (Off-diagonal penalties enforced)
+              </div>
               <div className="text-[11px] uppercase tracking-wide text-muted font-mono mb-3">
                 Q matrix heatmap ({data.num_variables}&times;{data.num_variables})
               </div>
+
               <Heatmap matrix={data.matrix} />
               <div className="flex items-center gap-4 mt-2 text-[10px] text-muted font-mono">
                 <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: "rgb(76,180,155)" }} /> favorable (negative)</span>

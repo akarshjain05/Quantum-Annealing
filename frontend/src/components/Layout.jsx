@@ -6,6 +6,12 @@ const NAV = [
   { to: "/", label: "Executive Summary", end: true },
   { to: "/corridors", label: "Corridor Management" },
   { to: "/optimizer", label: "Liquidity Optimizer" },
+  { to: "/qubo", label: "QUBO Formulation" },
+  { type: "divider" },
+  { to: "/scenarios", label: "What-If Scenarios" },
+  { to: "/stress", label: "Stress Testing" },
+  { to: "/agent", label: "Compliance Agent" },
+  { type: "divider" },
   { to: "/audit", label: "Compliance & Audit" },
 ];
 

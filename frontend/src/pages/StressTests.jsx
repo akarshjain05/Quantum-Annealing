@@ -67,11 +67,19 @@ export default function StressTests() {
                   <th className="px-4 py-2.5 text-right">Shortfall p</th>
                 </tr>
               </thead>
+
               <tbody>
-                {result.scenarios.map((s) => (
-                  <tr key={s.scenario_name} className="border-b border-border/60">
-                    <td className="px-4 py-2.5">{s.scenario_name}</td>
+                {result.scenarios.map((s) => {
+                  const maxRequired = Math.max(...result.scenarios.map(sc => sc.required_liquidity_musd));
+                  const isWorst = s.required_liquidity_musd === maxRequired;
+                  return (
+                  <tr key={s.scenario_name} className={`border-b border-border/60 ${isWorst ? "bg-red/10" : ""}`}>
+                    <td className="px-4 py-2.5 flex items-center gap-2">
+                      {s.scenario_name}
+                      {isWorst && <span className="bg-red text-bg text-[10px] uppercase font-bold px-1.5 py-0.5 rounded">Worst Case</span>}
+                    </td>
                     <td className="px-4 py-2.5 text-right font-mono tabular">{s.required_liquidity_musd.toFixed(1)}</td>
+
                     <td className="px-4 py-2.5 text-right font-mono tabular">{s.recommended_liquidity_musd.toFixed(1)}</td>
                     <td className={`px-4 py-2.5 text-right font-mono tabular ${s.delta_vs_baseline_musd > 0 ? "text-red" : "text-teal"}`}>
                       {s.delta_vs_baseline_musd >= 0 ? "+" : ""}{s.delta_vs_baseline_musd.toFixed(1)}
@@ -79,6 +87,7 @@ export default function StressTests() {
                     <td className="px-4 py-2.5 text-right font-mono tabular">{(s.settlement_coverage * 100).toFixed(1)}%</td>
                     <td className="px-4 py-2.5 text-right font-mono tabular">{(s.shortfall_probability * 100).toFixed(2)}%</td>
                   </tr>
+                  );
                 ))}
               </tbody>
             </table>
