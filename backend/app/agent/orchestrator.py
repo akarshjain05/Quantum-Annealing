@@ -11,6 +11,19 @@ this environment to test against) - see docs/agent-architecture.md.
 """
 import re
 from typing import Dict, Any, List
+import os
+try:
+    from google import genai
+    from pydantic import BaseModel, Field
+    HAS_GEMINI = True
+except ImportError:
+    HAS_GEMINI = False
+
+if HAS_GEMINI:
+    class AgentQueryParse(BaseModel):
+        intent: str = Field(description="The detected intent. Must be one of: general_snapshot, largest_excess, release_candidates, explain_excess, scenario_demand, scenario_volatility, scenario_confidence, scenario_cutoff, source_regulation, source_practice, binding_constraint")
+        corridor_code: str | None = Field(description="The extracted 7-character corridor code if a specific corridor is mentioned in the question (e.g. 'USD_INR'). Must be None if no corridor is mentioned.")
+
 
 from sqlalchemy.orm import Session
 
@@ -37,7 +50,33 @@ INTENTS = [
 ]
 
 
-def detect_intent(question: str) -> str:
+
+
+import functools
+
+@functools.lru_cache(maxsize=10)
+def _parse_query_with_llm(question: str) -> tuple[str, str | None]:
+    if not HAS_GEMINI or not os.environ.get("GEMINI_API_KEY"):
+        return _fallback_detect_intent(question), _fallback_find_corridor_code(question)
+    
+    try:
+        client = genai.Client()
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=f"Analyze this treasury question and extract the intent and corridor code (if any): '{question}'",
+            config={
+                'response_mime_type': 'application/json',
+                'response_schema': AgentQueryParse,
+                'temperature': 0.0
+            }
+        )
+        parsed = response.parsed
+        return parsed.intent, parsed.corridor_code
+    except Exception as e:
+        print(f"LLM parse failed, falling back to heuristics: {e}")
+        return _fallback_detect_intent(question), _fallback_find_corridor_code(question)
+
+def _fallback_detect_intent(question: str) -> str:
     q = question.lower()
     scores: Dict[str, int] = {}
     for intent, phrases in INTENTS:
@@ -46,19 +85,23 @@ def detect_intent(question: str) -> str:
             scores[intent] = score
     return max(scores, key=scores.get) if scores else "general_snapshot"
 
+def _fallback_find_corridor_code(question: str) -> str | None:
+    normalized = question.replace(" to ", "_").upper()
+    m = re.search(r"([A-Z]{3}[/_ -]?[A-Z]{3})", normalized)
+    if m:
+        return m.group(1).replace("/", "_").replace("-", "_")
+    return None
+
+def detect_intent(question: str) -> str:
+    # LLM now handles this in _parse_query_with_llm, but for backwards compat:
+    intent, _ = _parse_query_with_llm(question)
+    return intent
 
 def _find_corridor(db: Session, question: str):
-    normalized = question.replace(" to ", "_").upper()
-    m = CORRIDOR_CODE_RE.search(normalized)
-    if m:
-        code_guess = m.group(1).replace("/", "_").replace("-", "_")
-        corridor = db.query(models.Corridor).filter(models.Corridor.code == code_guess).first()
-        if corridor:
-            return corridor
-    for c in db.query(models.Corridor).all():
-        if c.source_currency in question.upper() and c.dest_currency in question.upper():
-            return c
-    return None
+    _, code = _parse_query_with_llm(question)
+    if not code:
+        return None
+    return db.query(models.Corridor).filter(models.Corridor.code == code).first()
 
 
 def _corridor_input_from_db(db: Session, corridor: models.Corridor, confidence_level: float = 0.95,
@@ -248,11 +291,27 @@ def answer_question(db: Session, question: str) -> Dict[str, Any]:
     return {"answer": answer_text, "tools_used": tools_used, "sources": sources, "intent": intent}
 
 
+
 def maybe_enhance_with_llm(question: str, deterministic_answer: str) -> str:
-    """Optional rephrasing hook. Disabled unless LLM_PROVIDER + a matching
-    API key are both set - the deterministic answer above is already
-    complete and grounded, so this only ever changes phrasing, never facts.
-    NOT exercised in this build/test run (no key available here)."""
-    if settings.LLM_PROVIDER != "anthropic" or not settings.ANTHROPIC_API_KEY:
+    """Optional rephrasing hook using Gemini."""
+    if not HAS_GEMINI or not os.environ.get("GEMINI_API_KEY"):
         return deterministic_answer
-    return deterministic_answer  # left as a documented extension point, not implemented here
+    
+    try:
+        client = genai.Client()
+        system_prompt = """You are an AI assistant for a treasury dashboard. 
+        Your job is to take the provided deterministic text and rewrite it to read naturally and conversationally, in direct response to the user's question.
+        CRITICAL RULES:
+        1. DO NOT add any new facts, numbers, or assumptions.
+        2. DO NOT remove any regulatory or model disclaimers.
+        3. Only change the phrasing and flow to make it sound human."""
+        
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=f"""User Question: '{question}'\n\nDeterministic Answer to rewrite:\n{deterministic_answer}""",
+            config={'system_instruction': system_prompt, 'temperature': 0.3}
+        )
+        return response.text.strip()
+    except Exception as e:
+        print(f"LLM enhancement failed: {e}")
+        return deterministic_answer

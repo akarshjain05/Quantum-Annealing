@@ -26,3 +26,4 @@ dimod>=0.12.0
 dwave-neal>=0.6.0
 matplotlib>=3.7.0
 scikit-learn>=1.3.0
+google-genai>=0.2.2
