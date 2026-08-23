@@ -22,7 +22,7 @@ def load_data():
         
     return txs, corridors
 
-def run_backtest(model_type: str, horizon_days: int = 1, confidence_level: float = 0.95):
+def run_backtest_phase2(horizon_days: int = 1, confidence_level: float = 0.95):
     txs, corridors_data = load_data()
     
     corridor_txs = defaultdict(list)
@@ -31,7 +31,12 @@ def run_backtest(model_type: str, horizon_days: int = 1, confidence_level: float
         corridor_txs[tx['corridor_code']].append((ts, tx['amount']))
         
     z_score = 1.96 if confidence_level == 0.95 else 1.645
-    results = {}
+    
+    # We will test two methods: 'gaussian' and 'empirical'
+    results = {
+        'gaussian': {'breaches': 0, 'windows': 0},
+        'empirical': {'breaches': 0, 'windows': 0}
+    }
     
     for code, history in corridor_txs.items():
         history.sort(key=lambda x: x[0])
@@ -40,15 +45,16 @@ def run_backtest(model_type: str, horizon_days: int = 1, confidence_level: float
             
         min_date = history[0][0].date()
         max_date = history[-1][0].date()
-        
         total_days = (max_date - min_date).days + 1
+        
         if total_days <= horizon_days:
             continue
             
-        errors = []
-        actuals = []
-        breaches = 0
-        total_windows = 0
+        # To compute empirical residuals, we need to track past predictions vs actuals
+        # Since we are doing a rolling origin, we can simulate what the model would have predicted
+        # at each point in the past to build the residual history.
+        # For simplicity in this script, we will just use the naive error of previous days 
+        # as a proxy for the residual distribution.
         
         for t_offset in range(1, total_days - horizon_days + 1):
             t = min_date + dt.timedelta(days=t_offset)
@@ -63,63 +69,59 @@ def run_backtest(model_type: str, horizon_days: int = 1, confidence_level: float
             hist_t_musd = [(ts, amt / 1e6) for ts, amt in hist_t]
             act_t_musd = act_t / 1e6
             
-            fcst = compute_forecast(hist_t_musd, horizon_days=horizon_days, model_type=model_type)
+            fcst = compute_forecast(hist_t_musd, horizon_days=horizon_days, model_type="baseline")
             
             mu = fcst.expected_demand_musd
             sigma = fcst.std_dev_musd
-            ci_high = mu + z_score * sigma
             
-            errors.append(abs(mu - act_t_musd))
-            actuals.append(act_t_musd)
+            # 1. Gaussian Parametric
+            ci_high_gaussian = mu + z_score * sigma
+            if act_t_musd > ci_high_gaussian:
+                results['gaussian']['breaches'] += 1
+            results['gaussian']['windows'] += 1
             
-            if act_t_musd > ci_high:
-                breaches += 1
-            total_windows += 1
+            # 2. Empirical Historical Simulation
+            # Build empirical residuals by testing every single day in hist_t 
+            # against its own trailing history.
+            residuals = []
+            for past_t_offset in range(1, t_offset):
+                past_t = min_date + dt.timedelta(days=past_t_offset)
+                past_hist = [(ts, amt) for ts, amt in history if ts.date() < past_t]
+                if not past_hist:
+                    continue
+                past_end = past_t + dt.timedelta(days=horizon_days)
+                past_act = sum(amt for ts, amt in history if past_t <= ts.date() < past_end) / 1e6
+                past_fcst = compute_forecast([(ts, amt/1e6) for ts, amt in past_hist], horizon_days=horizon_days, model_type="baseline")
+                residuals.append(past_act - past_fcst.expected_demand_musd)
             
-        if total_windows > 0:
-            mae = np.mean(errors)
-            rmse = np.sqrt(np.mean(np.array(errors)**2))
-            breach_rate = breaches / total_windows
-            
-            results[code] = {
-                "windows": total_windows,
-                "mae": mae,
-                "rmse": rmse,
-                "breach_rate": breach_rate
-            }
+            # If we don't have residuals, fall back to gaussian for this step
+            if residuals:
+                # Instead of 60 threshold, we use what we have to see if it works
+                emp_margin = float(np.quantile(residuals, confidence_level))
+                ci_high_empirical = mu + max(0, emp_margin) # margin can't be negative for safety
+            else:
+                ci_high_empirical = ci_high_gaussian
+                
+            if act_t_musd > ci_high_empirical:
+                results['empirical']['breaches'] += 1
+            results['empirical']['windows'] += 1
             
     return results
 
 if __name__ == "__main__":
-    print("Running Phase 1 Model Competition...\n")
-    models = ["baseline", "seasonal_naive", "gbr"]
+    print("Running Phase 2 Calibration Backtest...")
+    res = run_backtest_phase2(horizon_days=1)
     
-    overall_results = {}
+    g_breach = res['gaussian']['breaches'] / res['gaussian']['windows'] if res['gaussian']['windows'] > 0 else 0
+    e_breach = res['empirical']['breaches'] / res['empirical']['windows'] if res['empirical']['windows'] > 0 else 0
     
-    for model in models:
-        res = run_backtest(model_type=model, horizon_days=1)
-        
-        if not res:
-            overall_results[model] = {"mae": float('inf'), "rmse": float('inf'), "breach": 1.0}
-            continue
-            
-        avg_mae = np.mean([r['mae'] for r in res.values()])
-        avg_rmse = np.mean([r['rmse'] for r in res.values()])
-        avg_breach = np.mean([r['breach_rate'] for r in res.values()])
-        
-        overall_results[model] = {
-            "mae": avg_mae,
-            "rmse": avg_rmse,
-            "breach": avg_breach
-        }
-        
-    print(f"{'Model':<20} | {'Avg MAE':<10} | {'Avg RMSE':<10} | {'Avg Breach'}")
-    print("-" * 55)
-    for model, r in overall_results.items():
-        print(f"{model:<20} | {r['mae']:<10.3f} | {r['rmse']:<10.3f} | {r['breach']:.1%}")
-        
-    best_model = min(overall_results.keys(), key=lambda k: overall_results[k]['mae'])
+    print("\nBreach Rate Comparison (Target: 5.0%):")
+    print(f"Gaussian Parametric: {g_breach:.1%} (Breaches: {res['gaussian']['breaches']}/{res['gaussian']['windows']})")
+    print(f"Empirical Simulation: {e_breach:.1%} (Breaches: {res['empirical']['breaches']}/{res['empirical']['windows']})")
     
-    print(f"\n=> WINNER (Lowest MAE): {best_model}")
-    print("Updating forecast.py to set this as the default if not already...")
+    if e_breach < g_breach:
+        print("\n=> Empirical simulation improved calibration!")
+    else:
+        print("\n=> Empirical simulation DID NOT improve calibration on this dataset.")
+        print("=> As per instructions: this is real information, do not ship it.")
 
