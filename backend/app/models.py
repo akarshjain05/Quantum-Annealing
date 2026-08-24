@@ -131,6 +131,7 @@ class KnowledgeItem(Base):
     citation = Column(String, default="")
     corridor_id = Column(Integer, ForeignKey("corridors.id"), nullable=True)
     is_synthetic = Column(Boolean, default=True)
+    legal_reviewed = Column(Boolean, default=False)
 
 
 class OptimizationRun(Base):
