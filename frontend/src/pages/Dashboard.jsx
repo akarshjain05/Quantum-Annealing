@@ -137,14 +137,14 @@ export default function Dashboard() {
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={currencyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#263041" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis dataKey="currency" stroke="#7C8AA0" fontSize={12} />
               <YAxis stroke="#7C8AA0" fontSize={12} />
               <Tooltip
-                cursor={{ fill: "#1f2937" }}
+                cursor={{ fill: "#f3f4f6" }}
                 contentStyle={{
-                  background: "#171E27",
-                  border: "1px solid #263041",
+                  background: "#ffffff", color: "#374151", borderRadius: "8px",
+                  border: "1px solid #e5e7eb",
                   fontSize: 12,
                 }}
               />
@@ -171,7 +171,7 @@ export default function Dashboard() {
               layout="vertical" 
               margin={{ left: 10 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#263041" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis type="number" stroke="#7C8AA0" fontSize={12} />
               <YAxis
                 type="category"
@@ -181,10 +181,10 @@ export default function Dashboard() {
                 width={70}
               />
               <Tooltip
-                cursor={{ fill: "#1f2937" }}
+                cursor={{ fill: "#f3f4f6" }}
                 contentStyle={{
-                  background: "#171E27",
-                  border: "1px solid #263041",
+                  background: "#ffffff", color: "#374151", borderRadius: "8px",
+                  border: "1px solid #e5e7eb",
                   fontSize: 12,
                 }}
               />
