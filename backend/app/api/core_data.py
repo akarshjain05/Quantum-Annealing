@@ -74,13 +74,13 @@ def list_corridors(db: Session = Depends(get_db), user=Depends(get_current_user)
     latest_run = db.query(models.OptimizationRun).order_by(models.OptimizationRun.id.desc()).first()
     rec_map = {}
     if latest_run and latest_run.results:
-        rec_map = {r.corridor_code: r.optimized_liquidity_musd for r in latest_run.results}
+        rec_map = {r.corridor_id: r.optimized_liquidity_musd for r in latest_run.results}
 
     for c in db.query(models.Corridor).all():
         accounts = db.query(models.NostroAccount).filter(models.NostroAccount.corridor_id == c.id).all()
         current_balance = sum(a.current_balance_musd for a in accounts)
         
-        recommendedMin = rec_map.get(c.code, current_balance)
+        recommendedMin = rec_map.get(c.id, current_balance)
         
         efficiency_pct = (recommendedMin / current_balance) * 100 if current_balance > 0 else 100
         if efficiency_pct > 100:
