@@ -20,6 +20,9 @@ def run_seed(reset: bool = True):
     db = SessionLocal()
     
     try:
+        if not reset and db.query(models.Organization).first():
+            print('Database already seeded. Skipping.')
+            return
         if reset:
             for model in (models.HumanApproval, models.AgentMessage, models.AuditLog,
                           models.StressTestResult, models.ScenarioRun,
@@ -137,4 +140,4 @@ def run_seed(reset: bool = True):
         db.close()
 
 if __name__ == "__main__":
-    run_seed(reset=True)
+    run_seed(reset=False)
