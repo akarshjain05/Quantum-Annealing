@@ -365,15 +365,15 @@ async def run_optimization(
     opportunity_cost_rate = 0.05
     
     for res in outcome.corridor_results:
-        current = res["current_liquidity"]
-        recommended = res["optimized_liquidity"]
+        current = res["current_liquidity_musd"]
+        recommended = res["optimized_liquidity_musd"]
         delta = current - recommended
         total_current += current
         total_recommended += recommended
         
         corridor_results.append(CorridorResult(
             corridor_id=str(res["corridor_id"]),
-            corridor_code=res["code"],
+            corridor_code=res["corridor_code"],
             current_balance=current,
             minimum_required=recommended * 0.95, # Simplification for UI
             recommended_balance=recommended,
