@@ -122,6 +122,23 @@ def _fallback_detect_intent(question: str) -> str:
         return _intent_labels[best_idx]
     return "general_snapshot"
 
+def _extract_currency(question: str) -> str | None:
+    q = question.upper()
+    currencies = ["USD", "EUR", "GBP", "JPY", "INR", "SGD", "AED", "CHF", "AUD", "CAD"]
+    for c in currencies:
+        # Check for standalone currency word (e.g. " USD " or "USD?")
+        if re.search(r'\b' + c + r'\b', q):
+            return c
+    return None
+
+def _extract_currency(question: str) -> str | None:
+    q = question.upper()
+    currencies = ["USD", "EUR", "GBP", "JPY", "INR", "SGD", "AED", "CHF", "AUD", "CAD"]
+    for c in currencies:
+        if re.search(r'\b' + c + r'\b', q):
+            return c
+    return None
+
 def _fallback_find_corridor_code(question: str, db_corridors: List[Any] = None) -> str | None:
     q = question.lower()
     
@@ -258,20 +275,40 @@ def answer_question(db: Session, question: str) -> Dict[str, Any]:
 
     elif intent in ("largest_excess", "explain_excess", "release_candidates"):
         tools_used += ["get_liquidity_snapshot", "get_corridor_data", "run_optimizer"]
+        
+        target_currency = _extract_currency(question)
+        target_corridor = _find_corridor(db, question)
+        
         corridors = db.query(models.Corridor).all()
         inputs = [_corridor_input_from_db(db, c) for c in corridors]
         outcome = run_optimization(inputs, iterations=4000)
-        ranked = sorted(outcome.corridor_results, key=lambda r: r["capital_released_musd"], reverse=True)
+        
+        results = outcome.corridor_results
+        if target_corridor:
+            results = [r for r in results if r["corridor_code"] == target_corridor.code]
+        elif target_currency:
+            results = [r for r in results if target_currency in r["corridor_code"]]
+            
+        ranked = sorted(results, key=lambda r: r["capital_released_musd"], reverse=True)
+        
         lines = [
             f"{r['corridor_code']}: ${r['capital_released_musd']:.1f}M releasable "
             f"(current ${r['current_liquidity_musd']:.1f}M -> recommended ${r['optimized_liquidity_musd']:.1f}M)"
             for r in ranked[:3] if r["capital_released_musd"] > 0
         ]
         if lines:
-            text_parts.append("Largest liquidity release opportunities from the current optimization run:")
+            if target_corridor:
+                text_parts.append(f"Liquidity release opportunity for {target_corridor.code}:")
+            elif target_currency:
+                text_parts.append(f"Largest liquidity release opportunities involving {target_currency}:")
+            else:
+                text_parts.append("Largest liquidity release opportunities from the current optimization run:")
             text_parts.extend(f"- {l}" for l in lines)
         else:
-            text_parts.append("No corridor shows a meaningful release opportunity at the current confidence level.")
+            if target_currency:
+                text_parts.append(f"No significant releasable excess liquidity found involving {target_currency}.")
+            else:
+                text_parts.append("No corridor shows a meaningful release opportunity at the current confidence level.")
         practices = agent_tools.get_settlement_practices(db)
         if practices:
             p = practices[0]
