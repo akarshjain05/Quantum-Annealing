@@ -6,6 +6,23 @@ export default function Audit() {
   const [logs, setLogs] = useState(null);
   const [approvals, setApprovals] = useState(null);
   const [verify, setVerify] = useState(null);
+  const [pendingApprovals, setPendingApprovals] = useState(null);
+
+  async function handleApprove(runId, decision) {
+    try {
+      await client.post('/api/optimization/approve', {
+        run_id: runId,
+        decision: decision,
+        reason: decision === "APPROVED" ? "Looks good" : "Requires tuning",
+        notes: "Approved from audit dashboard"
+      });
+      load(); // refresh
+    } catch (err) {
+      console.error(err);
+      alert("Failed to submit decision.");
+    }
+  }
+
   const [expandedApproval, setExpandedApproval] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
 
@@ -20,14 +37,16 @@ export default function Audit() {
 
 
   async function load() {
-    const [l, a, v] = await Promise.all([
+    const [l, a, v, p] = await Promise.all([
       client.get("/api/audit/log"),
       client.get("/api/audit/approvals"),
       client.get("/api/audit/verify"),
+      client.get("/api/optimization/approvals/pending").catch(() => ({ data: [] }))
     ]);
     setLogs(l.data);
     setApprovals(a.data);
     setVerify(v.data);
+    setPendingApprovals(p.data);
   }
 
   useEffect(() => { load(); }, []);
@@ -74,8 +93,58 @@ export default function Audit() {
         </div>
       )}
 
+      
       <div>
-        <div className="text-[11px] uppercase tracking-wide text-muted font-mono mb-2">Human approvals</div>
+        <div className="text-[11px] uppercase tracking-wide text-muted font-mono mb-2 flex items-center justify-between">
+          <span>Pending Approvals</span>
+        </div>
+        {!pendingApprovals ? (
+          <div className="text-muted text-xs">Loading...</div>
+        ) : pendingApprovals.length === 0 ? (
+          <div className="text-muted text-xs mb-6">No optimization runs are currently awaiting approval.</div>
+        ) : (
+          <div className="card overflow-hidden mb-6 border-gold/30">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border text-left text-[11px] uppercase tracking-wide text-muted font-mono">
+                  <th className="px-4 py-2.5">Run</th>
+                  <th className="px-4 py-2.5">Submitted At</th>
+                  <th className="px-4 py-2.5">Summary</th>
+                  <th className="px-4 py-2.5 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingApprovals.map((p) => (
+                  <tr key={p.runId} className="border-b border-border/60 hover:bg-surface/50 transition-colors">
+                    <td className="px-4 py-2.5 font-mono text-teal">#{p.runNumber}</td>
+                    <td className="px-4 py-2.5 text-muted font-mono">{new Date(p.submittedAt).toLocaleString()}</td>
+                    <td className="px-4 py-2.5 text-muted">
+                      {p.summary.corridorCount} corridors • ${(p.summary.capitalRelease / 1_000_000).toFixed(1)}M released
+                    </td>
+                    <td className="px-4 py-2.5 text-right space-x-2">
+                      <button 
+                        onClick={() => handleApprove(p.runNumber, "REJECTED")}
+                        className="px-2 py-1 bg-red-900/40 text-red-400 rounded text-[10px] uppercase font-bold hover:bg-red-900/60 transition-colors"
+                      >
+                        Reject
+                      </button>
+                      <button 
+                        onClick={() => handleApprove(p.runNumber, "APPROVED")}
+                        className="px-2 py-1 bg-teal-900/40 text-teal-400 rounded text-[10px] uppercase font-bold hover:bg-teal-900/60 transition-colors"
+                      >
+                        Approve
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <div>
+        <div className="text-[11px] uppercase tracking-wide text-muted font-mono mb-2">Recorded Decisions</div>
         {approvals && approvals.length === 0 ? (
           <EmptyState title="No approvals recorded" hint="Approve or reject a recommendation from the Optimizer page." />
         ) : (
