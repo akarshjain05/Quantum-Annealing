@@ -92,9 +92,15 @@ export default function QuboInspector() {
               <div className="text-[11px] uppercase tracking-wide text-muted font-mono mb-1">
                 Coupling Status
               </div>
-              <div className="mb-4 text-xs font-medium text-[#C7A24C] bg-[#C7A24C]/10 px-2 py-1 rounded inline-block border border-[#C7A24C]/20">
-                Global Cap: $310.0M Active (Off-diagonal penalties enforced)
-              </div>
+              {data.global_liquidity_cap_musd ? (
+                <div className="mb-4 text-xs font-medium text-[#C7A24C] bg-[#C7A24C]/10 px-2 py-1 rounded inline-block border border-[#C7A24C]/20">
+                  Global Cap: ${data.global_liquidity_cap_musd.toFixed(1)}M Active (Off-diagonal penalties enforced)
+                </div>
+              ) : (
+                <div className="mb-4 text-xs font-medium text-teal bg-teal/10 px-2 py-1 rounded inline-block border border-teal/20">
+                  No Global Cap Active
+                </div>
+              )}
               <div className="text-[11px] uppercase tracking-wide text-muted font-mono mb-3">
                 Q matrix heatmap ({data.num_variables}&times;{data.num_variables})
               </div>

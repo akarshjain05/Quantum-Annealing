@@ -13,7 +13,7 @@ export default function StressTests() {
     setRunningLoss(true);
     setLossResult(null);
     try {
-      const res = await api.get('/optimization/loss-sensitivity');
+      const res = await client.get('/api/optimization/loss-sensitivity');
       setLossResult(res.data);
     } finally {
       setRunningLoss(false);

@@ -51,7 +51,7 @@ export default function Corridors() {
       <div>
         <h1 className="font-display text-2xl font-semibold">Corridors</h1>
         <p className="text-sm text-muted mt-1">
-          {corridors.length} active corridors across 8 currencies.
+          {corridors.length} active corridors across {new Set(corridors.flatMap(c => [c.source_currency, c.dest_currency])).size} currencies.
         </p>
       </div>
 
@@ -113,18 +113,11 @@ export default function Corridors() {
                         (() => {
                           const fc = forecasts[c.code];
 
-                          // Match the new backend spec logic exactly by scaling to the hardcoded recommended
                           const targetRecommended = c.recommended_musd;
-                          // Since recommendedMin = base_demand * (1 + 0.05 + 0.075 + 0.02) * 1.05 = base_demand * 1.20225
-                          const scale =
-                            targetRecommended / (fc.ci_high_musd * 1.20225);
 
-                          const expected7d = fc.expected_demand_musd * scale;
-                          const base_demand = fc.ci_high_musd * scale;
-                          const peakBuffer = Math.max(
-                            0,
-                            base_demand - expected7d,
-                          );
+                          const expected7d = fc.expected_demand_musd;
+                          const base_demand = fc.ci_high_musd;
+                          const peakBuffer = Math.max(0, base_demand - expected7d);
 
                           const settlementBuffer = base_demand * 0.05;
                           const fxReserve = base_demand * 0.075;
@@ -135,14 +128,14 @@ export default function Corridors() {
                             settlementBuffer +
                             fxReserve +
                             correspondentMargin;
-                          const recommendedMin = targetRecommended; // perfectly matches row
+                          const recommendedMin = targetRecommended; 
                           const recommendationBuffer =
-                            recommendedMin - minimumRequired;
+                            Math.max(0, recommendedMin - minimumRequired);
 
                           const currentBal = c.current_balance_musd;
-                          const excess = currentBal - recommendedMin;
+                          const excess = Math.max(0, currentBal - recommendedMin);
                           const coverageRatio =
-                            (currentBal / recommendedMin) * 100;
+                            recommendedMin > 0 ? (currentBal / recommendedMin) * 100 : 100;
 
                           return (
                             <div className="space-y-6">

@@ -1,6 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function Settings() {
+  const [confidence, setConfidence] = useState(95);
+  const [costRate, setCostRate] = useState(5.0);
+
+  useEffect(() => {
+    const savedConf = localStorage.getItem('targetConfidence');
+    const savedCost = localStorage.getItem('opportunityCostRate');
+    if (savedConf) setConfidence(Number(savedConf));
+    if (savedCost) setCostRate(Number(savedCost));
+  }, []);
+
+  const handleConfChange = (e) => {
+    const val = Number(e.target.value);
+    setConfidence(val);
+    localStorage.setItem('targetConfidence', val);
+  };
+
+  const handleCostChange = (e) => {
+    const val = Number(e.target.value);
+    setCostRate(val);
+    localStorage.setItem('opportunityCostRate', val);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -11,16 +33,16 @@ export default function Settings() {
         <div>
           <label className="block text-sm font-medium mb-1">Target Confidence Level</label>
           <div className="flex gap-4 items-center">
-            <input type="range" min="90" max="99" defaultValue="95" className="w-full accent-primary" />
-            <span className="font-mono text-sm">95%</span>
+            <input type="range" min="90" max="99" value={confidence} onChange={handleConfChange} className="w-full accent-primary" />
+            <span className="font-mono text-sm">{confidence}%</span>
           </div>
           <p className="text-xs text-muted mt-1">Governs the Gaussian safety buffer multiplier.</p>
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Opportunity Cost Rate</label>
           <div className="flex gap-4 items-center">
-            <input type="range" min="1" max="10" defaultValue="5" className="w-full accent-primary" />
-            <span className="font-mono text-sm">5.0%</span>
+            <input type="range" min="1" max="10" step="0.1" value={costRate} onChange={handleCostChange} className="w-full accent-primary" />
+            <span className="font-mono text-sm">{costRate.toFixed(1)}%</span>
           </div>
           <p className="text-xs text-muted mt-1">Blended annual yield assumption for released capital.</p>
         </div>

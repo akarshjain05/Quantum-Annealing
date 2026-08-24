@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from typing import List, Dict, Any, Optional
 
 from app.optimization.qubo import (
-    build_qubo, CorridorInput, shortfall_probability, QuboModel,
+    build_qubo, CorridorInput, shortfall_probability, QuboModel, DEFAULT_BUCKETS_MUSD
 )
 from app.optimization.annealing import simulated_annealing, decode_assignment, local_search_refine, energy as qubo_energy
 
@@ -99,7 +99,7 @@ def generate_explanation(c: CorridorInput, req: float, chosen_L: float, current_
         "model_assumptions": [
             "Demand distributed approximately per historical daily volume statistics (mean/std dev)",
             "Shortfall probability modeled via normal CDF - illustrative, not a validated risk model (spec §6.6)",
-            f"Liquidity discretized into fixed buckets: {['$'+str(b)+'M' for b in [0,1,2,5,10,20,50,100]]}",
+            f"Liquidity discretized into fixed buckets: {['$'+str(b)+'M' for b in DEFAULT_BUCKETS_MUSD]}",
         ],
     }
 
@@ -129,9 +129,7 @@ def run_optimization(
     global_liquidity_cap_musd: Optional[float] = None,
 ) -> OptimizationOutcome:
     qubo = build_qubo(corridors, weights=weights, onehot_penalty=onehot_penalty, global_liquidity_cap_musd=global_liquidity_cap_musd)
-    iterations = 5000 if not global_liquidity_cap_musd else 12000
-    cooling_rate = 0.99
-    initial_temperature = 1000.0
+
 
     # 1. Initial wide search
     sa = simulated_annealing(

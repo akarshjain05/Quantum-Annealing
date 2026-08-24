@@ -246,6 +246,8 @@ def _corridor_input_from_db(db: Session, corridor: models.Corridor, confidence_l
     risk = db.query(models.RiskParameter).filter(models.RiskParameter.corridor_id == corridor.id).first()
     accounts = db.query(models.NostroAccount).filter(models.NostroAccount.corridor_id == corridor.id).all()
     current = sum(a.current_balance_musd for a in accounts)
+    txns = db.query(models.PaymentTransaction).filter(models.PaymentTransaction.corridor_id == corridor.id).all()
+    pairs = [(t.ts, t.amount_musd) for t in txns]
     return CorridorInput(
         corridor_id=corridor.id, code=corridor.code, mu=mu, sigma=sigma,
         current_liquidity=current,
@@ -254,6 +256,7 @@ def _corridor_input_from_db(db: Session, corridor: models.Corridor, confidence_l
         fx_cost_bps=risk.fx_cost_bps if risk else 8.0,
         operational_cost_rate=risk.operational_cost_rate if risk else 0.02,
         confidence_level=confidence_level,
+        transactions=pairs,
     )
 
 
@@ -281,7 +284,7 @@ def answer_question(db: Session, question: str) -> Dict[str, Any]:
         
         corridors = db.query(models.Corridor).all()
         inputs = [_corridor_input_from_db(db, c) for c in corridors]
-        outcome = run_optimization(inputs, iterations=4000)
+        outcome = run_optimization(inputs, iterations=5000)
         
         results = outcome.corridor_results
         if target_corridor:
@@ -327,8 +330,8 @@ def answer_question(db: Session, question: str) -> Dict[str, Any]:
         corridors = [corridor] if corridor else db.query(models.Corridor).all()
         if not corridor:
             text_parts.append(f"No specific corridor recognized - showing the effect of a {pct:.0f}% demand increase across all corridors.")
-        base_out = run_optimization([_corridor_input_from_db(db, c) for c in corridors], iterations=4000)
-        shock_out = run_optimization([_corridor_input_from_db(db, c, demand_delta_pct=pct) for c in corridors], iterations=4000)
+        base_out = run_optimization([_corridor_input_from_db(db, c) for c in corridors], iterations=5000)
+        shock_out = run_optimization([_corridor_input_from_db(db, c, demand_delta_pct=pct) for c in corridors], iterations=5000)
         for b, s in zip(base_out.corridor_results, shock_out.corridor_results):
             delta = s["optimized_liquidity_musd"] - b["optimized_liquidity_musd"]
             direction = "increased" if delta > 0.01 else ("decreased" if delta < -0.01 else "stayed flat")
@@ -347,8 +350,8 @@ def answer_question(db: Session, question: str) -> Dict[str, Any]:
         pct_match = PERCENT_RE.search(question)
         pct = float(pct_match.group(1)) if pct_match else 20.0
         corridors = [corridor] if corridor else db.query(models.Corridor).all()
-        base_out = run_optimization([_corridor_input_from_db(db, c) for c in corridors], iterations=4000)
-        shock_out = run_optimization([_corridor_input_from_db(db, c, volatility_delta_pct=pct) for c in corridors], iterations=4000)
+        base_out = run_optimization([_corridor_input_from_db(db, c) for c in corridors], iterations=5000)
+        shock_out = run_optimization([_corridor_input_from_db(db, c, volatility_delta_pct=pct) for c in corridors], iterations=5000)
         for b, s in zip(base_out.corridor_results, shock_out.corridor_results):
             delta = s["optimized_liquidity_musd"] - b["optimized_liquidity_musd"]
             text_parts.append(
@@ -364,8 +367,8 @@ def answer_question(db: Session, question: str) -> Dict[str, Any]:
         target_conf = float(pct_matches[-1]) / 100.0 if pct_matches else 0.99
         corridor = _find_corridor(db, question)
         corridors = [corridor] if corridor else db.query(models.Corridor).all()
-        base_out = run_optimization([_corridor_input_from_db(db, c, confidence_level=0.95) for c in corridors], iterations=4000)
-        target_out = run_optimization([_corridor_input_from_db(db, c, confidence_level=target_conf) for c in corridors], iterations=4000)
+        base_out = run_optimization([_corridor_input_from_db(db, c, confidence_level=0.95) for c in corridors], iterations=5000)
+        target_out = run_optimization([_corridor_input_from_db(db, c, confidence_level=target_conf) for c in corridors], iterations=5000)
         for b, s in zip(base_out.corridor_results, target_out.corridor_results):
             text_parts.append(
                 f"{b['corridor_code']}: moving from 95% to {target_conf*100:.1f}% confidence raises the safety "
@@ -417,7 +420,7 @@ def answer_question(db: Session, question: str) -> Dict[str, Any]:
         tools_used += ["get_corridor_data", "run_optimizer"]
         corridor = _find_corridor(db, question)
         corridors = [corridor] if corridor else db.query(models.Corridor).all()
-        out = run_optimization([_corridor_input_from_db(db, c) for c in corridors], iterations=4000)
+        out = run_optimization([_corridor_input_from_db(db, c) for c in corridors], iterations=5000)
         for r in out.corridor_results:
             gap = r["optimized_liquidity_musd"] - r["required_liquidity_musd"]
             if abs(gap) < 1.5:

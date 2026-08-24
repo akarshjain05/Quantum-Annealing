@@ -20,17 +20,13 @@ def dashboard(db: Session = Depends(get_db), user=Depends(get_current_user)):
     for a in accounts:
         by_currency[a.currency] = by_currency.get(a.currency, 0.0) + a.current_balance_musd
 
-    # Load recommended values directly from static JSON to match spec
-    data_dir = Path("/app/data") if Path("/app/data").exists() else Path(__file__).resolve().parents[3] / "data"
-    with open(data_dir / "corridors.json") as f:
-        static_corridors = json.load(f)
-    rec_map = {c["code"]: c["recommended_balance"] / 1_000_000 for c in static_corridors}
-    
-    total_recommended = 310.0  # Force to exactly match the spec image total
-
-    capital_released_potential = max(0.0, total_liquidity - total_recommended)
-
     latest_run = db.query(models.OptimizationRun).order_by(models.OptimizationRun.id.desc()).first()
+    if latest_run and latest_run.results:
+        total_recommended = sum(r.optimized_liquidity_musd for r in latest_run.results)
+        capital_released_potential = sum(r.capital_released_musd for r in latest_run.results)
+    else:
+        total_recommended = total_liquidity
+        capital_released_potential = 0.0
 
     return {
         "organization": "Demo Global Bank",
@@ -40,9 +36,10 @@ def dashboard(db: Session = Depends(get_db), user=Depends(get_current_user)):
         "num_nostro_accounts": len(accounts),
         "liquidity_by_currency_musd": {k: round(v, 2) for k, v in by_currency.items()},
         "capital_released_potential_musd": round(capital_released_potential, 2),
+        "total_recommended_musd": round(total_recommended, 2),
         "latest_optimization_run": {
             "id": latest_run.id, "created_at": str(latest_run.created_at),
-            "capital_released_musd": sum(r.capital_released_musd for r in latest_run.results) if latest_run else None,
+            "capital_released_musd": round(capital_released_potential, 2),
         } if latest_run else None,
     }
 
@@ -53,12 +50,13 @@ def get_savings_metrics(db: Session = Depends(get_db), user=Depends(get_current_
     total_liquidity = sum(a.current_balance_musd for a in accounts)
     
     latest_run = db.query(models.OptimizationRun).order_by(models.OptimizationRun.id.desc()).first()
-    if latest_run:
+    if latest_run and latest_run.results:
         capital_released = sum(r.capital_released_musd for r in latest_run.results)
     else:
-        capital_released = 68.5  # Fallback to spec default to ensure dashboard looks right
+        capital_released = 0.0
     
-    opportunity_cost_rate = 0.05  # Default 5%, should be configurable
+    # Ideally from settings DB, hardcoded default for now
+    opportunity_cost_rate = 0.05
     
     return {
         "totalNostroLiquidity": total_liquidity,
@@ -73,16 +71,16 @@ def get_savings_metrics(db: Session = Depends(get_db), user=Depends(get_current_
 @router.get("/corridors")
 def list_corridors(db: Session = Depends(get_db), user=Depends(get_current_user)):
     out = []
+    latest_run = db.query(models.OptimizationRun).order_by(models.OptimizationRun.id.desc()).first()
+    rec_map = {}
+    if latest_run and latest_run.results:
+        rec_map = {r.corridor_code: r.optimized_liquidity_musd for r in latest_run.results}
+
     for c in db.query(models.Corridor).all():
         accounts = db.query(models.NostroAccount).filter(models.NostroAccount.corridor_id == c.id).all()
         current_balance = sum(a.current_balance_musd for a in accounts)
         
-        # Load recommended values directly from static JSON to match spec
-        data_dir = Path("/app/data") if Path("/app/data").exists() else Path(__file__).resolve().parents[3] / "data"
-        with open(data_dir / "corridors.json") as f:
-            static_corridors = json.load(f)
-        rec_map = {c["code"]: c["recommended_balance"] / 1_000_000 for c in static_corridors}
-        recommendedMin = rec_map.get(c.code, 0.0)
+        recommendedMin = rec_map.get(c.code, current_balance)
         
         efficiency_pct = (recommendedMin / current_balance) * 100 if current_balance > 0 else 100
         if efficiency_pct > 100:

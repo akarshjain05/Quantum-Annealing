@@ -47,16 +47,38 @@ def decision_rationale(run_id: int, db: Session = Depends(get_db)):
         
     capital_released = sum(r.capital_released_musd for r in run.results) if run.results else 0
     
-    # Mocking some of the financial breakdown for the example corridor based on the run
-    # In reality, this would be computed or stored in run.params_json
-    c_level = run.params_json.get("confidence_level", 0.95)
-    s_buffer = run.params_json.get("safety_buffer", 0.05)
+    c_level = run.params_json.get("confidence_level", 0.95) if run.params_json else 0.95
+    s_buffer = run.params_json.get("safety_buffer", 0.05) if run.params_json else 0.05
     
-    example_corridor = "EUR_USD"
+    example_code = "UNKNOWN"
+    p95_demand = 0.0
+    fx_reserve = 0.0
+    corr_margin = 0.0
+    min_req = 0.0
+    cur_bal = 0.0
+    excess = 0.0
+
     if run.results:
-        corridor_id = run.results[0].corridor_id
-        c = db.get(models.Corridor, corridor_id)
-        if c: example_corridor = c.code
+        res = run.results[0]
+        c = db.get(models.Corridor, res.corridor_id)
+        if c:
+            example_code = c.code
+            from app.forecasting.forecast import compute_forecast
+            txns = db.query(models.PaymentTransaction).filter(models.PaymentTransaction.corridor_id == c.id).all()
+            pairs = [(t.ts, t.amount_musd) for t in txns]
+            fc = compute_forecast(pairs, horizon_days=7)
+            
+            p95_demand = fc.expected_demand_musd * 1_000_000
+            cur_bal = res.current_liquidity_musd * 1_000_000
+            
+            risk = db.query(models.RiskParameter).filter(models.RiskParameter.corridor_id == c.id).first()
+            fx_rate = (risk.fx_cost_bps / 10000.0) if risk else 0.0008
+            fx_reserve = p95_demand * fx_rate * 10  # simplified representation
+            corr_margin = p95_demand * 0.02
+            
+            safety_buffer_val = p95_demand * s_buffer
+            min_req = p95_demand + safety_buffer_val + fx_reserve + corr_margin
+            excess = max(0.0, cur_bal - min_req)
         
     return {
         "runNumber": run_id,
@@ -66,14 +88,14 @@ def decision_rationale(run_id: int, db: Session = Depends(get_db)):
         "confidenceLevel": c_level * 100,
         "safetyBuffer": s_buffer,
         "exampleCorridor": {
-            "code": example_corridor,
-            "p95Demand": 150_000_000,
-            "safetyBuffer": 150_000_000 * s_buffer,
-            "fxReserve": 2_000_000,
-            "correspondentMargin": 1_000_000,
-            "minimumRequired": 150_000_000 + (150_000_000 * s_buffer) + 3_000_000,
-            "currentBalance": 200_000_000,
-            "excess": 200_000_000 - (150_000_000 + (150_000_000 * s_buffer) + 3_000_000)
+            "code": example_code,
+            "p95Demand": p95_demand,
+            "safetyBuffer": p95_demand * s_buffer,
+            "fxReserve": fx_reserve,
+            "correspondentMargin": corr_margin,
+            "minimumRequired": min_req,
+            "currentBalance": cur_bal,
+            "excess": excess
         },
         "approverNotes": approval.reason if approval else (audit.payload_json.get("notes", audit.payload_json.get("reason", "")) if audit else ""),
         "approvedBy": audit.actor if audit else "system",
