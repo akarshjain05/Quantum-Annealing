@@ -293,6 +293,23 @@ const ResultsStep: React.FC<{
   onBack: () => void;
   onSubmit: () => void;
 }> = ({ result, onBack, onSubmit }) => {
+  
+  // Calculate dynamic insight
+  let largestCorridor = "N/A";
+  let largestPercent = 0;
+  
+  if (result && result.corridor_results && result.corridor_results.length > 0) {
+    const sorted = [...result.corridor_results].sort((a, b) => {
+      const pctA = a.current_balance > 0 ? (a.delta / a.current_balance) * 100 : 0;
+      const pctB = b.current_balance > 0 ? (b.delta / b.current_balance) * 100 : 0;
+      return pctB - pctA;
+    });
+    largestCorridor = sorted[0].corridor_code;
+    largestPercent = sorted[0].current_balance > 0 
+      ? Math.round((sorted[0].delta / sorted[0].current_balance) * 100) 
+      : 0;
+  }
+
   return (
     <div className="space-y-6">
 
@@ -302,7 +319,7 @@ const ResultsStep: React.FC<{
         <div>
           <h4 className="text-sm font-medium text-teal-400 uppercase tracking-wider mb-1">Algorithmic Insight</h4>
           <p className="text-gray-300 text-sm">
-            Quantum optimization identified massive inefficiencies in Asian corridors. <span className="text-white font-medium">SGD_INR</span> saw the largest reduction (nearly 50%), while maintaining strict 99th-percentile settlement safety margins.
+            Quantum optimization successfully identified excess liquidity. <span className="text-white font-medium">{largestCorridor}</span> saw the largest reduction ({largestPercent}% reduction), while maintaining strict empirical settlement safety margins.
           </p>
         </div>
       </div>
