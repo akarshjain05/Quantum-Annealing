@@ -341,31 +341,41 @@ async def run_optimization(
     benchmark_result = benchmark.run_benchmark(problem=problem, solvers=solvers_to_run, skip_large_quantum=False)
     chart_data = benchmark.generate_chart_data(benchmark_result)
     
+
+    from app.optimization.engine import run_optimization as engine_run_optimization
+    from app.api.optimization import persist_optimization_run
+
+    # Run the real optimization engine to get authentic results
+    outcome = engine_run_optimization(
+        inputs,
+        seed=solver_config.seed,
+    )
+    
+    # Persist the run to the database so the Dashboard can see it
+    run = persist_optimization_run(
+        db, outcome, params=request.model_dump(), run_type="standard", solver="quantum_benchmark", seed=solver_config.seed, actor="system"
+    )
+    
+    # Use the real DB run_id
+    run_id = str(run.id)
+    
     corridor_results = []
     total_current = 0
     total_recommended = 0
     opportunity_cost_rate = 0.05
     
-    import json
-    from pathlib import Path
-    data_dir = Path("/app/data") if Path("/app/data").exists() else Path(__file__).resolve().parents[3] / "data"
-    with open(data_dir / "corridors.json") as f:
-        static_corridors = json.load(f)
-    rec_map = {c["code"]: c["recommended_balance"] / 1_000_000 for c in static_corridors}
-
-    for c_input in inputs:
-        current = c_input.current_liquidity
-        # Use exact static values from corridors.json to match Dashboard perfectly
-        recommended = rec_map.get(c_input.code, current * 0.85)
+    for res in outcome.corridor_results:
+        current = res["current_liquidity"]
+        recommended = res["optimized_liquidity"]
         delta = current - recommended
         total_current += current
         total_recommended += recommended
         
         corridor_results.append(CorridorResult(
-            corridor_id=str(c_input.corridor_id),
-            corridor_code=c_input.code,
+            corridor_id=str(res["corridor_id"]),
+            corridor_code=res["code"],
             current_balance=current,
-            minimum_required=recommended * 0.95,
+            minimum_required=recommended * 0.95, # Simplification for UI
             recommended_balance=recommended,
             delta=delta,
             annual_savings=delta * opportunity_cost_rate,
@@ -379,7 +389,6 @@ async def run_optimization(
     
     capital_released = total_current - total_recommended
     capital_release_percent = (capital_released / total_current * 100) if total_current > 0 else 0
-    
     qubo_info = {
         "num_variables": problem.n,
         "dimension": f"{problem.n}x{problem.n}",
