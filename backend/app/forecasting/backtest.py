@@ -44,7 +44,7 @@ def run_backtest_phase3(horizon_days: int = 1, confidence_level: float = 0.95):
         ts = dt.datetime.fromisoformat(tx['timestamp'])
         corridor_txs[tx['corridor_code']].append((ts, tx['amount']))
         
-    z_score = 1.96 if confidence_level == 0.95 else 1.645
+    z_score = 1.645 if confidence_level == 0.95 else 2.326
     
     results = {
         'gaussian': {'breaches': 0, 'windows': 0},
