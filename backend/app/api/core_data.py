@@ -20,7 +20,7 @@ def dashboard(db: Session = Depends(get_db), user=Depends(get_current_user)):
     for a in accounts:
         by_currency[a.currency] = by_currency.get(a.currency, 0.0) + a.current_balance_musd
 
-    latest_run = db.query(models.OptimizationRun).order_by(models.OptimizationRun.id.desc()).first()
+    latest_run = db.query(models.OptimizationRun).filter(models.OptimizationRun.run_type == "standard").order_by(models.OptimizationRun.id.desc()).first()
     if latest_run and latest_run.results:
         total_recommended = sum(r.optimized_liquidity_musd for r in latest_run.results)
         capital_released_potential = sum(r.capital_released_musd for r in latest_run.results)
@@ -49,7 +49,7 @@ def get_savings_metrics(db: Session = Depends(get_db), user=Depends(get_current_
     accounts = db.query(models.NostroAccount).all()
     total_liquidity = sum(a.current_balance_musd for a in accounts)
     
-    latest_run = db.query(models.OptimizationRun).order_by(models.OptimizationRun.id.desc()).first()
+    latest_run = db.query(models.OptimizationRun).filter(models.OptimizationRun.run_type == "standard").order_by(models.OptimizationRun.id.desc()).first()
     if latest_run and latest_run.results:
         capital_released = sum(r.capital_released_musd for r in latest_run.results)
     else:
@@ -71,7 +71,7 @@ def get_savings_metrics(db: Session = Depends(get_db), user=Depends(get_current_
 @router.get("/corridors")
 def list_corridors(db: Session = Depends(get_db), user=Depends(get_current_user)):
     out = []
-    latest_run = db.query(models.OptimizationRun).order_by(models.OptimizationRun.id.desc()).first()
+    latest_run = db.query(models.OptimizationRun).filter(models.OptimizationRun.run_type == "standard").order_by(models.OptimizationRun.id.desc()).first()
     rec_map = {}
     if latest_run and latest_run.results:
         rec_map = {r.corridor_id: r.optimized_liquidity_musd for r in latest_run.results}
