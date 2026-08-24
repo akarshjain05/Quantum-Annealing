@@ -257,13 +257,13 @@ export default function Corridors() {
                                     </tr>
                                     <tr>
                                       <td className="px-4 py-2">
-                                        + 5% Recommendation Buffer
+                                        + Discretization & Final Buffer
                                       </td>
                                       <td className="px-4 py-2 text-right font-mono">
                                         ${recommendationBuffer.toFixed(1)}M
                                       </td>
                                       <td className="px-4 py-2 text-muted text-xs">
-                                        Final 5% margin on Minimum Required
+                                        Rounding up to nearest Quantum Engine Bucket
                                       </td>
                                     </tr>
                                     <tr className="bg-surface/50 font-medium">
