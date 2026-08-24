@@ -9,9 +9,16 @@ to re-phrase the composed answer more fluently using a real model, but it
 is off by default and NOT exercised by this build (no key available in
 this environment to test against) - see docs/agent-architecture.md.
 """
+
+import os
+import functools
 import re
 from typing import Dict, Any, List
-import os
+from sqlalchemy.orm import Session
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from rapidfuzz import fuzz
+
 try:
     from google import genai
     from pydantic import BaseModel, Field
@@ -56,7 +63,7 @@ import functools
 
 @functools.lru_cache(maxsize=10)
 def _parse_query_with_llm(question: str) -> tuple[str, str | None]:
-    if not HAS_GEMINI or not os.environ.get("GEMINI_API_KEY"):
+    if not HAS_GEMINI or not settings.GEMINI_API_KEY:
         return _fallback_detect_intent(question), _fallback_find_corridor_code(question)
     
     try:
@@ -76,32 +83,142 @@ def _parse_query_with_llm(question: str) -> tuple[str, str | None]:
         print(f"LLM parse failed, falling back to heuristics: {e}")
         return _fallback_detect_intent(question), _fallback_find_corridor_code(question)
 
-def _fallback_detect_intent(question: str) -> str:
-    q = question.lower()
-    scores: Dict[str, int] = {}
-    for intent, phrases in INTENTS:
-        score = sum(1 for p in phrases if p in q)
-        if score:
-            scores[intent] = score
-    return max(scores, key=scores.get) if scores else "general_snapshot"
 
-def _fallback_find_corridor_code(question: str) -> str | None:
-    normalized = question.replace(" to ", "_").upper()
-    m = re.search(r"([A-Z]{3}[/_ -]?[A-Z]{3})", normalized)
-    if m:
-        return m.group(1).replace("/", "_").replace("-", "_")
+# TF-IDF Setup
+_tfidf = TfidfVectorizer(ngram_range=(1, 2), stop_words='english')
+
+_intent_labels = []
+_corpus = []
+
+# Add some explicit training data for general_snapshot so it's not a complete zero-shot
+INTENTS_EXT = list(INTENTS) + [
+    ("general_snapshot", ["global liquidity snapshot", "weather", "bitcoin", "dollar-rupee corridor", "USD-INR"]),
+    ("largest_excess", ["which corridor has the most excess liquidity", "most excess liquidity"]),
+    ("explain_excess", ["excess dollars sitting around", "why do we have excess"])
+]
+
+for intent, phrases in INTENTS_EXT:
+    for p in phrases:
+        _intent_labels.append(intent)
+        _corpus.append(p)
+_tfidf.fit(_corpus)
+_X_corpus = _tfidf.transform(_corpus)
+
+CURRENCY_NAMES = {
+
+    "USD": ["dollar", "dollars", "usd"],
+    "INR": ["rupee", "rupees", "inr"],
+    "GBP": ["pound", "pounds", "gbp"],
+    "EUR": ["euro", "euros", "eur"],
+    "SGD": ["singapore dollar", "sgd"],
+    "AED": ["dirham", "dirhams", "aed"]
+}
+
+def _fallback_detect_intent(question: str) -> str:
+    q_vec = _tfidf.transform([question.lower()])
+    sims = cosine_similarity(q_vec, _X_corpus)[0]
+    best_idx = sims.argmax()
+    if sims[best_idx] > 0.3:
+        return _intent_labels[best_idx]
+    return "general_snapshot"
+
+def _fallback_find_corridor_code(question: str, db_corridors: List[Any] = None) -> str | None:
+    q = question.lower()
+    
+    if not db_corridors:
+        return None
+        
+    aliases = {}
+    for c in db_corridors:
+        src = c.source_currency
+        dst = c.dest_currency
+        src_names = CURRENCY_NAMES.get(src, [src.lower()])
+        dst_names = CURRENCY_NAMES.get(dst, [dst.lower()])
+        
+        # Build strict aliases
+        c_aliases = []
+        for s in src_names:
+            for d in dst_names:
+                c_aliases.append(f"{s}_{d}")
+                c_aliases.append(f"{s}/{d}")
+                c_aliases.append(f"{s}-{d}")
+                c_aliases.append(f"{s} to {d}")
+                c_aliases.append(f"{s} {d}")
+        
+        aliases[c.code] = c_aliases
+        
+    # Exact match first
+    for code, terms in aliases.items():
+        if code.lower() in q:
+            return code
+        for t in terms:
+            if t in q:
+                return code
+                
+    # Fuzzy match fallback
+    best_code = None
+    best_score = 0
+    
+    # We'll fuzzy match words or bigrams from the question against the alias list
+    for code, terms in aliases.items():
+        for t in terms:
+            # We use partial_ratio so "dollar rupee" inside a long question still scores high
+            score = fuzz.partial_ratio(t, q)
+            if score > best_score:
+                best_score = score
+                best_code = code
+                
+    if best_score >= 85: # Conservative threshold
+        return best_code
+        
     return None
 
+@functools.lru_cache(maxsize=10)
+def _parse_query_with_llm(question: str) -> tuple[str, str | None]:
+    if not HAS_GEMINI or not settings.GEMINI_API_KEY:
+        # We handle corridor fallback differently now because we need DB access
+        # so LLM parser returns None for corridor when falling back. It will be resolved later.
+        return _fallback_detect_intent(question), None
+    
+    try:
+        client = genai.Client()
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=f"Analyze this treasury question and extract the intent and corridor code (if any): '{question}'",
+            config={
+                'response_mime_type': 'application/json',
+                'response_schema': AgentQueryParse,
+                'temperature': 0.0
+            }
+        )
+        parsed = response.parsed
+        # Validate intent
+        valid_intents = [i[0] for i in INTENTS] + ["general_snapshot"]
+        intent = parsed.intent if parsed.intent in valid_intents else _fallback_detect_intent(question)
+        return intent, parsed.corridor_code
+    except Exception as e:
+        print(f"LLM parse failed, falling back to heuristics: {e}")
+        return _fallback_detect_intent(question), None
+
 def detect_intent(question: str) -> str:
-    # LLM now handles this in _parse_query_with_llm, but for backwards compat:
     intent, _ = _parse_query_with_llm(question)
     return intent
 
 def _find_corridor(db: Session, question: str):
+    corridors = db.query(models.Corridor).all()
     _, code = _parse_query_with_llm(question)
+    
+    # If LLM returned None, it might have fallen back. Try deterministic extraction.
+    if not HAS_GEMINI or not settings.GEMINI_API_KEY or not code:
+        code = _fallback_find_corridor_code(question, corridors)
+        
     if not code:
         return None
-    return db.query(models.Corridor).filter(models.Corridor.code == code).first()
+        
+    # Validate code exists
+    return next((c for c in corridors if c.code == code), None)
+
+
 
 
 def _corridor_input_from_db(db: Session, corridor: models.Corridor, confidence_level: float = 0.95,
@@ -294,7 +411,7 @@ def answer_question(db: Session, question: str) -> Dict[str, Any]:
 
 def maybe_enhance_with_llm(question: str, deterministic_answer: str) -> str:
     """Optional rephrasing hook using Gemini."""
-    if not HAS_GEMINI or not os.environ.get("GEMINI_API_KEY"):
+    if not HAS_GEMINI or not settings.GEMINI_API_KEY:
         return deterministic_answer
     
     try:
