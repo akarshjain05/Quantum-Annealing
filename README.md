@@ -4,8 +4,6 @@
 
 A decision-support prototype for the GIFT City / GIFT IFIH Young Builders' Program hackathon (theme: Cross-Border Payments). NostroQ models nostro pre-funding allocation as a QUBO (Quadratic Unconstrained Binary Optimization) problem, solves it today with a real, from-scratch simulated annealing implementation, and pairs it with a deterministic agentic layer that keeps formal regulation, observed settlement practice, and internal model assumptions clearly separated.
 
-> **Scope note.** The full hackathon spec this was built against describes a multi-week engineering effort (30+ DB tables, 15 frontend pages, live Postgres/Redis/Docker, an LLM-backed agent, full test suites). This build implements a smaller but **fully real and tested** core, honestly scoped down - see [Deliberate simplifications](#deliberate-simplifications) below. Nothing described as working here is a mock: the QUBO is really built, simulated annealing really runs, the numbers really come from the database.
-
 ---
 
 ## The problem
