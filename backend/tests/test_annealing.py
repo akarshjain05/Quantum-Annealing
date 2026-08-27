@@ -67,10 +67,10 @@ def test_refinement_finds_true_block_optimum():
     # simulate a solver stuck behind the barrier
     bad_x = np.zeros(K)
     bad_x[-1] = 1.0
-    refined_x, improved = local_search_refine(qubo.Q, bad_x, 1, K)
+    refined_x, improved = local_search_refine(qubo.Q, bad_x, [K])
 
     true_best_k = int(np.argmin(np.diag(qubo.Q)))
-    assignment, clean = decode_assignment(refined_x, 1, K)
+    assignment, clean = decode_assignment(refined_x, [K])
     assert clean
     assert assignment[0] == true_best_k
     assert improved
