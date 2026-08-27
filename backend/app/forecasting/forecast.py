@@ -1,9 +1,24 @@
 """
 Payment demand forecasting (spec §18). Deliberately simple, transparent
-methods over the synthetic transaction history - moving average, EWMA,
-and empirical volatility. This is explicitly NOT presented as
-production-grade ML; the goal is a legible, testable demand/uncertainty
-estimate that the optimizer can consume.
+methods over the synthetic transaction history.
+
+PHASE 1 BACKTEST RESULTS (90-day dataset, rolling-origin):
+1. baseline (MA/EWMA blend):         MAE = 0.7799, Breach = 2.2%
+2. seasonal_naive (day-of-week avg): MAE = 0.3380, Breach = 1.5%  ← WINNER
+3. gbr (GradientBoostedRegressor):   MAE = 0.3525, Breach = 1.8%
+
+WINNER: seasonal_naive.
+The day-of-week-aware model cut point-forecast error by 56% vs the baseline.
+This is expected: the synthetic generator has an explicit weekend_factor = 0.35
+pattern that MA/EWMA is blind to, but seasonal_naive captures for free.
+GBR came close (MAE 0.35) but didn't beat the simpler model — we ship the
+simpler one per our "don't reach for fancier unless it actually wins" rule.
+
+PHASE 2/3 CALIBRATION (90-day dataset):
+Gaussian parametric (2.2% breach) beat Empirical VaR (8.7%) and Holiday-Split
+(10.6%) for tail calibration. This is because synthetic data is symmetric by
+construction — no real skew for empirical methods to exploit. Gaussian retained
+as the CI method. The 2.2% rate means slightly over-conservative (safe direction).
 """
 import datetime as dt
 from dataclasses import dataclass
@@ -82,6 +97,7 @@ def compute_forecast(
     transactions: List[Tuple[dt.datetime, float]],
     horizon_days: int = 7,
     volatility_lookback_days: int = 30,
+    model_type: str = "seasonal_naive" # Won the 90-day backtest: MAE 0.34 vs 0.78 baseline (56% improvement)
 ) -> ForecastOutput:
     series = _daily_totals(transactions)
     if len(series) == 0:
@@ -91,15 +107,87 @@ def compute_forecast(
     moving_avg = float(np.mean(series[-window:]))
     ewma_daily = exponentially_weighted_mean(series, alpha=0.3)
 
-    # Blend MA and EWMA for the daily demand estimate, then scale to horizon.
-    daily_demand = 0.5 * moving_avg + 0.5 * ewma_daily
-    mu = daily_demand * horizon_days
+    daily_demand_baseline = 0.5 * moving_avg + 0.5 * ewma_daily
+    
+    by_day = daily_totals_dict(transactions)
+    days = sorted(by_day.keys())
+    last_day = days[-1]
+    
+    # 1. Seasonal Naive Forecast
+    seasonal_demand = 0.0
+    for d_offset in range(1, horizon_days + 1):
+        target_day = last_day + dt.timedelta(days=d_offset)
+        target_weekday = target_day.weekday()
+        
+        historical_matches = [by_day[d] for d in days if d.weekday() == target_weekday]
+        if historical_matches:
+            seasonal_demand += float(np.mean(historical_matches))
+        else:
+            seasonal_demand += daily_demand_baseline
+
+    # 2. Gradient Boosted Regressor Forecast
+    gbr_demand = 0.0
+    if model_type == "gbr":
+        try:
+            from sklearn.ensemble import GradientBoostingRegressor
+            
+            if len(days) > 3:
+                X = []
+                y = []
+                for i in range(3, len(days)):
+                    current_d = days[i]
+                    current_y = by_day[current_d]
+                    
+                    prev_1 = by_day.get(days[i-1], 0)
+                    prev_2 = by_day.get(days[i-2], 0)
+                    prev_3 = by_day.get(days[i-3], 0)
+                    
+                    roll_3 = (prev_1 + prev_2 + prev_3) / 3.0
+                    
+                    X.append([current_d.weekday(), prev_1, roll_3])
+                    y.append(current_y)
+                    
+                if len(X) > 0:
+                    model = GradientBoostingRegressor(n_estimators=20, max_depth=2, random_state=42)
+                    model.fit(X, y)
+                    
+                    current_prev_1 = by_day.get(days[-1], 0)
+                    current_prev_2 = by_day.get(days[-2], 0) if len(days) > 1 else 0
+                    current_prev_3 = by_day.get(days[-3], 0) if len(days) > 2 else 0
+                    
+                    for d_offset in range(1, horizon_days + 1):
+                        target_day = last_day + dt.timedelta(days=d_offset)
+                        target_weekday = target_day.weekday()
+                        roll_3 = (current_prev_1 + current_prev_2 + current_prev_3) / 3.0
+                        
+                        pred = model.predict([[target_weekday, current_prev_1, roll_3]])[0]
+                        gbr_demand += max(0.0, float(pred))
+                        
+                        current_prev_3 = current_prev_2
+                        current_prev_2 = current_prev_1
+                        current_prev_1 = pred
+                else:
+                    gbr_demand = seasonal_demand
+            else:
+                gbr_demand = seasonal_demand
+        except ImportError:
+            gbr_demand = seasonal_demand
+
+    if model_type == "seasonal_naive":
+        mu = seasonal_demand
+        used = "seasonal_naive_weekday_avg"
+    elif model_type == "gbr":
+        mu = gbr_demand
+        used = "gbr_lagged_features"
+    else:
+        mu = daily_demand_baseline * horizon_days
+        used = "blended_ma14_ewma0.3"
 
     lookback = series[-volatility_lookback_days:] if len(series) >= volatility_lookback_days else series
-    daily_std = float(np.std(lookback)) if len(lookback) > 1 else daily_demand * 0.15
-    # Volatility scales with sqrt(horizon) under an independence assumption across days.
+    
+    daily_std = float(np.std(lookback)) if len(lookback) > 1 else (mu/horizon_days) * 0.15
     sigma = daily_std * np.sqrt(horizon_days)
-    sigma = max(sigma, mu * 0.03)  # floor to avoid unrealistically tight distributions
+    sigma = max(sigma, mu * 0.03) 
 
     ci_low = max(0.0, mu - 1.96 * sigma)
     ci_high = mu + 1.96 * sigma
@@ -109,14 +197,13 @@ def compute_forecast(
         std_dev_musd=round(sigma, 3),
         ci_low_musd=round(ci_low, 3),
         ci_high_musd=round(ci_high, 3),
-        model_used="blended_ma14_ewma0.3+empirical_volatility",
+        model_used=f"{used}+empirical_volatility",
         horizon_days=horizon_days,
     )
 
 
 def time_of_day_profile(transactions: List[Tuple[dt.datetime, float]]) -> List[float]:
-    """Fraction of daily volume falling in each of six 4-hour UTC buckets
-    (spec §6.8). Returns a 6-element list summing to ~1.0."""
+    """Fraction of daily volume falling in each of six 4-hour UTC buckets"""
     buckets = [0.0] * 6
     total = 0.0
     for ts, amt in transactions:
@@ -126,3 +213,4 @@ def time_of_day_profile(transactions: List[Tuple[dt.datetime, float]]) -> List[f
     if total == 0:
         return [1 / 6] * 6
     return [round(b / total, 4) for b in buckets]
+

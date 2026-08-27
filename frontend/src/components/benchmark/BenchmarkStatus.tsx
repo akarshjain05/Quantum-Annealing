@@ -73,7 +73,7 @@ export const BenchmarkStatus: React.FC<BenchmarkStatusProps> = ({
     .filter(
       (s) =>
         (s.category === "classical" || s.category === "quantum_inspired") &&
-        s.type !== "exact",
+        s.type !== "exact" && s.type !== "dwave_exact",
     )
     .map((s) => {
       let name = s.display_name;

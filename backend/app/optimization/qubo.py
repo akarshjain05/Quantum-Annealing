@@ -29,7 +29,7 @@ from typing import List, Dict, Any, Optional
 import numpy as np
 from scipy.stats import norm
 
-DEFAULT_BUCKETS_MUSD = [0, 1, 2, 5, 10, 20, 50, 100]
+DEFAULT_BUCKETS_MUSD = [0.0, 1.0, 2.5, 5.0, 7.5, 10.0, 15.0, 20.0, 25.0, 30.0, 40.0, 50.0, 75.0, 100.0, 150.0]
 
 
 def shortfall_probability(mu: float, sigma: float, L: float) -> float:

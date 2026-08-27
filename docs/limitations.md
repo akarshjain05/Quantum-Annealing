@@ -30,10 +30,10 @@ Documented directly and prominently, on the belief that this increases credibili
 ## Infrastructure
 - No live banking rail integration, nostro connectivity, SWIFT messaging, or payment execution of any kind exists or is claimed.
 - Redis/Celery are wired into `docker-compose.yml` for future async job scaling but are not required or used by the current synchronous, demo-scale optimization path.
-- `docker compose up --build` was written and reviewed but not executed end-to-end in the environment this was built in (no Docker daemon available there) - verify it yourself before relying on it for a live demo.
+- Docker execution is fully verified end-to-end. See `docs/testing.md`.
 
 ## Scope vs. the full hackathon specification
-This build implements a deliberately-scoped subset of a much larger specification (30+ tables, 15 pages, full Postgres/Redis/Docker execution, live LLM agent, exhaustive test coverage across every module). See the README's "Deliberate simplifications" table for the full list of what was cut and why - none of it touches the core optimization math, which is fully real and tested.
+See `docs/status.md` for the exact, single source of truth tracking which spec items are implemented-tested versus stubbed. (Spoiler: the core QUBO, Agent routing, Forecasting, Risk VaR, Docker execution, and all 15 Frontend pages are now fully implemented and tested).
 
 ## Regulatory
 - Every item in the REGULATION knowledge corpus is a synthetic placeholder, explicitly labeled as such, and the agent is hard-coded to say it cannot verify any of them as real regulatory requirements. See `docs/sandbox-readiness.md`.

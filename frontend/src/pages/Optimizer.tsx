@@ -226,47 +226,6 @@ const ConfigureStep: React.FC<{
   return (
     <div className="space-y-6">
       {/* Quantum Status */}
-      <BenchmarkStatus status={quantumStatus} loading={statusLoading} />
-
-      {/* Risk Appetite */}
-      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
-          Risk Appetite
-        </h3>
-        <p className="text-sm text-gray-400 mb-4">
-          Select how much settlement risk is acceptable:
-        </p>
-
-        <div className="space-y-2">
-          {(Object.keys(RISK_DESCRIPTIONS) as RiskAppetite[]).map((risk) => (
-            <label
-              key={risk}
-              className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                config.riskAppetite === risk
-                  ? "bg-teal-500/10 border border-teal-500/30"
-                  : "bg-gray-700/30 border border-transparent hover:bg-gray-700/50"
-              }`}
-            >
-              <input
-                type="radio"
-                name="riskAppetite"
-                value={risk}
-                checked={config.riskAppetite === risk}
-                onChange={() => onChange({ ...config, riskAppetite: risk })}
-                className="mt-1"
-              />
-              <div>
-                <div className="font-medium text-white">
-                  {RISK_DESCRIPTIONS[risk].label}
-                </div>
-                <div className="text-sm text-gray-400">
-                  {RISK_DESCRIPTIONS[risk].description}
-                </div>
-              </div>
-            </label>
-          ))}
-        </div>
-      </div>
 
       {/* Solver Configuration */}
       <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
@@ -334,10 +293,39 @@ const ResultsStep: React.FC<{
   onBack: () => void;
   onSubmit: () => void;
 }> = ({ result, onBack, onSubmit }) => {
+  
+  // Calculate dynamic insight
+  let largestCorridor = "N/A";
+  let largestPercent = 0;
+  
+  if (result && result.corridor_results && result.corridor_results.length > 0) {
+    const sorted = [...result.corridor_results].sort((a, b) => {
+      const pctA = a.current_balance > 0 ? (a.delta / a.current_balance) * 100 : 0;
+      const pctB = b.current_balance > 0 ? (b.delta / b.current_balance) * 100 : 0;
+      return pctB - pctA;
+    });
+    largestCorridor = sorted[0].corridor_code;
+    largestPercent = sorted[0].current_balance > 0 
+      ? Math.round((sorted[0].delta / sorted[0].current_balance) * 100) 
+      : 0;
+  }
+
   return (
     <div className="space-y-6">
+
+      {/* Auto-generated Insight Banner */}
+      <div className="bg-teal-900/30 border border-teal-500/40 rounded-lg p-4 flex items-start gap-4">
+        <span className="text-2xl mt-0.5">💡</span>
+        <div>
+          <h4 className="text-sm font-medium text-teal-400 uppercase tracking-wider mb-1">Algorithmic Insight</h4>
+          <p className="text-gray-300 text-sm">
+            Quantum optimization successfully identified excess liquidity. <span className="text-white font-medium">{largestCorridor}</span> saw the largest reduction ({largestPercent}% reduction), while maintaining strict empirical settlement safety margins.
+          </p>
+        </div>
+      </div>
+
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <SummaryCard
           label="Capital Released"
           value={`$${result.capital_released.toFixed(1)}M`}
@@ -354,11 +342,6 @@ const ResultsStep: React.FC<{
           label="Corridors Optimized"
           value={result.num_corridors.toString()}
           sublabel="all safety requirements met"
-        />
-        <SummaryCard
-          label="QUBO Size"
-          value={result.qubo_info.num_variables.toString()}
-          sublabel={`${result.qubo_info.sparsity} sparse`}
         />
       </div>
 

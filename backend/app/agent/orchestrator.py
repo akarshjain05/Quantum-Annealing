@@ -9,8 +9,28 @@ to re-phrase the composed answer more fluently using a real model, but it
 is off by default and NOT exercised by this build (no key available in
 this environment to test against) - see docs/agent-architecture.md.
 """
+
+import os
+import functools
 import re
 from typing import Dict, Any, List
+from sqlalchemy.orm import Session
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from rapidfuzz import fuzz
+
+try:
+    from google import genai
+    from pydantic import BaseModel, Field
+    HAS_GEMINI = True
+except ImportError:
+    HAS_GEMINI = False
+
+if HAS_GEMINI:
+    class AgentQueryParse(BaseModel):
+        intent: str = Field(description="The detected intent. Must be one of: general_snapshot, largest_excess, release_candidates, explain_excess, scenario_demand, scenario_volatility, scenario_confidence, scenario_cutoff, source_regulation, source_practice, binding_constraint")
+        corridor_code: str | None = Field(description="The extracted 7-character corridor code if a specific corridor is mentioned in the question (e.g. 'USD_INR'). Must be None if no corridor is mentioned.")
+
 
 from sqlalchemy.orm import Session
 
@@ -37,28 +57,185 @@ INTENTS = [
 ]
 
 
-def detect_intent(question: str) -> str:
-    q = question.lower()
-    scores: Dict[str, int] = {}
-    for intent, phrases in INTENTS:
-        score = sum(1 for p in phrases if p in q)
-        if score:
-            scores[intent] = score
-    return max(scores, key=scores.get) if scores else "general_snapshot"
 
 
-def _find_corridor(db: Session, question: str):
-    normalized = question.replace(" to ", "_").upper()
-    m = CORRIDOR_CODE_RE.search(normalized)
-    if m:
-        code_guess = m.group(1).replace("/", "_").replace("-", "_")
-        corridor = db.query(models.Corridor).filter(models.Corridor.code == code_guess).first()
-        if corridor:
-            return corridor
-    for c in db.query(models.Corridor).all():
-        if c.source_currency in question.upper() and c.dest_currency in question.upper():
+import functools
+
+@functools.lru_cache(maxsize=10)
+def _parse_query_with_llm(question: str) -> tuple[str, str | None]:
+    if not HAS_GEMINI or not settings.GEMINI_API_KEY:
+        return _fallback_detect_intent(question), _fallback_find_corridor_code(question)
+    
+    try:
+        client = genai.Client()
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=f"Analyze this treasury question and extract the intent and corridor code (if any): '{question}'",
+            config={
+                'response_mime_type': 'application/json',
+                'response_schema': AgentQueryParse,
+                'temperature': 0.0
+            }
+        )
+        parsed = response.parsed
+        return parsed.intent, parsed.corridor_code
+    except Exception as e:
+        print(f"LLM parse failed, falling back to heuristics: {e}")
+        return _fallback_detect_intent(question), _fallback_find_corridor_code(question)
+
+
+# TF-IDF Setup
+_tfidf = TfidfVectorizer(ngram_range=(1, 2), stop_words='english')
+
+_intent_labels = []
+_corpus = []
+
+# Add some explicit training data for general_snapshot so it's not a complete zero-shot
+INTENTS_EXT = list(INTENTS) + [
+    ("general_snapshot", ["global liquidity snapshot", "weather", "bitcoin", "dollar-rupee corridor", "USD-INR"]),
+    ("largest_excess", ["which corridor has the most excess liquidity", "most excess liquidity"]),
+    ("explain_excess", ["excess dollars sitting around", "why do we have excess"])
+]
+
+for intent, phrases in INTENTS_EXT:
+    for p in phrases:
+        _intent_labels.append(intent)
+        _corpus.append(p)
+_tfidf.fit(_corpus)
+_X_corpus = _tfidf.transform(_corpus)
+
+CURRENCY_NAMES = {
+
+    "USD": ["dollar", "dollars", "usd"],
+    "INR": ["rupee", "rupees", "inr"],
+    "GBP": ["pound", "pounds", "gbp"],
+    "EUR": ["euro", "euros", "eur"],
+    "SGD": ["singapore dollar", "sgd"],
+    "AED": ["dirham", "dirhams", "aed"]
+}
+
+def _fallback_detect_intent(question: str) -> str:
+    q_vec = _tfidf.transform([question.lower()])
+    sims = cosine_similarity(q_vec, _X_corpus)[0]
+    best_idx = sims.argmax()
+    if sims[best_idx] > 0.3:
+        return _intent_labels[best_idx]
+    return "general_snapshot"
+
+def _extract_currency(question: str) -> str | None:
+    q = question.upper()
+    currencies = ["USD", "EUR", "GBP", "JPY", "INR", "SGD", "AED", "CHF", "AUD", "CAD"]
+    for c in currencies:
+        # Check for standalone currency word (e.g. " USD " or "USD?")
+        if re.search(r'\b' + c + r'\b', q):
             return c
     return None
+
+def _extract_currency(question: str) -> str | None:
+    q = question.upper()
+    currencies = ["USD", "EUR", "GBP", "JPY", "INR", "SGD", "AED", "CHF", "AUD", "CAD"]
+    for c in currencies:
+        if re.search(r'\b' + c + r'\b', q):
+            return c
+    return None
+
+def _fallback_find_corridor_code(question: str, db_corridors: List[Any] = None) -> str | None:
+    q = question.lower()
+    
+    if not db_corridors:
+        return None
+        
+    aliases = {}
+    for c in db_corridors:
+        src = c.source_currency
+        dst = c.dest_currency
+        src_names = CURRENCY_NAMES.get(src, [src.lower()])
+        dst_names = CURRENCY_NAMES.get(dst, [dst.lower()])
+        
+        # Build strict aliases
+        c_aliases = []
+        for s in src_names:
+            for d in dst_names:
+                c_aliases.append(f"{s}_{d}")
+                c_aliases.append(f"{s}/{d}")
+                c_aliases.append(f"{s}-{d}")
+                c_aliases.append(f"{s} to {d}")
+                c_aliases.append(f"{s} {d}")
+        
+        aliases[c.code] = c_aliases
+        
+    # Exact match first
+    for code, terms in aliases.items():
+        if code.lower() in q:
+            return code
+        for t in terms:
+            if t in q:
+                return code
+                
+    # Fuzzy match fallback
+    best_code = None
+    best_score = 0
+    
+    # We'll fuzzy match words or bigrams from the question against the alias list
+    for code, terms in aliases.items():
+        for t in terms:
+            # We use partial_ratio so "dollar rupee" inside a long question still scores high
+            score = fuzz.partial_ratio(t, q)
+            if score > best_score:
+                best_score = score
+                best_code = code
+                
+    if best_score >= 85: # Conservative threshold
+        return best_code
+        
+    return None
+
+@functools.lru_cache(maxsize=10)
+def _parse_query_with_llm(question: str) -> tuple[str, str | None]:
+    if not HAS_GEMINI or not settings.GEMINI_API_KEY:
+        # We handle corridor fallback differently now because we need DB access
+        # so LLM parser returns None for corridor when falling back. It will be resolved later.
+        return _fallback_detect_intent(question), None
+    
+    try:
+        client = genai.Client()
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=f"Analyze this treasury question and extract the intent and corridor code (if any): '{question}'",
+            config={
+                'response_mime_type': 'application/json',
+                'response_schema': AgentQueryParse,
+                'temperature': 0.0
+            }
+        )
+        parsed = response.parsed
+        # Validate intent
+        valid_intents = [i[0] for i in INTENTS] + ["general_snapshot"]
+        intent = parsed.intent if parsed.intent in valid_intents else _fallback_detect_intent(question)
+        return intent, parsed.corridor_code
+    except Exception as e:
+        print(f"LLM parse failed, falling back to heuristics: {e}")
+        return _fallback_detect_intent(question), None
+
+def detect_intent(question: str) -> str:
+    intent, _ = _parse_query_with_llm(question)
+    return intent
+
+def _find_corridor(db: Session, question: str):
+    corridors = db.query(models.Corridor).all()
+    _, code = _parse_query_with_llm(question)
+    
+    # If LLM returned None, it might have fallen back. Try deterministic extraction.
+    if not HAS_GEMINI or not settings.GEMINI_API_KEY or not code:
+        code = _fallback_find_corridor_code(question, corridors)
+        
+    if not code:
+        return None
+        
+    # Validate code exists
+    return next((c for c in corridors if c.code == code), None)
+
+
 
 
 def _corridor_input_from_db(db: Session, corridor: models.Corridor, confidence_level: float = 0.95,
@@ -69,6 +246,8 @@ def _corridor_input_from_db(db: Session, corridor: models.Corridor, confidence_l
     risk = db.query(models.RiskParameter).filter(models.RiskParameter.corridor_id == corridor.id).first()
     accounts = db.query(models.NostroAccount).filter(models.NostroAccount.corridor_id == corridor.id).all()
     current = sum(a.current_balance_musd for a in accounts)
+    txns = db.query(models.PaymentTransaction).filter(models.PaymentTransaction.corridor_id == corridor.id).all()
+    pairs = [(t.ts, t.amount_musd) for t in txns]
     return CorridorInput(
         corridor_id=corridor.id, code=corridor.code, mu=mu, sigma=sigma,
         current_liquidity=current,
@@ -77,6 +256,7 @@ def _corridor_input_from_db(db: Session, corridor: models.Corridor, confidence_l
         fx_cost_bps=risk.fx_cost_bps if risk else 8.0,
         operational_cost_rate=risk.operational_cost_rate if risk else 0.02,
         confidence_level=confidence_level,
+        transactions=pairs,
     )
 
 
@@ -98,20 +278,40 @@ def answer_question(db: Session, question: str) -> Dict[str, Any]:
 
     elif intent in ("largest_excess", "explain_excess", "release_candidates"):
         tools_used += ["get_liquidity_snapshot", "get_corridor_data", "run_optimizer"]
+        
+        target_currency = _extract_currency(question)
+        target_corridor = _find_corridor(db, question)
+        
         corridors = db.query(models.Corridor).all()
         inputs = [_corridor_input_from_db(db, c) for c in corridors]
-        outcome = run_optimization(inputs, iterations=4000)
-        ranked = sorted(outcome.corridor_results, key=lambda r: r["capital_released_musd"], reverse=True)
+        outcome = run_optimization(inputs, iterations=5000)
+        
+        results = outcome.corridor_results
+        if target_corridor:
+            results = [r for r in results if r["corridor_code"] == target_corridor.code]
+        elif target_currency:
+            results = [r for r in results if target_currency in r["corridor_code"]]
+            
+        ranked = sorted(results, key=lambda r: r["capital_released_musd"], reverse=True)
+        
         lines = [
             f"{r['corridor_code']}: ${r['capital_released_musd']:.1f}M releasable "
             f"(current ${r['current_liquidity_musd']:.1f}M -> recommended ${r['optimized_liquidity_musd']:.1f}M)"
             for r in ranked[:3] if r["capital_released_musd"] > 0
         ]
         if lines:
-            text_parts.append("Largest liquidity release opportunities from the current optimization run:")
+            if target_corridor:
+                text_parts.append(f"Liquidity release opportunity for {target_corridor.code}:")
+            elif target_currency:
+                text_parts.append(f"Largest liquidity release opportunities involving {target_currency}:")
+            else:
+                text_parts.append("Largest liquidity release opportunities from the current optimization run:")
             text_parts.extend(f"- {l}" for l in lines)
         else:
-            text_parts.append("No corridor shows a meaningful release opportunity at the current confidence level.")
+            if target_currency:
+                text_parts.append(f"No significant releasable excess liquidity found involving {target_currency}.")
+            else:
+                text_parts.append("No corridor shows a meaningful release opportunity at the current confidence level.")
         practices = agent_tools.get_settlement_practices(db)
         if practices:
             p = practices[0]
@@ -130,8 +330,8 @@ def answer_question(db: Session, question: str) -> Dict[str, Any]:
         corridors = [corridor] if corridor else db.query(models.Corridor).all()
         if not corridor:
             text_parts.append(f"No specific corridor recognized - showing the effect of a {pct:.0f}% demand increase across all corridors.")
-        base_out = run_optimization([_corridor_input_from_db(db, c) for c in corridors], iterations=4000)
-        shock_out = run_optimization([_corridor_input_from_db(db, c, demand_delta_pct=pct) for c in corridors], iterations=4000)
+        base_out = run_optimization([_corridor_input_from_db(db, c) for c in corridors], iterations=5000)
+        shock_out = run_optimization([_corridor_input_from_db(db, c, demand_delta_pct=pct) for c in corridors], iterations=5000)
         for b, s in zip(base_out.corridor_results, shock_out.corridor_results):
             delta = s["optimized_liquidity_musd"] - b["optimized_liquidity_musd"]
             direction = "increased" if delta > 0.01 else ("decreased" if delta < -0.01 else "stayed flat")
@@ -150,8 +350,8 @@ def answer_question(db: Session, question: str) -> Dict[str, Any]:
         pct_match = PERCENT_RE.search(question)
         pct = float(pct_match.group(1)) if pct_match else 20.0
         corridors = [corridor] if corridor else db.query(models.Corridor).all()
-        base_out = run_optimization([_corridor_input_from_db(db, c) for c in corridors], iterations=4000)
-        shock_out = run_optimization([_corridor_input_from_db(db, c, volatility_delta_pct=pct) for c in corridors], iterations=4000)
+        base_out = run_optimization([_corridor_input_from_db(db, c) for c in corridors], iterations=5000)
+        shock_out = run_optimization([_corridor_input_from_db(db, c, volatility_delta_pct=pct) for c in corridors], iterations=5000)
         for b, s in zip(base_out.corridor_results, shock_out.corridor_results):
             delta = s["optimized_liquidity_musd"] - b["optimized_liquidity_musd"]
             text_parts.append(
@@ -167,8 +367,8 @@ def answer_question(db: Session, question: str) -> Dict[str, Any]:
         target_conf = float(pct_matches[-1]) / 100.0 if pct_matches else 0.99
         corridor = _find_corridor(db, question)
         corridors = [corridor] if corridor else db.query(models.Corridor).all()
-        base_out = run_optimization([_corridor_input_from_db(db, c, confidence_level=0.95) for c in corridors], iterations=4000)
-        target_out = run_optimization([_corridor_input_from_db(db, c, confidence_level=target_conf) for c in corridors], iterations=4000)
+        base_out = run_optimization([_corridor_input_from_db(db, c, confidence_level=0.95) for c in corridors], iterations=5000)
+        target_out = run_optimization([_corridor_input_from_db(db, c, confidence_level=target_conf) for c in corridors], iterations=5000)
         for b, s in zip(base_out.corridor_results, target_out.corridor_results):
             text_parts.append(
                 f"{b['corridor_code']}: moving from 95% to {target_conf*100:.1f}% confidence raises the safety "
@@ -220,7 +420,7 @@ def answer_question(db: Session, question: str) -> Dict[str, Any]:
         tools_used += ["get_corridor_data", "run_optimizer"]
         corridor = _find_corridor(db, question)
         corridors = [corridor] if corridor else db.query(models.Corridor).all()
-        out = run_optimization([_corridor_input_from_db(db, c) for c in corridors], iterations=4000)
+        out = run_optimization([_corridor_input_from_db(db, c) for c in corridors], iterations=5000)
         for r in out.corridor_results:
             gap = r["optimized_liquidity_musd"] - r["required_liquidity_musd"]
             if abs(gap) < 1.5:
@@ -248,11 +448,27 @@ def answer_question(db: Session, question: str) -> Dict[str, Any]:
     return {"answer": answer_text, "tools_used": tools_used, "sources": sources, "intent": intent}
 
 
+
 def maybe_enhance_with_llm(question: str, deterministic_answer: str) -> str:
-    """Optional rephrasing hook. Disabled unless LLM_PROVIDER + a matching
-    API key are both set - the deterministic answer above is already
-    complete and grounded, so this only ever changes phrasing, never facts.
-    NOT exercised in this build/test run (no key available here)."""
-    if settings.LLM_PROVIDER != "anthropic" or not settings.ANTHROPIC_API_KEY:
+    """Optional rephrasing hook using Gemini."""
+    if not HAS_GEMINI or not settings.GEMINI_API_KEY:
         return deterministic_answer
-    return deterministic_answer  # left as a documented extension point, not implemented here
+    
+    try:
+        client = genai.Client()
+        system_prompt = """You are an AI assistant for a treasury dashboard. 
+        Your job is to take the provided deterministic text and rewrite it to read naturally and conversationally, in direct response to the user's question.
+        CRITICAL RULES:
+        1. DO NOT add any new facts, numbers, or assumptions.
+        2. DO NOT remove any regulatory or model disclaimers.
+        3. Only change the phrasing and flow to make it sound human."""
+        
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=f"""User Question: '{question}'\n\nDeterministic Answer to rewrite:\n{deterministic_answer}""",
+            config={'system_instruction': system_prompt, 'temperature': 0.3}
+        )
+        return response.text.strip()
+    except Exception as e:
+        print(f"LLM enhancement failed: {e}")
+        return deterministic_answer

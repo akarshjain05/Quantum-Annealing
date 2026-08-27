@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import client from "../api/client";
 
@@ -6,10 +6,25 @@ const NAV = [
   { to: "/", label: "Executive Summary", end: true },
   { to: "/corridors", label: "Corridor Management" },
   { to: "/optimizer", label: "Liquidity Optimizer" },
-  { to: "/audit", label: "Compliance & Audit" },
+  { to: "/qubo", label: "QUBO Formulation" },
+  { type: "divider" },
+  { to: "/scenarios", label: "What-If Scenarios" },
+  { to: "/stress", label: "Stress Testing" },
+  { to: "/agent", label: "Compliance Agent" },
+  { type: "divider" },
+  { to: "/audit", label: "Compliance & Audit", hasBadge: true },
 ];
 
 export default function Layout({ children }) {
+  const location = useLocation();
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    client.get("/api/optimization/approvals/pending")
+      .then(res => setPendingCount(res.data.length || 0))
+      .catch(() => setPendingCount(0));
+  }, [location.pathname]);
+
   return (
     <div className="min-h-screen flex">
       <aside className="w-60 shrink-0 border-r border-border bg-surface flex flex-col">

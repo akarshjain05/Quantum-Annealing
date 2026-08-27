@@ -334,3 +334,11 @@ async def run_benchmark_endpoint(request: OptimizationBenchmarkRequest, db: Sess
     result = benchmark.run_benchmark(problem)
     return benchmark.generate_chart_data(result)
 
+
+@router.get("/loss-sensitivity")
+def get_loss_sensitivity(db: Session = Depends(get_db)):
+    """
+    Phase B: Sensitivity analysis for loss_given_shortfall
+    """
+    from app.optimization.sensitivity import run_loss_sensitivity_analysis
+    return run_loss_sensitivity_analysis(db)

@@ -20,6 +20,9 @@ def run_seed(reset: bool = True):
     db = SessionLocal()
     
     try:
+        if not reset and db.query(models.Organization).first():
+            print('Database already seeded. Skipping.')
+            return
         if reset:
             for model in (models.HumanApproval, models.AgentMessage, models.AuditLog,
                           models.StressTestResult, models.ScenarioRun,
@@ -82,10 +85,30 @@ def run_seed(reset: bool = True):
                 current_balance_musd=c_data["current_balance"] / 1_000_000,
             ))
 
+            # Phase A: Decomposed Loss Parameters
+            import random
+            
+            # Using current_balance as a rough proxy for scale since base_vol is gone
+            scale = (c_data["current_balance"] / 1_000_000) * 0.1
+            
+            # Contractual penalty (e.g. overdraft fees) - plausibly estimable
+            penalty_fee = round(scale * random.uniform(0.1, 0.5), 2)
+            
+            # Operational / manual intervention cost - roughly estimable
+            ops_cost = round(random.uniform(0.01, 0.05), 3)
+            
+            # Reputational risk - MODEL_ASSUMPTION, hard to quantify
+            reputational = round(scale * random.uniform(1.0, 2.0), 2)
+            
+            total_loss = penalty_fee + ops_cost + reputational
+
             db.add(models.RiskParameter(
                 corridor_id=c.id,
                 opportunity_cost_rate_annual=0.05,
-                loss_given_shortfall_musd=10.0,
+                loss_given_shortfall_musd=total_loss,
+                correspondent_penalty_fee=penalty_fee,
+                operational_remediation_cost=ops_cost,
+                reputational_risk_proxy=reputational,
                 fx_cost_bps=10.0,
                 operational_cost_rate=0.02,
             ))
@@ -117,4 +140,4 @@ def run_seed(reset: bool = True):
         db.close()
 
 if __name__ == "__main__":
-    run_seed(reset=True)
+    run_seed(reset=False)

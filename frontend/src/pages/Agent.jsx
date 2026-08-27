@@ -44,7 +44,7 @@ export default function Agent() {
       <div>
         <h1 className="font-display text-2xl font-semibold">Agent</h1>
         <p className="text-sm text-muted mt-1">
-          Deterministic tool-calling agent - no LLM key required. Pulls live figures and re-runs the optimizer where relevant.
+          Deterministic by default; optional LLM-assisted routing available — answers are always template-composed from real data, never LLM-generated.
         </p>
       </div>
 
