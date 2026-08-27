@@ -55,7 +55,8 @@ def corridor_inputs_from_db(
 
 
 def _latest_audit_hash(db: Session) -> str:
-    last = db.query(models.AuditLog).order_by(models.AuditLog.id.desc()).first()
+    # Lock the latest row to prevent forking the hash chain during concurrent writes
+    last = db.query(models.AuditLog).order_by(models.AuditLog.id.desc()).with_for_update().first()
     return last.self_hash if last else GENESIS_HASH
 
 
