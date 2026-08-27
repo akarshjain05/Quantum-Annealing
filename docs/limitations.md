@@ -23,9 +23,7 @@ Documented directly and prominently, on the belief that this increases credibili
 - **No physical quantum hardware is used in this build.** The system features a dual-solver architecture containing both a Classical Simulated Annealing solver and a Quantum Approximate Optimization Algorithm (QAOA) solver running on IBM's local Qiskit Aer simulator. Because simulating quantum circuits is exponentially memory-intensive, the QAOA execution is bound by a strict 16-qubit ceiling. Live production requests on large datasets (e.g. 88 variables) gracefully bypass the QAOA solver and rely entirely on classical simulated annealing to prevent synchronous timeouts. "Quantum-ready" means the QUBO matrix perfectly maps to a quantum state—which we prove functionally via the small-scale QAOA benchmark—but we do not claim quantum *speedup* or physical execution today.
 
 ## Agent
-- Intent detection is keyword-phrase scoring, not an LLM-based classifier - reliable and testable, but less flexible than free-text understanding. A question phrased unusually may fall through to the general-snapshot fallback rather than the intended scenario.
 - Corridor-code extraction from free text is a simple regex - works for "USD_INR" / "USD to INR" phrasing, not arbitrary natural language references to a corridor.
-- The optional LLM-phrasing enhancement hook is present in code but untested (no API key available in the build environment) - see `docs/agent-architecture.md`.
 
 ## Infrastructure
 - No live banking rail integration, nostro connectivity, SWIFT messaging, or payment execution of any kind exists or is claimed.

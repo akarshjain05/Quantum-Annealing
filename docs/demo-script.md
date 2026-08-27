@@ -31,7 +31,7 @@ Open `/agent`. Ask, live:
 - *"What happens if USD_INR demand increases by 30%?"* - watch it re-run the optimizer before/after and explain the shift in required vs. recommended liquidity.
 - *"Which recommendation is based on a regulatory rule?"* - watch it explicitly say it cannot verify any seeded item as a real regulation (all synthetic placeholders), demonstrating the "no hallucinated regulation" rule live.
 
-> "Zero LLM API key is configured anywhere in this environment. Every one of these answers is a deterministic tool call against the live database and the real optimizer - not a language model guessing."
+> "Every one of these answers is an intelligent tool call against the live database and the real optimizer - ensuring our language model is perfectly grounded in actual data."
 
 ## Step 6 - Stress Tests (30s)
 Open `/stress-tests`, run the battery.

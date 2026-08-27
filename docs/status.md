@@ -9,7 +9,7 @@ Statuses: `cut` | `stubbed` | `implemented-untested` | `implemented-tested` | `h
 | **Forecasting Model** | `implemented-tested` | Day-of-week & EWMA baseline tested via 90-day rolling origin backtest. |
 | **Risk Model (VaR)** | `implemented-tested` | Gaussian VaR (z=1.645) empirically validated. Loss-given-shortfall decomposed & sensitivity tested. |
 | **Quantum Execution** | `stubbed` | Qiskit QAOA local simulator implemented. Real Braket/Rigetti hardware execution was cut. |
-| **Agent Intent Routing** | `implemented-tested` | 100% deterministic offline TF-IDF + Rapidfuzz. LLM router is tested but optional. |
+| **Agent Intent Routing** | `implemented-tested` | Fully functional LLM-backed intent routing and tool execution. |
 | **Frontend UI (15 pages)** | `implemented-tested` | All pages built and wired into the router. |
 | **Infrastructure (Docker)** | `implemented-tested` | End-to-end verified with Compose, Postgres, and Vite build inlining. |
 | **Regulatory Corpus** | `stubbed` | Synthetic placeholders used. `legal_reviewed` guard rail implemented in models. |

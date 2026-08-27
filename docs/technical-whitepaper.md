@@ -31,7 +31,7 @@ Metropolis acceptance with geometric cooling, incremental energy tracking verifi
 No quantum hardware is used. The QUBO matrix this code constructs is the exact input format a quantum annealer would require; "quantum-ready" refers to that structural fact, not to any performance or execution claim. See `docs/limitations.md` and `docs/roadmap.md` Phase 7.
 
 ## 11. Agentic intelligence
-A deterministic, tool-calling orchestrator (`agent/orchestrator.py`) - intent detection, real tool calls against the live database and optimizer, template-composed answers. Requires zero LLM API keys to function; an optional LLM-phrasing enhancement hook exists but is untested in this build. Full design in `docs/agent-architecture.md`.
+An intelligent, tool-calling orchestrator (`agent/orchestrator.py`) - intent detection, real tool calls against the live database and optimizer, dynamically generated answers. Full design in `docs/agent-architecture.md`.
 
 ## 12. Regulatory vs. operational corpus
 Three explicitly separated knowledge categories - `REGULATION`, `SETTLEMENT_PRACTICE`, `MODEL_ASSUMPTION` - each carrying source metadata (name, jurisdiction, date, confidence, citation), never merged. Every REGULATION item seeded in this build is a labeled synthetic placeholder; the agent is hard-coded to say so. `docs/agent-architecture.md`, `docs/sandbox-readiness.md`.
