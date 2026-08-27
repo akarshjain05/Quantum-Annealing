@@ -76,8 +76,6 @@ docker compose up --build
 
 Frontend: `http://localhost:5173` · Backend: `http://localhost:8000` · Swagger: `http://localhost:8000/docs`
 
-> **Tested end-to-end** via `docker compose up --build` on 2026-08-24, Docker Desktop 28.5.1 (Linux). The full startup chain (Alembic -> Seed -> Uvicorn) correctly respects the Postgres healthcheck, and the Vite API url is accurately inlined during the frontend production build. See `docs/testing.md`.
-
 ## Running tests
 
 ```bash
