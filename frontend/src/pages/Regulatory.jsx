@@ -32,7 +32,7 @@ export default function Regulatory() {
                 }`}>
                   {item.source_type}
                 </span>
-                <span className="text-sm font-medium">{item.topic}</span>
+                <span className="text-sm font-medium">{item.title}</span>
                 {item.is_synthetic && (
                   <span className="ml-auto text-[9px] uppercase tracking-wider bg-surface text-muted px-1.5 py-0.5 rounded border border-border">
                     Synthetic Placeholder
