@@ -67,7 +67,16 @@ const RISK_DESCRIPTIONS: Record<
 
 export default function Optimizer() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [config, setConfig] = useState<OptimizerConfig>(DEFAULT_CONFIG);
+  const [config, setConfig] = useState<OptimizerConfig>(() => {
+    const savedConf = localStorage.getItem('targetConfidence');
+    let conf = DEFAULT_CONFIG.confidenceLevel;
+    if (savedConf) conf = Number(savedConf) / 100.0;
+    
+    return {
+      ...DEFAULT_CONFIG,
+      confidenceLevel: conf
+    };
+  });
 
   const { status: quantumStatus, loading: statusLoading } = useQuantumStatus();
   const {

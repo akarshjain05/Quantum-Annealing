@@ -194,6 +194,7 @@ def record_approval(
 
     approval = models.HumanApproval(run_id=run.id, decision=decision, reason=reason, user_id=user_id)
     db.add(approval)
+    run.status = decision
 
     prev_hash = _latest_audit_hash(db)
     payload = {"run_id": run.id, "decision": decision, "reason": reason, "user": actor_email}
