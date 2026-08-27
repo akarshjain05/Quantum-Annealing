@@ -6,7 +6,7 @@ import uuid
 import logging
 
 from app.core.config import settings
-from app.api import core_data, optimization, qubo, scenarios, stress_tests, agent, audit, health, quantum
+from app.api import core_data, optimization, qubo, scenarios, stress_tests, agent, audit, health, quantum, auth
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 logger = logging.getLogger("nostroq")
@@ -42,7 +42,7 @@ async def request_id_and_logging(request: Request, call_next):
     return response
 
 
-for router_module in (health, core_data, optimization, qubo, scenarios, stress_tests, agent, audit, quantum):
+for router_module in (health, auth, core_data, optimization, qubo, scenarios, stress_tests, agent, audit, quantum):
     app.include_router(router_module.router)
 
 

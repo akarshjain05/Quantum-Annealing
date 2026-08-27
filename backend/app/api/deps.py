@@ -11,8 +11,22 @@ bearer_scheme = HTTPBearer(auto_error=False)
 
 def get_current_user(
     db: Session = Depends(get_db),
+    token: HTTPAuthorizationCredentials = Depends(bearer_scheme)
 ) -> models.User:
-    user = db.query(models.User).filter(models.User.email == "treasury@demo-bank.com").first()
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    if not token:
+        raise credentials_exception
+    payload = decode_token(token.credentials)
+    if not payload:
+        raise credentials_exception
+    user_id = payload.get("sub")
+    if not user_id:
+        raise credentials_exception
+    user = db.query(models.User).filter(models.User.id == int(user_id)).first()
     if not user:
-        user = db.query(models.User).first()
+        raise credentials_exception
     return user
