@@ -2,7 +2,7 @@
 
 Phased from where this build actually is today - not aspirational marketing.
 
-**Phase 1 - Synthetic prototype (this build).** Real QUBO + simulated annealing over synthetic data, deterministic agent, full audit trail. Done.
+**Phase 1 - Baseline implementation (this build).** Real QUBO + simulated annealing over synthetic data, deterministic agent, full audit trail. Done.
 
 **Phase 2 - Fast-follow completeness.** Remaining frontend pages (Regulatory Grounding, standalone Forecast, Settings), remaining doc depth, `docker compose up` verified end-to-end on real hardware, expanded pytest/frontend test coverage, CI pipeline.
 

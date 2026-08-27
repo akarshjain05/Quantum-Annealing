@@ -7,7 +7,7 @@ Banks and payment institutions operating cross-border corridors pre-fund nostro 
 Most treasury desks rely on static buffers (a fixed multiple of historical average demand, or mean plus a fixed number of standard deviations) reviewed periodically, manually, and conservatively - because getting it wrong in the "too little" direction risks a settlement failure, which is a much more visible and costly event than idle capital.
 
 ## Capital inefficiency
-The gap between a static buffer and a risk-aware, corridor-specific optimum is exactly the capital this system targets. In one real run during this build, the gap was measured at ~22% of total nostro liquidity across 11 corridors - illustrative of *the kind of number this class of problem can produce*, not a claim about any real institution's actual numbers, which this prototype has no access to.
+The gap between a static buffer and a risk-aware, corridor-specific optimum is exactly the capital this system targets. In one real run during this build, the gap was measured at ~22% of total nostro liquidity across 11 corridors - illustrative of *the kind of number this class of problem can produce*, not a claim about any real institution's actual numbers, which this system currently lacks access to.
 
 ## Proposed solution
 Formulate the allocation decision as a QUBO, solve it with simulated annealing today (quantum-ready by construction for tomorrow), and wrap it in an agentic layer that keeps regulation, observed practice, and model assumptions separated, with independent validation, human approval, and a full audit trail.
@@ -31,7 +31,7 @@ On-premise or private-cloud deployment given the sensitivity of the underlying d
 
 ## Risks
 - **Model risk** if a recommendation is acted on without the human review this system requires.
-- **Data integration risk** - real value depends on real transaction and account data, which requires real integration work this prototype does not include.
+- **Data integration risk** - real value depends on real transaction and account data, which requires real integration work.
 - **Regulatory risk** - see `docs/sandbox-readiness.md` for what would need review before any real use.
 - **Adoption risk** - treasury teams are (rightly) conservative; trust has to be earned via the explainability and audit features this build prioritizes, not asserted.
 

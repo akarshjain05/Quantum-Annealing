@@ -48,7 +48,7 @@ When asked about regulatory grounding, the agent's answer always ends with an ex
 
 - No tool executes, initiates, or simulates a financial transaction.
 - Every optimization recommendation surfaced through the agent still requires human approval on the Optimizer page before it's marked `APPROVED` in the audit trail.
-- The UI states plainly, in the top bar of every page: *"Decision-support prototype - no live financial transactions are executed."*
+- The UI states plainly, in the top bar of every page: *"Decision-support system - no live financial transactions are executed."*
 
 
 ## Phase 1 Improvements (TF-IDF & RapidFuzz)

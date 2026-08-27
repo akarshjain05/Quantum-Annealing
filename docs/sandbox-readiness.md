@@ -17,7 +17,7 @@ NostroQ is designed for potential deployment within IFSCA's regulatory sandbox f
 | **Genuine Innovation** | ✅ Met | QUBO/quantum formulation novel for treasury |
 | **Consumer Benefit** | ✅ Met | Capital efficiency = lower banking costs |
 | **Need for Sandbox** | ✅ Met | No existing framework for quantum-assisted treasury |
-| **Readiness to Test** | ✅ Met | Working prototype, shadow mode ready |
+| **Readiness to Test** | ✅ Met | Working application, shadow mode ready |
 | **Exit Strategy** | ✅ Met | Classical fallback if quantum fails |
 
 ### Why GIFT City?

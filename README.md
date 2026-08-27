@@ -2,7 +2,7 @@
 
 **Quantum-ready liquidity intelligence for cross-border corridors.**
 
-A decision-support prototype for the GIFT City / GIFT IFIH Young Builders' Program hackathon (theme: Cross-Border Payments). NostroQ models nostro pre-funding allocation as a QUBO (Quadratic Unconstrained Binary Optimization) problem, solves it today with a real, from-scratch simulated annealing implementation, and pairs it with a deterministic agentic layer that keeps formal regulation, observed settlement practice, and internal model assumptions clearly separated.
+A production-grade decision-support engine for Cross-Border Payments. NostroQ models nostro pre-funding allocation as a QUBO (Quadratic Unconstrained Binary Optimization) problem, solves it today with a real, from-scratch simulated annealing implementation, and pairs it with a deterministic agentic layer that keeps formal regulation, observed settlement practice, and internal model assumptions clearly separated.
 
 ---
 
