@@ -9,7 +9,7 @@ from app.core.config import settings
 from app.api.deps import get_current_user
 from app.optimization.engine import run_optimization
 from app.optimization.qubo import shortfall_probability
-from app.api.optimization import corridor_inputs_from_db
+from app.services.optimization_service import corridor_inputs_from_db
 from app import models
 
 router = APIRouter(prefix="/api/stress-tests", tags=["stress-tests"])

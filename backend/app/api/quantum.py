@@ -27,7 +27,7 @@ from app.optimization.quantum_solver import (
     QISKIT_ALGORITHMS_AVAILABLE
 )
 
-from app.api.optimization import corridor_inputs_from_db
+from app.services.optimization_service import corridor_inputs_from_db
 from app.optimization.engine import build_qubo
 from app.core.database import get_db
 from sqlalchemy.orm import Session
