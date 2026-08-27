@@ -380,10 +380,10 @@ def run_optimization(
             delta=delta,
             annual_savings=delta * opportunity_cost_rate,
             breakdown={
-                "p95_demand": recommended * 0.75,
-                "safety_buffer": recommended * 0.05,
-                "fx_reserve": recommended * 0.10,
-                "correspondent_margin": recommended * 0.05
+                "p95_demand": recommended * 0.873,
+                "safety_buffer": (recommended * 0.873) * 0.05,
+                "fx_reserve": (recommended * 0.873) * 0.075,
+                "correspondent_margin": (recommended * 0.873) * 0.02
             }
         ))
     

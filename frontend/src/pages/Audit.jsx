@@ -115,21 +115,21 @@ export default function Audit() {
               </thead>
               <tbody>
                 {pendingApprovals.map((p) => (
-                  <tr key={p.runId} className="border-b border-border/60 hover:bg-surface/50 transition-colors">
-                    <td className="px-4 py-2.5 font-mono text-teal">#{p.runNumber}</td>
-                    <td className="px-4 py-2.5 text-muted font-mono">{new Date(p.submittedAt).toLocaleString()}</td>
+                  <tr key={p.run_id} className="border-b border-border/60 hover:bg-surface/50 transition-colors">
+                    <td className="px-4 py-2.5 font-mono text-teal">#{p.run_number}</td>
+                    <td className="px-4 py-2.5 text-muted font-mono">{new Date(p.submitted_at).toLocaleString()}</td>
                     <td className="px-4 py-2.5 text-muted">
-                      {p.summary.corridorCount} corridors • ${(p.summary.capitalRelease / 1_000_000).toFixed(1)}M released
+                      {p.summary.corridor_count} corridors • ${(p.summary.capital_release / 1_000_000).toFixed(1)}M released
                     </td>
                     <td className="px-4 py-2.5 text-right space-x-2">
                       <button 
-                        onClick={() => handleApprove(p.runNumber, "REJECTED")}
+                        onClick={() => handleApprove(p.run_number, "REJECTED")}
                         className="px-2 py-1 bg-red-900/40 text-red-400 rounded text-[10px] uppercase font-bold hover:bg-red-900/60 transition-colors"
                       >
                         Reject
                       </button>
                       <button 
-                        onClick={() => handleApprove(p.runNumber, "APPROVED")}
+                        onClick={() => handleApprove(p.run_number, "APPROVED")}
                         className="px-2 py-1 bg-teal-900/40 text-teal-400 rounded text-[10px] uppercase font-bold hover:bg-teal-900/60 transition-colors"
                       >
                         Approve
@@ -203,25 +203,25 @@ function DecisionRationale({ runId }) {
     <div className="mt-4 bg-surface/50 p-6 rounded-md border border-border">
       <h3 className="font-medium text-teal mb-3 flex items-center gap-2">
         <span className="w-1.5 h-1.5 rounded-full bg-teal"></span>
-        Decision Rationale - Run #{details.runNumber}
+        Decision Rationale - Run #{details.run_number}
       </h3>
       
       <p className="text-sm text-muted mb-6">
-        This record documents why ${(details.capitalReleased / 1_000_000).toFixed(1)}M 
-        capital release was recommended and <span className="font-mono text-text">{details.status}</span> on {new Date(details.decidedAt).toLocaleString()}.
+        This record documents why ${(details.capital_released / 1_000_000).toFixed(1)}M 
+        capital release was recommended and <span className="font-mono text-text">{details.status}</span> on {new Date(details.decided_at).toLocaleString()}.
       </p>
       
       <div className="grid md:grid-cols-2 gap-6">
         <div className="space-y-3">
           <div className="text-[11px] uppercase tracking-wide text-muted font-mono border-b border-border/50 pb-1">
-            Calculation Methodology
+            Calculation Methodology (Illustrative)
           </div>
           <p className="text-xs text-muted">
             For each corridor, the minimum safe balance was calculated as:
           </p>
           <div className="bg-bg p-3 rounded font-mono text-xs border border-border/50 text-faint">
-            Minimum = P{details.confidenceLevel}(Historical Demand)<br/>
-            + Safety Buffer ({(details.safetyBuffer * 100).toFixed(0)}%)<br/>
+            Minimum = P{details.confidence_level}(Historical Demand)<br/>
+            + Safety Buffer ({(details.safety_buffer * 100).toFixed(0)}%)<br/>
             + FX Volatility Reserve<br/>
             + Correspondent Risk Margin
           </div>
@@ -229,49 +229,49 @@ function DecisionRationale({ runId }) {
         
         <div className="space-y-3">
           <div className="text-[11px] uppercase tracking-wide text-muted font-mono border-b border-border/50 pb-1">
-            Example - {details.exampleCorridor.code}
+            Example - {details.example_corridor.code}
           </div>
           <div className="bg-bg p-3 rounded text-xs border border-border/50 space-y-1.5 font-mono">
             <div className="flex justify-between">
-              <span className="text-muted">P{details.confidenceLevel} Historical Demand</span>
-              <span>${(details.exampleCorridor.p95Demand / 1_000_000).toFixed(1)}M</span>
+              <span className="text-muted">P{details.confidence_level} Historical Demand</span>
+              <span>${(details.example_corridor.p95Demand / 1_000_000).toFixed(1)}M</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted">Safety Buffer ({(details.safetyBuffer * 100).toFixed(0)}%)</span>
-              <span>${(details.exampleCorridor.safetyBuffer / 1_000_000).toFixed(1)}M</span>
+              <span className="text-muted">Safety Buffer ({(details.safety_buffer * 100).toFixed(0)}%)</span>
+              <span>${(details.example_corridor.safetyBuffer / 1_000_000).toFixed(1)}M</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted">FX Reserve</span>
-              <span>${(details.exampleCorridor.fxReserve / 1_000_000).toFixed(1)}M</span>
+              <span>${(details.example_corridor.fxReserve / 1_000_000).toFixed(1)}M</span>
             </div>
             <div className="flex justify-between border-b border-border/50 pb-1.5">
               <span className="text-muted">Correspondent Margin</span>
-              <span>${(details.exampleCorridor.correspondentMargin / 1_000_000).toFixed(1)}M</span>
+              <span>${(details.example_corridor.correspondentMargin / 1_000_000).toFixed(1)}M</span>
             </div>
             <div className="flex justify-between pt-0.5 font-medium">
               <span className="text-teal">Minimum Required</span>
-              <span className="text-teal">${(details.exampleCorridor.minimumRequired / 1_000_000).toFixed(1)}M</span>
+              <span className="text-teal">${(details.example_corridor.minimumRequired / 1_000_000).toFixed(1)}M</span>
             </div>
             <div className="flex justify-between pt-2">
               <span className="text-muted">Current Balance</span>
-              <span>${(details.exampleCorridor.currentBalance / 1_000_000).toFixed(1)}M</span>
+              <span>${(details.example_corridor.currentBalance / 1_000_000).toFixed(1)}M</span>
             </div>
             <div className="flex justify-between pt-0.5 font-medium">
               <span className="text-gold">Excess Capital</span>
-              <span className="text-gold">${(details.exampleCorridor.excess / 1_000_000).toFixed(1)}M</span>
+              <span className="text-gold">${(details.example_corridor.excess / 1_000_000).toFixed(1)}M</span>
             </div>
           </div>
         </div>
       </div>
       
-      {details.approverNotes && (
+      {details.approver_notes && (
         <div className="mt-6 pt-4 border-t border-border/50">
           <div className="text-[11px] uppercase tracking-wide text-muted font-mono mb-2">
             Approver Notes
           </div>
           <blockquote className="border-l-2 border-teal pl-3 text-sm italic text-muted">
-            "{details.approverNotes}"
-            <footer className="mt-1 text-xs not-italic font-mono text-faint">— {details.approvedBy}</footer>
+            "{details.approver_notes}"
+            <footer className="mt-1 text-xs not-italic font-mono text-faint">— {details.approved_by}</footer>
           </blockquote>
         </div>
       )}
@@ -284,7 +284,7 @@ function DecisionRationale({ runId }) {
           <div className="text-muted">Record Hash:</div>
           <div className="text-teal truncate" title={details.hash}>{details.hash}</div>
           <div className="text-muted">Prev Hash:</div>
-          <div className="text-faint truncate" title={details.previousHash}>{details.previousHash}</div>
+          <div className="text-faint truncate" title={details.previous_hash}>{details.previous_hash}</div>
           <div className="text-muted">Timestamp:</div>
           <div className="text-faint">{details.timestamp}</div>
         </div>

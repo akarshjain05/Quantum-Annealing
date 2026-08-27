@@ -166,8 +166,8 @@ def record_approval(
     
     return {
         "status": decision,
-        "runId": str(run.id),
-        "decidedAt": datetime.datetime.utcnow().isoformat(),
-        "auditHash": audit.self_hash,
+        "run_id": str(run.id),
+        "decided_at": datetime.datetime.utcnow().isoformat(),
+        "audit_hash": audit.self_hash,
         "note": "Decision-support prototype. No live financial transaction is executed."
     }
