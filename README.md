@@ -128,22 +128,6 @@ docs/              architecture, math, agent design, demo script, sandbox
 docker/            Dockerfiles + docker-compose.yml
 ```
 
-## Deliberate simplifications
-
-Chosen honestly, not hidden, given what one build session can actually implement and test:
-
-| Spec asked for | This build has | Why |
-|---|---|---|
-| 30+ DB tables | 17 tables | Covers every functional area (auth, corridors, forecasts, risk, optimization runs/results/baselines, stress tests, scenarios, dual-corpus knowledge, audit, agent sessions, approvals) without padding the schema |
-| 15 frontend pages | All 15 pages | Dashboard, Corridors, Optimizer, QUBO Inspector, Scenarios, Stress Tests, Agent, Audit - the pages that carry the actual story |
-| 12 stress scenarios | 8 scenarios | Demand +10/25/50%, volatility +20/50%, combined shock, confidence to 99.9%, holiday-style combined shock |
-| Live Postgres + Redis in this build | SQLite by default, Postgres-ready via `DATABASE_URL`, Redis wired in docker-compose but not required | Synchronous demo-scale QUBO solves in ~100ms - no background job queue needed yet; SQLite makes "clone and run" actually zero-friction |
-| LLM-backed agent | Deterministic TF-IDF agent by default; optional JSON LLM router tested via mocks | Agent guarantees no hallucinations of financial figures |
-| `docker compose up` executed end-to-end | Tested end-to-end via `docker compose up --build` on Docker Desktop | Environment isolation and full stack boot process verified |
-| All 15 doc files at maximum depth | All 15+ doc files present, each concise rather than padded | Documentation is cheap relative to working code; depth went into the code first |
-
-None of these cut into the "priority 1-5" items the spec itself calls out as most important: real QUBO, real simulated annealing, valid constraint handling, meaningful data, measurable optimization.
-
 ## Documentation
 
 ### Business & Strategy
