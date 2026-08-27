@@ -39,6 +39,7 @@ export interface SolverResult {
   solution_quality: number;
   gap_from_best: number;
   gap_percent: number;
+  metadata?: Record<string, any>;
   iterations?: number;
   num_reads?: number;
   convergence_data: Array<{ iteration: number; energy: number }>;
@@ -580,6 +581,11 @@ const QuantumVsClassicalCard: React.FC<{ data: BenchmarkData }> = ({ data }) => 
           </div>
           <div className="text-sm text-gray-400">
             Best: <span className="text-purple-400">{getDisplayName(bestQuantum.solver_type, bestQuantum.display_name)}</span>
+            {bestQuantum.metadata?.mocked_chunked_qaoa && (
+              <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 uppercase tracking-wider" title="Classical SA with fabricated delay to simulate QAOA scale">
+                MOCKED
+              </span>
+            )}
           </div>
           <div className="text-sm text-gray-400">
             Energy: <span className="text-white font-mono">{formatEnergy(bestQuantum.energy)}</span>

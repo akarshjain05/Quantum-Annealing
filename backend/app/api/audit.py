@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import Query, APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -10,7 +10,7 @@ router = APIRouter(prefix="/api/audit", tags=["audit"])
 
 
 @router.get("/log")
-def audit_log(limit: int = 50, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def audit_log(limit: int = Query(50, le=200), db: Session = Depends(get_db), user=Depends(get_current_user)):
     rows = db.query(models.AuditLog).order_by(models.AuditLog.id.desc()).limit(limit).all()
     return [{
         "id": r.id, "event_type": r.event_type, "actor": r.actor, "created_at": str(r.created_at),
@@ -26,7 +26,7 @@ def verify_audit_chain(db: Session = Depends(get_db), user=Depends(get_current_u
 
 
 @router.get("/approvals")
-def list_approvals(limit: int = 50, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def list_approvals(limit: int = Query(50, le=200), db: Session = Depends(get_db), user=Depends(get_current_user)):
     rows = db.query(models.HumanApproval).order_by(models.HumanApproval.id.desc()).limit(limit).all()
     return [{
         "id": r.id, "run_id": r.run_id, "decision": r.decision, "reason": r.reason,
@@ -40,10 +40,7 @@ def decision_rationale(run_id: int, db: Session = Depends(get_db)):
         return {"error": "not found"}
     
     approval = db.query(models.HumanApproval).filter(models.HumanApproval.run_id == run_id).first()
-    audit = db.query(models.AuditLog).filter(models.AuditLog.event_type == "approval_decided", models.AuditLog.payload_json["run_id"] == str(run_id)).first()
-    if not audit:
-        # Fallback to older HUMAN_APPROVAL events
-        audit = db.query(models.AuditLog).filter(models.AuditLog.event_type == "HUMAN_APPROVAL", models.AuditLog.payload_json["run_id"] == run_id).first()
+    audit = db.query(models.AuditLog).filter(models.AuditLog.event_type == "HUMAN_APPROVAL", models.AuditLog.payload_json["run_id"] == run_id).first()
         
     capital_released = sum(r.capital_released_musd for r in run.results) if run.results else 0
     
@@ -68,38 +65,37 @@ def decision_rationale(run_id: int, db: Session = Depends(get_db)):
             pairs = [(t.ts, t.amount_musd) for t in txns]
             fc = compute_forecast(pairs, horizon_days=7)
             
-            p95_demand = fc.expected_demand_musd * 1_000_000
+            p95_demand = fc.ci_high_musd * 1_000_000
             cur_bal = res.current_liquidity_musd * 1_000_000
             
-            risk = db.query(models.RiskParameter).filter(models.RiskParameter.corridor_id == c.id).first()
-            fx_rate = (risk.fx_cost_bps / 10000.0) if risk else 0.0008
-            fx_reserve = p95_demand * fx_rate * 10  # simplified representation
+            # Illustrative breakdown matching frontend Corridors.jsx
+            safety_buffer_val = p95_demand * 0.05
+            fx_reserve = p95_demand * 0.075
             corr_margin = p95_demand * 0.02
             
-            safety_buffer_val = p95_demand * s_buffer
             min_req = p95_demand + safety_buffer_val + fx_reserve + corr_margin
             excess = max(0.0, cur_bal - min_req)
         
     return {
-        "runNumber": run_id,
-        "capitalReleased": capital_released * 1_000_000,
+        "run_number": run_id,
+        "capital_released": capital_released * 1_000_000,
         "status": approval.decision if approval else (audit.payload_json.get("decision") if audit else "UNKNOWN"),
-        "decidedAt": (approval.created_at if approval else (audit.created_at if audit else run.created_at)).isoformat() + "Z",
-        "confidenceLevel": c_level * 100,
-        "safetyBuffer": s_buffer,
-        "exampleCorridor": {
+        "decided_at": (approval.created_at if approval else (audit.created_at if audit else run.created_at)).isoformat() + "Z",
+        "confidence_level": c_level * 100,
+        "safety_buffer": s_buffer,
+        "example_corridor": {
             "code": example_code,
-            "p95Demand": p95_demand,
-            "safetyBuffer": p95_demand * s_buffer,
-            "fxReserve": fx_reserve,
-            "correspondentMargin": corr_margin,
-            "minimumRequired": min_req,
-            "currentBalance": cur_bal,
+            "p95_demand": p95_demand,
+            "safety_buffer": p95_demand * s_buffer,
+            "fx_reserve": fx_reserve,
+            "correspondent_margin": corr_margin,
+            "minimum_required": min_req,
+            "current_balance": cur_bal,
             "excess": excess
         },
-        "approverNotes": approval.reason if approval else (audit.payload_json.get("notes", audit.payload_json.get("reason", "")) if audit else ""),
-        "approvedBy": audit.actor if audit else "system",
+        "approver_notes": approval.reason if approval else (audit.payload_json.get("notes", audit.payload_json.get("reason", "")) if audit else ""),
+        "approved_by": audit.actor if audit else "system",
         "hash": audit.self_hash if audit else "N/A",
-        "previousHash": audit.prev_hash if audit else "N/A",
+        "previous_hash": audit.prev_hash if audit else "N/A",
         "timestamp": audit.created_at.isoformat() + "Z" if audit else ""
     }

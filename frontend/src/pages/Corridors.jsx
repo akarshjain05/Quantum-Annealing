@@ -183,7 +183,7 @@ export default function Corridors() {
 
                               <div className="border border-border rounded-md overflow-hidden bg-bg">
                                 <div className="px-4 py-2 border-b border-border bg-surface text-[11px] uppercase tracking-wide text-muted font-mono">
-                                  Recommendation Breakdown
+                                  Recommendation Breakdown (Illustrative)
                                 </div>
                                 <table className="w-full text-sm">
                                   <thead className="bg-surface/50 text-[11px] text-muted font-mono border-b border-border text-left">

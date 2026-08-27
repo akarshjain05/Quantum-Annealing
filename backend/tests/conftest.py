@@ -21,16 +21,38 @@ def seeded_db():
     yield
 
 
-@pytest.fixture(scope="session")
-def client():
+from sqlalchemy.orm import sessionmaker
+
+@pytest.fixture(scope="function")
+def db_session():
+    connection = engine.connect()
+    transaction = connection.begin()
+    session = sessionmaker(bind=connection)()
+    
+    yield session
+    
+    session.close()
+    transaction.rollback()
+    connection.close()
+
+@pytest.fixture(scope="function")
+def client(db_session):
     from fastapi.testclient import TestClient
     from app.main import app
-    return TestClient(app)
+    from app.core.database import get_db
+    
+    def override_get_db():
+        yield db_session
+        
+    app.dependency_overrides[get_db] = override_get_db
+    with TestClient(app) as c:
+        yield c
+    app.dependency_overrides.clear()
 
-
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def auth_headers(client):
     resp = client.post("/api/auth/login", json={"email": "treasury@demo-bank.com", "password": "DemoPassword123!"})
     assert resp.status_code == 200, resp.text
     token = resp.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
+

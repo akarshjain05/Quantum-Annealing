@@ -6,7 +6,7 @@ from app.core.config import settings
 from app.api.deps import get_current_user
 from app.schemas import ScenarioRunRequest
 from app.optimization.engine import run_optimization
-from app.api.optimization import corridor_inputs_from_db, persist_optimization_run, run_to_response
+from app.services.optimization_service import corridor_inputs_from_db, persist_optimization_run, run_to_response
 from app import models
 
 router = APIRouter(prefix="/api/scenarios", tags=["scenarios"])

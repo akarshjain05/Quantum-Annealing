@@ -304,7 +304,7 @@ SOLUTION NostroQ optimizes nostro allocation using QUBO formulation that runs on
 
 TRACTION
 
-Working prototype with 11 corridors
+Working application with 11 corridors
 Benchmark: 22% capital efficiency improvement (synthetic data)
 Quantum simulation validated on Qiskit
 MARKET

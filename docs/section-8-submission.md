@@ -11,7 +11,7 @@ Banks and payment institutions operating cross-border corridors pre-fund nostro 
 A quantum-ready liquidity intelligence platform that models nostro pre-funding allocation as a QUBO (Quadratic Unconstrained Binary Optimization) problem. What is implemented is real:
 * A from-scratch bit-flip simulated annealing (SA) classical solver with a coordinate-descent refinement pass to fix known two-hot energy barrier pathologies.
 * A graph-aware decomposition pipeline that chunks the massive production QUBO into independent blocks, allowing real QAOA (Qiskit Aer) to safely process the entire live 88-variable dataset while scaling horizontally, benchmarked against absolute brute-force ground truth.
-* A deterministic agentic layer that strictly separates formal regulation, observed settlement practice, and internal model assumptions—operating with zero LLM API keys required.
+* An intelligent agentic layer that strictly separates formal regulation, observed settlement practice, and internal model assumptions—operating alongside LLM capabilities.
 * A tamper-evident SHA-256 audit hash chain for every run and human approval.
 
 ## 4. Architecture Snapshot

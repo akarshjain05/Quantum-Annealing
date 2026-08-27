@@ -102,15 +102,8 @@ def simulated_annealing(
 
 from typing import Tuple, Dict, Any, List
 
-def decode_assignment(best_x: np.ndarray, *args) -> Tuple[Dict[int, int], bool]:
+def decode_assignment(best_x: np.ndarray, block_sizes: List[int]) -> Tuple[Dict[int, int], bool]:
     """Decode the flat binary vector into one bucket-index per block."""
-    if len(args) == 1 and isinstance(args[0], list):
-        block_sizes = args[0]
-    elif len(args) == 2 and isinstance(args[0], int) and isinstance(args[1], int):
-        block_sizes = [args[1]] * args[0]
-    else:
-        raise TypeError("decode_assignment expects either block_sizes: List[int] or num_corridors: int, num_buckets: int")
-    
     assignment = {}
     clean_onehot = True
     offset = 0

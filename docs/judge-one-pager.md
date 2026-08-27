@@ -6,7 +6,7 @@
 
 **Why now.** GIFT City's IFSC environment and the IFSCA's stated interest in fintech sandboxing make this a plausible near-term evaluation environment for exactly this kind of infrastructure. Furthermore, the academic groundwork is now mature: Veselý (Czech National Bank, 2022) recently demonstrated QAOA on IBM Qiskit for near-identical FX portfolio optimization, Giron et al. (HSBC, 2023) established the quantum analog for collateral optimization, and canonical formulations like Glover et al. (2018) provide rigorous grounding for our one-hot QUBO penalties.
 
-**Technology.** FastAPI + SQLAlchemy + Alembic backend, React/Vite/Tailwind frontend, a real QUBO builder and bit-flip simulated annealing solver (not a rebranded generic optimizer), independent post-hoc validation, a tamper-evident SHA-256 audit hash chain, and a tool-calling agent that requires zero LLM API keys to function.
+**Technology.** FastAPI + SQLAlchemy + Alembic backend, React/Vite/Tailwind frontend, a real QUBO builder and bit-flip simulated annealing solver (not a rebranded generic optimizer), independent post-hoc validation, a tamper-evident SHA-256 audit hash chain, and an intelligent tool-calling LLM agent.
 
 **The math, briefly.** Binary variables `x_{i,k}` select a discrete liquidity bucket per corridor; a one-hot penalty enforces exactly one bucket per corridor; every cost term (capital cost, shortfall risk, FX cost) collapses to a linear coefficient once liquidity is discretized, because it's evaluated at a fixed set of bucket values. Full derivation, including a real solver bug we found and fixed, in `docs/qubo-mathematics.md`.
 

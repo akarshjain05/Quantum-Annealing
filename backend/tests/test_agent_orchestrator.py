@@ -3,13 +3,17 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-# Disable LLM for these tests to measure deterministic baseline
-os.environ["GEMINI_API_KEY"] = ""
-os.environ["HAS_GEMINI"] = "False"
+
 
 from app.agent.orchestrator import _fallback_detect_intent, _fallback_find_corridor_code
 from app.core.database import Base
 from app import models
+
+@pytest.fixture(autouse=True)
+def disable_llm(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "")
+    monkeypatch.setenv("HAS_GEMINI", "False")
+
 
 TEST_CASES = [
     # Canonical (from UI)

@@ -59,12 +59,12 @@ def get_savings_metrics(db: Session = Depends(get_db), user=Depends(get_current_
     opportunity_cost_rate = 0.05
     
     return {
-        "totalNostroLiquidity": total_liquidity,
-        "capitalReleased": capital_released,
-        "opportunityCostRate": opportunity_cost_rate,
-        "annualSavingsOpportunity": capital_released * opportunity_cost_rate,
-        "efficiencyImprovement": (capital_released / total_liquidity * 100) if total_liquidity > 0 else 0,
-        "operatingMode": "shadow"
+        "total_nostro_liquidity": total_liquidity,
+        "capital_released": capital_released,
+        "opportunity_cost_rate": opportunity_cost_rate,
+        "annual_savings_opportunity": capital_released * opportunity_cost_rate,
+        "efficiency_improvement": (capital_released / total_liquidity * 100) if total_liquidity > 0 else 0,
+        "operating_mode": "shadow"
     }
 
 

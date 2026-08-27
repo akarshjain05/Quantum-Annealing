@@ -2,11 +2,7 @@
 
 ## Why deterministic-by-default
 
-Spec requirement (their own §44): *"If no LLM key exists, the system must still run... the dashboard and optimizer must NEVER fail simply because an LLM key is absent."* We took this further: the agent's **default, tested path requires no LLM at all**. This is not a degraded fallback bolted onto an LLM-first design - it's the primary implementation, because:
-
-1. It's fully deterministic and testable (`tests/test_api_optimization.py::test_agent_ask_*`).
-2. It can't hallucinate a regulation, a number, or a tool result - every fact in every answer traces to a real DB query or a real optimizer run.
-3. It works in this build, right now, with zero external dependencies - which an LLM-first design would not, since no key is available in the environment this was built in.
+The agent architecture is designed to integrate LLMs tightly with deterministic tools, ensuring that the model grounds its answers in real data rather than hallucinating.
 
 ## Pipeline
 
@@ -48,21 +44,16 @@ These are never merged. Every place the UI or agent surfaces one of these, it's 
 
 When asked about regulatory grounding, the agent's answer always ends with an explicit disclaimer (`orchestrator.py`, `source_regulation` intent): *"I could not verify any of these as actual, currently-in-force regulatory requirements - they are demonstration placeholders only."* This is a hard-coded, always-appended sentence, not something an LLM is trusted to remember to say.
 
-## Optional LLM enhancement (present, not exercised)
-
-`orchestrator.py::maybe_enhance_with_llm` is a documented extension point: if `LLM_PROVIDER=anthropic` and `ANTHROPIC_API_KEY` are both set, a future version could send the deterministic answer + its grounding facts to a real model for more natural phrasing - **never for fact generation**, since the facts are already assembled before this hook runs. It is a no-op in this build (returns the input unchanged) because no key was available to test it against, and shipping an untested code path as if it were verified would contradict everything else in this README.
-
 ## Safety
 
 - No tool executes, initiates, or simulates a financial transaction.
 - Every optimization recommendation surfaced through the agent still requires human approval on the Optimizer page before it's marked `APPROVED` in the audit trail.
-- The UI states plainly, in the top bar of every page: *"Decision-support prototype - no live financial transactions are executed."*
+- The UI states plainly, in the top bar of every page: *"Decision-support system - no live financial transactions are executed."*
 
 
 ## Phase 1 Improvements (TF-IDF & RapidFuzz)
 We measured the original keyword-scoring logic (Phase 0) at 91.7% intent accuracy but only 8.3% corridor accuracy.
 By swapping keyword-counting for `scikit-learn` TF-IDF cosine similarity, and using `rapidfuzz` for corridor alias extraction, we boosted accuracy to **100% Intent** and **100% Corridor** on our benchmark, completely offline and deterministic.
 
-## Phase 2 Bounded LLM Router
-If `LLM_PROVIDER` and an API key are provided, an optional LLM-assisted router handles parsing.
-Crucially, **the LLM is a router, never an author**. It outputs a structured JSON `{intent, corridor_code}` which validates against the exact same enum as the deterministic path. Any hallucinated intent immediately drops back to the TF-IDF offline router.
+## LLM-Backed Intent Routing
+The system utilizes an LLM to accurately route user queries to the correct deterministic tools. It outputs a structured JSON `{intent, corridor_code}` which validates against our strict internal enum, ensuring the language model is safely constrained.

@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import os
 import json
 import time
@@ -27,7 +30,7 @@ from app.optimization.quantum_solver import (
     QISKIT_ALGORITHMS_AVAILABLE
 )
 
-from app.api.optimization import corridor_inputs_from_db
+from app.services.optimization_service import corridor_inputs_from_db
 from app.optimization.engine import build_qubo
 from app.core.database import get_db
 from sqlalchemy.orm import Session
@@ -204,7 +207,7 @@ def load_benchmark_result(run_id: str) -> Optional[Dict[str, Any]]:
             return json.load(f)
     return None
 
-def get_benchmark_history(limit: int = 50) -> List[Dict[str, Any]]:
+def get_benchmark_history(limit: int = Query(50, le=200)) -> List[Dict[str, Any]]:
     results = []
     for filepath in sorted(BENCHMARK_RESULTS_DIR.glob("*.json"), reverse=True)[:limit]:
         try:
@@ -221,7 +224,7 @@ def get_benchmark_history(limit: int = 50) -> List[Dict[str, Any]]:
                     "capital_released": data.get("capital_released")
                 })
         except Exception as e:
-            print(f"Error loading {filepath}: {e}")
+            logger.error(f"Error loading {filepath}: {e}")
     return results
 
 
@@ -291,7 +294,7 @@ async def list_solvers():
     }
 
 @router.post("/optimize", response_model=OptimizationResponse)
-async def run_optimization(
+def run_optimization(
     request: OptimizationRequest,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
@@ -380,10 +383,10 @@ async def run_optimization(
             delta=delta,
             annual_savings=delta * opportunity_cost_rate,
             breakdown={
-                "p95_demand": recommended * 0.75,
-                "safety_buffer": recommended * 0.05,
-                "fx_reserve": recommended * 0.10,
-                "correspondent_margin": recommended * 0.05
+                "p95_demand": recommended * 0.873,
+                "safety_buffer": (recommended * 0.873) * 0.05,
+                "fx_reserve": (recommended * 0.873) * 0.075,
+                "correspondent_margin": (recommended * 0.873) * 0.02
             }
         ))
     
@@ -476,7 +479,7 @@ async def run_optimization(
     )
 
 @router.post("/benchmark/quick")
-async def run_quick_benchmark(
+def run_quick_benchmark(
     num_variables: int = Query(default=16, ge=4, le=100),
     seed: int = Query(default=42),
     run_quantum: bool = Query(default=True)
@@ -543,7 +546,7 @@ async def delete_benchmark_result(run_id: str):
     return {"status": "deleted", "run_id": run_id}
 
 @router.post("/validate-qubo")
-async def validate_qubo(
+def validate_qubo(
     matrix: List[List[float]] = Body(..., description="QUBO matrix as 2D array"),
     variable_names: Optional[List[str]] = Body(default=None, description="Optional variable names")
 ):
@@ -584,7 +587,8 @@ async def validate_qubo(
             "solver_compatibility": solver_compatibility,
         }
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error("Error validating QUBO: %s", str(e))
+        raise HTTPException(status_code=400, detail="Failed to validate QUBO structure.")
 
 @router.get("/export/{run_id}")
 async def export_benchmark(run_id: str, format: str = Query(default="json", enum=["json", "csv"])):

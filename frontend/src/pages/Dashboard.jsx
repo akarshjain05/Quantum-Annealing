@@ -58,12 +58,12 @@ export default function Dashboard() {
     ([k, v]) => ({ currency: k, value: v }),
   );
 
-  const opportunityCostRate = savings.opportunityCostRate;
+  const opportunityCostRate = savings.opportunity_cost_rate;
   const isEstimate = !dash.latest_optimization_run;
   const capitalReleased = dash.capital_released_potential_musd;
   const totalNostroLiquidity = dash.total_nostro_liquidity_musd;
-  const annualSavingsOpportunity = savings.annualSavingsOpportunity;
-  const efficiencyImprovement = savings.efficiencyImprovement;
+  const annualSavingsOpportunity = savings.annual_savings_opportunity;
+  const efficiencyImprovement = savings.efficiency_improvement;
 
   return (
     <div className="space-y-6">

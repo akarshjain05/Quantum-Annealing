@@ -17,6 +17,15 @@ import OptimizationRuns from "./pages/OptimizationRuns";
 import Settings from "./pages/Settings";
 
 
+
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -24,7 +33,8 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/*" element={
-            <Layout>
+            <ProtectedRoute>
+              <Layout>
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/liquidity" element={<Liquidity />} />
@@ -43,6 +53,7 @@ export default function App() {
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Layout>
+            </ProtectedRoute>
           } />
         </Routes>
 

@@ -6,20 +6,29 @@ import uuid
 import logging
 
 from app.core.config import settings
-from app.api import core_data, optimization, qubo, scenarios, stress_tests, agent, audit, health, quantum
+from app.api import core_data, optimization, qubo, scenarios, stress_tests, agent, audit, health, quantum, auth
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 logger = logging.getLogger("nostroq")
 
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from app.api.deps import limiter
+
 app = FastAPI(
+
     title=settings.APP_NAME,
     description=f"{settings.APP_TAGLINE} - decision-support prototype. No live financial transactions are executed.",
     version=settings.MODEL_VERSION,
 )
 
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if settings.ENV == "development" else [],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -42,7 +51,7 @@ async def request_id_and_logging(request: Request, call_next):
     return response
 
 
-for router_module in (health, core_data, optimization, qubo, scenarios, stress_tests, agent, audit, quantum):
+for router_module in (health, auth, core_data, optimization, qubo, scenarios, stress_tests, agent, audit, quantum):
     app.include_router(router_module.router)
 
 

@@ -44,7 +44,7 @@ def get_session(session_id: str, db: Session = Depends(get_db), user=Depends(get
 def get_knowledge(db: Session = Depends(get_db), user=Depends(get_current_user)):
     items = db.query(models.KnowledgeItem).all()
     return [{
-        "id": i.id, "source_type": i.source_type, "topic": i.topic,
+        "id": i.id, "source_type": i.source_type, "title": i.title,
         "content": i.content, "is_synthetic": i.is_synthetic,
         "legal_reviewed": i.legal_reviewed
     } for i in items]

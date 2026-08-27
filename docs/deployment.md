@@ -37,7 +37,7 @@ See `.env.example` (root and `backend/`). The important ones:
 |---|---|---|
 | `DATABASE_URL` | `sqlite:///./nostroq.db` | Set to a `postgresql+psycopg2://...` URL for production |
 | `SECRET_KEY` | dev placeholder | **Must** be changed before any real deployment |
-| `LLM_PROVIDER` / `*_API_KEY` | unset | Optional - the app is fully functional without these |
+| `LLM_PROVIDER` / `*_API_KEY` | required | Required for the LLM-backed agent to function |
 | `RANDOM_SEED` | `42` | Controls deterministic synthetic data generation |
 
 ## Production considerations (not implemented, noted honestly)

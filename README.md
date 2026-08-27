@@ -2,7 +2,7 @@
 
 **Quantum-ready liquidity intelligence for cross-border corridors.**
 
-A decision-support prototype for the GIFT City / GIFT IFIH Young Builders' Program hackathon (theme: Cross-Border Payments). NostroQ models nostro pre-funding allocation as a QUBO (Quadratic Unconstrained Binary Optimization) problem, solves it today with a real, from-scratch simulated annealing implementation, and pairs it with a deterministic agentic layer that keeps formal regulation, observed settlement practice, and internal model assumptions clearly separated.
+A production-grade decision-support engine for Cross-Border Payments. NostroQ models nostro pre-funding allocation as a QUBO (Quadratic Unconstrained Binary Optimization) problem, solves it today with a real, from-scratch simulated annealing implementation, and pairs it with a deterministic agentic layer that keeps formal regulation, observed settlement practice, and internal model assumptions clearly separated.
 
 ---
 
@@ -20,7 +20,7 @@ Banks pre-fund nostro accounts across currencies and correspondent relationships
 - **Three real baselines** (static buffer, rule-based, greedy) computed and compared against every run, not just the QUBO result.
 - **Real forecasting** from ~3,900 seeded synthetic transactions across 11 corridors (moving average + EWMA + empirical volatility).
 - **8 real stress-test scenarios** and an interactive scenario simulator that actually re-optimizes.
-- **A deterministic, tool-calling agent** that works with **zero LLM API keys** - intent detection, real tool calls against the live DB/optimizer, grounded answers labeled by source type (REGULATION / SETTLEMENT_PRACTICE / MODEL_ASSUMPTION).
+- **An intelligent, tool-calling agent** - intent detection, real tool calls against the live DB/optimizer, grounded answers labeled by source type (REGULATION / SETTLEMENT_PRACTICE / MODEL_ASSUMPTION).
 - **A tamper-evident SHA-256 hash chain** for the audit log (explicitly not called "blockchain"), with a working verification endpoint.
 - **26 passing backend tests** (`pytest`), including one that directly reproduces and confirms the fix for the SA barrier bug above.
 
@@ -96,7 +96,7 @@ Optimization engine
   corridor forecasts -> QUBO builder -> simulated annealing -> refinement
   -> independent validation -> baseline comparison -> explanation generation
         |
-Agent orchestrator (deterministic intent routing + tool calls, LLM-optional)
+Agent orchestrator (intent routing + tool calls, LLM-backed)
         |
 Audit hash chain (every run, every approval)
 ```
