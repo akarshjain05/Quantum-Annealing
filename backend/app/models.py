@@ -121,7 +121,7 @@ class KnowledgeItem(Base):
     assumptions - never merged (spec §12)."""
     __tablename__ = "knowledge_items"
     id = Column(Integer, primary_key=True)
-    source_type = Column(String, nullable=False)  # REGULATION | SETTLEMENT_PRACTICE | MODEL_ASSUMPTION
+    source_type = Column(String, nullable=False, index=True)  # REGULATION | SETTLEMENT_PRACTICE | MODEL_ASSUMPTION
     title = Column(String, nullable=False)
     content = Column(Text, nullable=False)
     source_name = Column(String, nullable=False)
@@ -138,7 +138,7 @@ class OptimizationRun(Base):
     __tablename__ = "optimization_runs"
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=utcnow)
-    run_type = Column(String, default="standard")  # standard | scenario | stress_test
+    run_type = Column(String, default="standard", index=True)  # standard | scenario | stress_test
     solver = Column(String, default="simulated_annealing")
     params_json = Column(JSON, default=dict)
     status = Column(String, default="COMPLETED")  # COMPLETED | INVALID | FAILED
@@ -218,7 +218,7 @@ class StressTestResult(Base):
 class AuditLog(Base):
     __tablename__ = "audit_logs"
     id = Column(Integer, primary_key=True)
-    event_type = Column(String, nullable=False)
+    event_type = Column(String, nullable=False, index=True)
     payload_json = Column(JSON, default=dict)
     actor = Column(String, default="system")
     created_at = Column(DateTime, default=utcnow)

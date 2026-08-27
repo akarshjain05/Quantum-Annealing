@@ -20,18 +20,62 @@ def corridor_inputs_from_db(
     if not corridors:
         raise HTTPException(status_code=400, detail="No matching corridors found")
 
+    corridor_ids = [c.id for c in corridors]
+    
+    # Batch load RiskParameters and NostroAccounts
+    risks = db.query(models.RiskParameter).filter(models.RiskParameter.corridor_id.in_(corridor_ids)).all()
+    risk_by_corridor = {r.corridor_id: r for r in risks}
+    
+    accounts = db.query(models.NostroAccount).filter(models.NostroAccount.corridor_id.in_(corridor_ids)).all()
+    balance_by_corridor = {}
+    for a in accounts:
+        balance_by_corridor[a.corridor_id] = balance_by_corridor.get(a.corridor_id, 0) + a.current_balance_musd
+        
+    # Batch load forecasts (Task 3: use cache)
+    today = datetime.datetime.utcnow().date()
+    forecasts = db.query(models.PaymentForecast).filter(models.PaymentForecast.corridor_id.in_(corridor_ids)).all()
+    forecast_by_corridor = {}
+    for f in forecasts:
+        if f.computed_at.date() >= today:
+            # We already have a fresh forecast for this corridor
+            if f.corridor_id not in forecast_by_corridor or f.computed_at > forecast_by_corridor[f.corridor_id].computed_at:
+                forecast_by_corridor[f.corridor_id] = f
+
+    # Batch load all transactions
+    txns = db.query(models.PaymentTransaction).filter(models.PaymentTransaction.corridor_id.in_(corridor_ids)).all()
+    txns_by_corridor = {}
+    for t in txns:
+        txns_by_corridor.setdefault(t.corridor_id, []).append((t.ts, t.amount_musd))
+
+    missing_ids = [cid for cid in corridor_ids if cid not in forecast_by_corridor]
+    if missing_ids:
+        from app.forecasting.forecast import compute_forecast
+        for cid in missing_ids:
+            pairs = txns_by_corridor.get(cid, [])
+            fc = compute_forecast(pairs, horizon_days=7)
+            db_fc = models.PaymentForecast(
+                corridor_id=cid,
+                horizon_days=7,
+                expected_demand_musd=fc.expected_demand_musd,
+                std_dev_musd=fc.std_dev_musd,
+                model_used=fc.model_used,
+                ci_low_musd=fc.ci_low_musd,
+                ci_high_musd=fc.ci_high_musd
+            )
+            db.add(db_fc)
+            forecast_by_corridor[cid] = db_fc
+            
+        db.commit()
+
     inputs = []
     for c in corridors:
-        from app.forecasting.forecast import compute_forecast
-        txns = db.query(models.PaymentTransaction).filter(models.PaymentTransaction.corridor_id == c.id).all()
-        pairs = [(t.ts, t.amount_musd) for t in txns]
-        fc = compute_forecast(pairs, horizon_days=7)
+        fc = forecast_by_corridor[c.id]
         mu = fc.expected_demand_musd * (1 + demand_delta_pct / 100.0)
         sigma = max(fc.std_dev_musd * (1 + volatility_delta_pct / 100.0), 0.01)
 
-        risk = db.query(models.RiskParameter).filter(models.RiskParameter.corridor_id == c.id).first()
-        accounts = db.query(models.NostroAccount).filter(models.NostroAccount.corridor_id == c.id).all()
-        current = sum(a.current_balance_musd for a in accounts)
+        risk = risk_by_corridor.get(c.id)
+        current = balance_by_corridor.get(c.id, 0.0)
+        pairs = txns_by_corridor.get(c.id, [])
 
         inputs.append(CorridorInput(
             corridor_id=c.id, code=c.code, mu=mu, sigma=sigma, current_liquidity=current,

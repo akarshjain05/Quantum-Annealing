@@ -204,7 +204,7 @@ def load_benchmark_result(run_id: str) -> Optional[Dict[str, Any]]:
             return json.load(f)
     return None
 
-def get_benchmark_history(limit: int = 50) -> List[Dict[str, Any]]:
+def get_benchmark_history(limit: int = Query(50, le=200)) -> List[Dict[str, Any]]:
     results = []
     for filepath in sorted(BENCHMARK_RESULTS_DIR.glob("*.json"), reverse=True)[:limit]:
         try:

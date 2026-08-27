@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import Query, APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -10,7 +10,7 @@ router = APIRouter(prefix="/api/audit", tags=["audit"])
 
 
 @router.get("/log")
-def audit_log(limit: int = 50, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def audit_log(limit: int = Query(50, le=200), db: Session = Depends(get_db), user=Depends(get_current_user)):
     rows = db.query(models.AuditLog).order_by(models.AuditLog.id.desc()).limit(limit).all()
     return [{
         "id": r.id, "event_type": r.event_type, "actor": r.actor, "created_at": str(r.created_at),
@@ -26,7 +26,7 @@ def verify_audit_chain(db: Session = Depends(get_db), user=Depends(get_current_u
 
 
 @router.get("/approvals")
-def list_approvals(limit: int = 50, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def list_approvals(limit: int = Query(50, le=200), db: Session = Depends(get_db), user=Depends(get_current_user)):
     rows = db.query(models.HumanApproval).order_by(models.HumanApproval.id.desc()).limit(limit).all()
     return [{
         "id": r.id, "run_id": r.run_id, "decision": r.decision, "reason": r.reason,

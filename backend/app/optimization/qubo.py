@@ -221,26 +221,22 @@ def build_qubo(
                 B_k = buckets[k]
                 Q[idx, idx] += P_netting * (B_k ** 2 - 2 * Req_G * B_k)
                 
+        bucket_outer = P_netting * np.outer(buckets, buckets)
         for i_idx in range(len(G)):
             for j_idx in range(i_idx + 1, len(G)):
                 i, j = G[i_idx], G[j_idx]
-                for k1 in range(K):
-                    for k2 in range(K):
-                        idx1 = i * K + k1
-                        idx2 = j * K + k2
-                        cross_term = 2.0 * P_netting * buckets[k1] * buckets[k2]
-                        Q[idx1, idx2] += cross_term / 2.0
-                        Q[idx2, idx1] += cross_term / 2.0
+                Q[i*K:(i+1)*K, j*K:(j+1)*K] += bucket_outer
+                Q[j*K:(j+1)*K, i*K:(i+1)*K] += bucket_outer
 
     # 3. Add one-hot penalty off-diagonal terms for ALL blocks (corridors + slack)
     base_idx = 0
     for block_size in block_sizes:
         energy_offset += P
-        for k1 in range(block_size):
-            for k2 in range(k1 + 1, block_size):
-                a, b = base_idx + k1, base_idx + k2
-                Q[a, b] += P
-                Q[b, a] += P
+        Q[base_idx:base_idx+block_size, base_idx:base_idx+block_size] += P
+        np.fill_diagonal(
+            Q[base_idx:base_idx+block_size, base_idx:base_idx+block_size],
+            Q.diagonal()[base_idx:base_idx+block_size] - P
+        )
         base_idx += block_size
 
     # 4. Add Normalized Capital Cap Penalty Terms: P_cap * ((sum L_i + Sl - C_total) / C_total)^2
@@ -248,16 +244,9 @@ def build_qubo(
         C_total = global_liquidity_cap_musd
         energy_offset += P_cap * 1.0  # (C_total/C_total)^2 = 1.0
         
-        # P_cap * (v / C)^2 - 2 * P_cap * 1.0 * (v / C)
-        for idx in range(num_vars):
-            v_norm = var_values[idx] / C_total
-            Q[idx, idx] += P_cap * (v_norm ** 2) - 2.0 * P_cap * v_norm
-            
-            # Off-diagonal: 2 * P_cap * (v_i / C) * (v_j / C)
-            for jdx in range(idx + 1, num_vars):
-                cross_term = 2.0 * P_cap * (var_values[idx] / C_total) * (var_values[jdx] / C_total)
-                Q[idx, jdx] += cross_term / 2.0
-                Q[jdx, idx] += cross_term / 2.0
+        v_norm = np.array(var_values) / C_total
+        Q += P_cap * np.outer(v_norm, v_norm)
+        np.fill_diagonal(Q, Q.diagonal() - 2.0 * P_cap * v_norm)
 
     return QuboModel(
         Q=Q,

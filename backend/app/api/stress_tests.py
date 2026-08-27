@@ -1,6 +1,6 @@
 import uuid
 from typing import Optional, List
-from fastapi import APIRouter, Depends
+from fastapi import Query, APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -86,7 +86,7 @@ def run_stress_tests(req: StressTestRequest = StressTestRequest(), db: Session =
 
 
 @router.get("/history")
-def stress_test_history(limit: int = 50, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def stress_test_history(limit: int = Query(50, le=200), db: Session = Depends(get_db), user=Depends(get_current_user)):
     rows = db.query(models.StressTestResult).order_by(models.StressTestResult.id.desc()).limit(limit).all()
     return [{
         "batch_id": r.batch_id, "scenario_name": r.scenario_name,

@@ -1,6 +1,6 @@
 from typing import List, Optional
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import Query, APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -39,7 +39,7 @@ def run_optimization_endpoint(req: OptimizationRunRequest, db: Session = Depends
 
 
 @router.get("/runs")
-def list_runs(limit: int = 20, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def list_runs(limit: int = Query(20, le=200), db: Session = Depends(get_db), user=Depends(get_current_user)):
     runs = db.query(models.OptimizationRun).order_by(models.OptimizationRun.id.desc()).limit(limit).all()
     return [{
         "run_id": r.id, "created_at": str(r.created_at), "run_type": r.run_type, "status": r.status,
