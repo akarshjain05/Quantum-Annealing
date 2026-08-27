@@ -49,7 +49,7 @@ def run_loss_sensitivity_analysis(db: Session, confidence_level: float = 0.95) -
         corridor_inputs.append(c_input)
 
     # Now sweep multipliers
-    multipliers = [0.5, 1.0, 1.5, 2.0, 3.0]
+    multipliers = DEFAULT_LOSS_MULTIPLIER_SWEEP
     sweep_results = []
     
     baseline_capital = sum(c.current_liquidity for c in corridor_inputs)

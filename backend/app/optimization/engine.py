@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 """
 Orchestrates one full optimization run: build QUBO -> solve via simulated
 annealing -> decode -> validate -> compute baselines -> compute financial
@@ -174,7 +177,8 @@ def run_optimization(
     offset = 0
     for block_size in qubo.block_sizes:
         active = sum(best_x[offset:offset+block_size] > 0.5)
-        assert active == 1, f"block at {offset} (size {block_size}) has {active} active bits after refinement!"
+        if active != 1:
+            raise RuntimeError(f"block at {offset} (size {block_size}) has {active} active bits after refinement!")
         offset += block_size
         
     final_x, final_energy = best_x, best_energy
@@ -254,15 +258,16 @@ def run_optimization(
         slack_offset = sum(qubo.block_sizes[:qubo.num_corridors])
         chosen_slack_value = qubo.var_meta[slack_offset + slack_k]["bucket_value_musd"]
         cap = global_liquidity_cap_musd
-        P_cap = 200000.0  # as defined in qubo.py
+        from app.optimization.qubo import DEFAULT_CAP_PENALTY
+        P_cap = DEFAULT_CAP_PENALTY
         cap_residual = total_optimized + chosen_slack_value - cap
         cap_penalty_contribution = P_cap * ((cap_residual / cap) ** 2)
 
-        print(f"[CAP DEBUG] sum(L_i)          = {total_optimized}")
-        print(f"[CAP DEBUG] chosen_slack      = {chosen_slack_value}")
-        print(f"[CAP DEBUG] sum + slack       = {total_optimized + chosen_slack_value}   (target: {cap})")
-        print(f"[CAP DEBUG] cap penalty       = {cap_penalty_contribution}")
-        print(f"[CAP DEBUG] total final energy = {final_energy}")
+        logger.debug(f"[CAP DEBUG] sum(L_i)          = {total_optimized}")
+        logger.debug(f"[CAP DEBUG] chosen_slack      = {chosen_slack_value}")
+        logger.debug(f"[CAP DEBUG] sum + slack       = {total_optimized + chosen_slack_value}   (target: {cap})")
+        logger.debug(f"[CAP DEBUG] cap penalty       = {cap_penalty_contribution}")
+        logger.debug(f"[CAP DEBUG] total final energy = {final_energy}")
 
     return OptimizationOutcome(
         qubo=qubo,

@@ -29,7 +29,20 @@ from typing import List, Dict, Any, Optional
 import numpy as np
 from scipy.stats import norm
 
+
 DEFAULT_BUCKETS_MUSD = [0.0, 1.0, 2.5, 5.0, 7.5, 10.0, 15.0, 20.0, 25.0, 30.0, 40.0, 50.0, 75.0, 100.0, 150.0]
+
+# Magic numbers extracted as documented constants
+DEFAULT_CAP_PENALTY = 200000.0
+DEFAULT_NETTING_PENALTY = 1.0
+DEFAULT_ONEHOT_PENALTY = 40.0
+DEFAULT_WEIGHTS = {
+    "cost": 1.0,
+    "risk": 1.0,
+    "shortfall": 1.0,
+    "fx": 0.3,
+    "operational": 0.2,
+}
 
 
 def shortfall_probability(mu: float, sigma: float, L: float) -> float:
@@ -84,20 +97,14 @@ def build_qubo(
     weights: Optional[Dict[str, float]] = None,
     onehot_penalty: Optional[float] = None,
     global_liquidity_cap_musd: Optional[float] = None,
-    cap_penalty: float = 200000.0,
+    cap_penalty: float = DEFAULT_CAP_PENALTY,
 ) -> QuboModel:
     buckets = buckets or DEFAULT_BUCKETS_MUSD
-    default_weights = {
-        "cost": 1.0,
-        "risk": 1.0,
-        "shortfall": 1.0,
-        "fx": 0.3,
-        "operational": 0.2,
-    }
+    default_weights = DEFAULT_WEIGHTS.copy()
     if weights is not None:
         default_weights.update(weights)
     weights = default_weights
-    P = onehot_penalty if onehot_penalty is not None else 40.0
+    P = onehot_penalty if onehot_penalty is not None else DEFAULT_ONEHOT_PENALTY
     P_cap = cap_penalty  # Penalty multiplier for the global capital cap
 
     N = len(corridors)
@@ -190,7 +197,7 @@ def build_qubo(
                     grouped.add(j)
 
     from app.forecasting.forecast import compute_correlation
-    P_netting = 1.0  # Derived to punish 5M deviation with ~250 energy
+    P_netting = DEFAULT_NETTING_PENALTY  # Derived to punish 5M deviation with ~250 energy
 
     for G in netting_groups:
         # compute Req_G

@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import os
 import json
 import time
@@ -221,7 +224,7 @@ def get_benchmark_history(limit: int = Query(50, le=200)) -> List[Dict[str, Any]
                     "capital_released": data.get("capital_released")
                 })
         except Exception as e:
-            print(f"Error loading {filepath}: {e}")
+            logger.error(f"Error loading {filepath}: {e}")
     return results
 
 
@@ -584,7 +587,8 @@ def validate_qubo(
             "solver_compatibility": solver_compatibility,
         }
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error("Error validating QUBO: %s", str(e))
+        raise HTTPException(status_code=400, detail="Failed to validate QUBO structure.")
 
 @router.get("/export/{run_id}")
 async def export_benchmark(run_id: str, format: str = Query(default="json", enum=["json", "csv"])):
