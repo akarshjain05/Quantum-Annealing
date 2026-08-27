@@ -11,7 +11,7 @@ from app.schemas import (
     SubmitApprovalRequest, ApprovalDecisionRequest
 )
 from app.optimization.qubo import CorridorInput
-from app.services.optimization_service import corridor_inputs_from_db, persist_optimization_run, run_to_response, _latest_audit_hash
+from app.services.optimization_service import corridor_inputs_from_db, persist_optimization_run, run_to_response, _latest_audit_hash, record_approval
 from app.optimization.engine import run_optimization, OptimizationOutcome
 from app.audit.chain import compute_hash, GENESIS_HASH
 from app import models
@@ -57,21 +57,8 @@ def get_run(run_id: int, db: Session = Depends(get_db), user=Depends(get_current
 
 @router.post("/approve")
 def approve_run(req: ApprovalRequest, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    run = db.get(models.OptimizationRun, req.run_id)
-    if not run:
-        raise HTTPException(status_code=404, detail="Run not found")
-    if req.decision not in ("APPROVED", "REJECTED", "RECALCULATION_REQUESTED"):
-        raise HTTPException(status_code=400, detail="Invalid decision")
-    approval = models.HumanApproval(run_id=run.id, decision=req.decision, reason=req.reason, user_id=user.id)
-    db.add(approval)
-
-    prev_hash = _latest_audit_hash(db)
-    payload = {"run_id": run.id, "decision": req.decision, "reason": req.reason, "user": user.email}
-    audit = models.AuditLog(event_type="HUMAN_APPROVAL", actor=user.email, payload_json=payload, prev_hash=prev_hash)
-    audit.self_hash = compute_hash(prev_hash, payload)
-    db.add(audit)
-    db.commit()
-    return {"status": "recorded", "decision": req.decision, "note": "Decision-support prototype. No live financial transaction is executed."}
+    res = record_approval(db, req.run_id, req.decision, req.reason, user.email, user.id)
+    return {"status": "recorded", "decision": res["status"], "note": res["note"]}
 
 @router.post("/configure")
 def configure_optimization(request: OptimizationConfigRequest):
@@ -124,31 +111,15 @@ def submit_for_approval(run_id: str, request: SubmitApprovalRequest, db: Session
     }
 
 @router.post("/runs/{run_id}/decide")
-def decide_approval_new(run_id: str, request: ApprovalDecisionRequest, db: Session = Depends(get_db)):
+def decide_approval_new(run_id: str, request: ApprovalDecisionRequest, db: Session = Depends(get_db), user=Depends(get_current_user)):
     """Record approval decision."""
-    prev_hash = _latest_audit_hash(db)
-    payload = {
-        "run_id": run_id,
-        "decision": request.decision,
-        "decided_by": request.decided_by,
-        "notes": request.notes,
-        "rejection_reason": request.rejection_reason
-    }
-    audit = models.AuditLog(
-        event_type="approval_decided",
-        actor=request.decided_by,
-        payload_json=payload,
-        prev_hash=prev_hash
-    )
-    audit.self_hash = compute_hash(prev_hash, payload)
-    db.add(audit)
-    db.commit()
-    
+    reason = request.notes or request.rejection_reason or ""
+    res = record_approval(db, int(run_id), request.decision, reason, request.decided_by, user.id if user else None)
     return {
-        "status": request.decision,
-        "runId": run_id,
-        "decidedAt": datetime.utcnow().isoformat(),
-        "auditHash": audit.self_hash
+        "status": res["status"],
+        "runId": res["runId"],
+        "decidedAt": res["decidedAt"] + "Z",
+        "auditHash": res["auditHash"]
     }
 
 @router.get("/approvals/pending")

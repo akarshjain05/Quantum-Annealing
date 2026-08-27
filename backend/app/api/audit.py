@@ -40,10 +40,7 @@ def decision_rationale(run_id: int, db: Session = Depends(get_db)):
         return {"error": "not found"}
     
     approval = db.query(models.HumanApproval).filter(models.HumanApproval.run_id == run_id).first()
-    audit = db.query(models.AuditLog).filter(models.AuditLog.event_type == "approval_decided", models.AuditLog.payload_json["run_id"] == str(run_id)).first()
-    if not audit:
-        # Fallback to older HUMAN_APPROVAL events
-        audit = db.query(models.AuditLog).filter(models.AuditLog.event_type == "HUMAN_APPROVAL", models.AuditLog.payload_json["run_id"] == run_id).first()
+    audit = db.query(models.AuditLog).filter(models.AuditLog.event_type == "HUMAN_APPROVAL", models.AuditLog.payload_json["run_id"] == run_id).first()
         
     capital_released = sum(r.capital_released_musd for r in run.results) if run.results else 0
     

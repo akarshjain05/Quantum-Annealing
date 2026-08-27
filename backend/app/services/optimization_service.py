@@ -136,3 +136,38 @@ def run_to_response(run: models.OptimizationRun, outcome: Optional[OptimizationO
         "self_hash": run.self_hash, "prev_hash": run.prev_hash,
     }
 
+
+def record_approval(
+    db: Session, run_id: int, decision: str, reason: str, actor_email: str, user_id: Optional[int] = None
+) -> Dict[str, Any]:
+    run = db.get(models.OptimizationRun, run_id)
+    if not run:
+        raise HTTPException(status_code=404, detail="Run not found")
+        
+    decision = decision.upper()
+    if decision not in ("APPROVED", "REJECTED", "RECALCULATION_REQUESTED"):
+        raise HTTPException(status_code=400, detail="Invalid decision")
+
+    approval = models.HumanApproval(run_id=run.id, decision=decision, reason=reason, user_id=user_id)
+    db.add(approval)
+
+    prev_hash = _latest_audit_hash(db)
+    payload = {"run_id": run.id, "decision": decision, "reason": reason, "user": actor_email}
+    audit = models.AuditLog(
+        event_type="HUMAN_APPROVAL", 
+        actor=actor_email, 
+        payload_json=payload, 
+        prev_hash=prev_hash
+    )
+    audit.self_hash = compute_hash(prev_hash, payload)
+    db.add(audit)
+    db.commit()
+    db.refresh(audit)
+    
+    return {
+        "status": decision,
+        "runId": str(run.id),
+        "decidedAt": datetime.datetime.utcnow().isoformat(),
+        "auditHash": audit.self_hash,
+        "note": "Decision-support prototype. No live financial transaction is executed."
+    }
