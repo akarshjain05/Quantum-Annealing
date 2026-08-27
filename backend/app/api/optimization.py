@@ -323,7 +323,7 @@ async def quantum_status():
     return benchmark.get_solver_status()
 
 @router.post("/quantum/benchmark")
-async def run_benchmark_endpoint(request: OptimizationBenchmarkRequest, db: Session = Depends(get_db)):
+def run_benchmark_endpoint(request: OptimizationBenchmarkRequest, db: Session = Depends(get_db)):
     from app.optimization.engine import build_qubo
     from app.optimization.quantum_solver import QuantumBenchmark, QUBOProblem
     

@@ -291,7 +291,7 @@ async def list_solvers():
     }
 
 @router.post("/optimize", response_model=OptimizationResponse)
-async def run_optimization(
+def run_optimization(
     request: OptimizationRequest,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
@@ -476,7 +476,7 @@ async def run_optimization(
     )
 
 @router.post("/benchmark/quick")
-async def run_quick_benchmark(
+def run_quick_benchmark(
     num_variables: int = Query(default=16, ge=4, le=100),
     seed: int = Query(default=42),
     run_quantum: bool = Query(default=True)
@@ -543,7 +543,7 @@ async def delete_benchmark_result(run_id: str):
     return {"status": "deleted", "run_id": run_id}
 
 @router.post("/validate-qubo")
-async def validate_qubo(
+def validate_qubo(
     matrix: List[List[float]] = Body(..., description="QUBO matrix as 2D array"),
     variable_names: Optional[List[str]] = Body(default=None, description="Optional variable names")
 ):
