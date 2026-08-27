@@ -11,15 +11,24 @@ from app.api import core_data, optimization, qubo, scenarios, stress_tests, agen
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 logger = logging.getLogger("nostroq")
 
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from app.api.deps import limiter
+
 app = FastAPI(
+
     title=settings.APP_NAME,
     description=f"{settings.APP_TAGLINE} - decision-support prototype. No live financial transactions are executed.",
     version=settings.MODEL_VERSION,
 )
 
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if settings.ENV == "development" else [],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

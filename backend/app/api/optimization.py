@@ -1,11 +1,11 @@
 from typing import List, Optional
 from datetime import datetime
-from fastapi import Query, APIRouter, Depends, HTTPException
+from fastapi import Request, Query, APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.config import settings
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, RequireRole, limiter
 from app.schemas import (
     OptimizationRunRequest, ApprovalRequest, OptimizationConfigRequest,
     SubmitApprovalRequest, ApprovalDecisionRequest
@@ -20,7 +20,8 @@ router = APIRouter(prefix="/api/optimization", tags=["optimization"])
 
 
 @router.post("/run")
-def run_optimization_endpoint(req: OptimizationRunRequest, db: Session = Depends(get_db), user=Depends(get_current_user)):
+@limiter.limit("5/minute")
+def run_optimization_endpoint(request: Request, req: OptimizationRunRequest, db: Session = Depends(get_db), user=Depends(get_current_user)):
     seed = req.random_seed if req.random_seed is not None else settings.RANDOM_SEED
     inputs = corridor_inputs_from_db(
         db, req.corridors, req.confidence_level,
@@ -115,7 +116,7 @@ def submit_for_approval(run_id: str, request: SubmitApprovalRequest, db: Session
     }
 
 @router.post("/runs/{run_id}/decide")
-def decide_approval_new(run_id: str, request: ApprovalDecisionRequest, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def decide_approval_new(run_id: str, request: ApprovalDecisionRequest, db: Session = Depends(get_db), user=Depends(RequireRole(["approver", "admin"]))):
     """Record approval decision."""
     reason = request.notes or request.rejection_reason or ""
     res = record_approval(db, int(run_id), request.decision, reason, request.decided_by, user.id if user else None)
@@ -168,11 +169,12 @@ class OptimizationBenchmarkRequest(BaseModel):
     confidence_level: float = 0.95
 
 @router.post("/quantum/benchmark")
-def run_benchmark_endpoint(request: OptimizationBenchmarkRequest, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def run_benchmark_endpoint(request: Request, payload: OptimizationBenchmarkRequest, db: Session = Depends(get_db)):
     from app.optimization.engine import build_qubo
     from app.optimization.quantum_solver import QuantumBenchmark, QUBOProblem
     
-    inputs = corridor_inputs_from_db(db, request.corridors, request.confidence_level)
+    inputs = corridor_inputs_from_db(db, payload.corridors, payload.confidence_level)
     qubo = build_qubo(inputs)
     problem = QUBOProblem(qubo.Q, [f"x_{i}" for i in range(qubo.num_vars)])
     benchmark = QuantumBenchmark(seed=42)

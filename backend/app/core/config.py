@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     ENV: str = "development"
 
     # Auth
+    CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
     SECRET_KEY: str = "dev-only-secret-CHANGE-ME-before-any-real-deployment"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 12
@@ -40,4 +41,9 @@ class Settings(BaseSettings):
         extra = "ignore"
 
 
+
 settings = Settings()
+
+if settings.ENV.lower() == "production" and settings.SECRET_KEY == "dev-only-secret-CHANGE-ME-before-any-real-deployment":
+    raise RuntimeError("SECURITY FATAL: ENV is production but SECRET_KEY is using the unsafe default. Please set a secure SECRET_KEY.")
+
