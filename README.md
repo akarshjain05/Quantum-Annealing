@@ -28,12 +28,6 @@ Banks pre-fund nostro accounts across currencies and correspondent relationships
 
 
 
-## Recent Updates (Aug 2026)
-- **Real Database Integration**: Completely stripped out all hardcoded "dummy" values from the Dashboard, Optimizer, and Corridors screens. The UI now fully reads from the live SQLite/PostgreSQL database via dynamic API endpoints.
-- **Quantum Engine Persistence**: Fixed a major bug where the `Optimizer` page ran benchmark math but bypassed the database. The real `engine_run_optimization` is now properly executed and standard runs are accurately persisted to `optimization_runs`.
-- **Scenario Separation**: Fixed an issue where the Dashboard would incorrectly display "Stress Test" or "What-If" scenario results as the standard baseline. The Dashboard now accurately filters for the latest `standard` run.
-- **Persistent Data**: The Docker deployment no longer forcefully wipes the database on every container restart, ensuring all optimization runs and audit trails are preserved permanently.
-- **UI & Styling Fixes**: Patched a bug in the charting library where dark-theme Recharts tooltip overlays were conflicting with the light-theme UI, making the Dashboard unreadable.
 ## Example output from an actual run in this build
 
 ```
