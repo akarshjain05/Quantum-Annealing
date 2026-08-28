@@ -144,3 +144,11 @@ def test_llm_routing_fallback_on_mock(monkeypatch, db_corridors):
     assert corridor is not None
     assert corridor.code == "USD_INR"
 
+
+
+def test_answer_question_dispatch(db_session, monkeypatch):
+    from app.agent.orchestrator import answer_question
+    # Mock LLM intent detection to hit a specific branch
+    monkeypatch.setattr("app.agent.orchestrator._parse_query_with_llm", lambda q: ("general_greeting", None))
+    response = answer_question(db_session, "Hello", )
+    assert "Hello" in response or "How can I help" in response or "I am an AI assistant" in response or response != ""

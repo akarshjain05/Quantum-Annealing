@@ -55,15 +55,15 @@ export const BenchmarkHistory: React.FC<BenchmarkHistoryProps> = ({
 }) => {
   if (loading) {
     return (
-      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-        <div className="p-4 border-b border-gray-700">
-          <div className="h-5 bg-gray-700 rounded w-1/3 animate-pulse"></div>
+      <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
+        <div className="p-4 border-b border-slate-700">
+          <div className="h-5 bg-slate-700 rounded w-1/3 animate-pulse"></div>
         </div>
         <div className="divide-y divide-gray-700">
           {[1, 2, 3].map(i => (
             <div key={i} className="p-4 animate-pulse">
-              <div className="h-4 bg-gray-700 rounded w-1/2 mb-2"></div>
-              <div className="h-3 bg-gray-700 rounded w-1/3"></div>
+              <div className="h-4 bg-slate-700 rounded w-1/2 mb-2"></div>
+              <div className="h-3 bg-slate-700 rounded w-1/3"></div>
             </div>
           ))}
         </div>
@@ -73,9 +73,9 @@ export const BenchmarkHistory: React.FC<BenchmarkHistoryProps> = ({
 
   if (runs.length === 0) {
     return (
-      <div className="bg-gray-800 rounded-lg border border-gray-700 p-8 text-center">
-        <p className="text-gray-400">No benchmark history available</p>
-        <p className="text-sm text-gray-500 mt-2">
+      <div className="bg-slate-800 rounded-lg border border-slate-700 p-8 text-center">
+        <p className="text-slate-400">No benchmark history available</p>
+        <p className="text-sm text-slate-500 mt-2">
           Run an optimization with benchmark enabled to see results here.
         </p>
       </div>
@@ -83,10 +83,10 @@ export const BenchmarkHistory: React.FC<BenchmarkHistoryProps> = ({
   }
 
   return (
-    <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-      <div className="p-4 border-b border-gray-700">
-        <h3 className="font-medium text-white">Benchmark History</h3>
-        <p className="text-sm text-gray-400">{runs.length} runs</p>
+    <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
+      <div className="p-4 border-b border-slate-700">
+        <h3 className="font-medium text-text">Benchmark History</h3>
+        <p className="text-sm text-slate-400">{runs.length} runs</p>
       </div>
       
       <div className="divide-y divide-gray-700 max-h-96 overflow-y-auto">
@@ -97,38 +97,38 @@ export const BenchmarkHistory: React.FC<BenchmarkHistoryProps> = ({
             className={`w-full p-4 text-left transition-colors ${
               selectedRunId === run.run_id
                 ? 'bg-teal-500/10 border-l-2 border-teal-500'
-                : 'hover:bg-gray-700/50'
+                : 'hover:bg-slate-700/50'
             }`}
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-sm text-gray-400">
+              <span className="font-mono text-sm text-slate-400">
                 {run.run_id.slice(0, 20)}...
               </span>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-slate-500">
                 {formatDistanceToNow(new Date(run.timestamp), { addSuffix: true })}
               </span>
             </div>
             
             <div className="grid grid-cols-3 gap-2 text-sm">
               <div>
-                <span className="text-gray-500">Size:</span>{' '}
-                <span className="text-white">{run.problem_size} vars</span>
+                <span className="text-slate-500">Size:</span>{' '}
+                <span className="text-text">{run.problem_size} vars</span>
               </div>
               <div>
-                <span className="text-gray-500">Best:</span>{' '}
+                <span className="text-slate-500">Best:</span>{' '}
                 <span className="text-teal-400">
                   {getSolverDisplayName(run.best_solver)}
                 </span>
               </div>
               <div>
-                <span className="text-gray-500">Time:</span>{' '}
-                <span className="text-white">{formatTime(run.total_time_ms)}</span>
+                <span className="text-slate-500">Time:</span>{' '}
+                <span className="text-text">{formatTime(run.total_time_ms)}</span>
               </div>
             </div>
             
             {run.capital_released && (
               <div className="mt-2 text-sm">
-                <span className="text-gray-500">Capital Released:</span>{' '}
+                <span className="text-slate-500">Capital Released:</span>{' '}
                 <span className="text-green-400">{formatMoney(run.capital_released)}</span>
               </div>
             )}

@@ -117,10 +117,10 @@ export default function Optimizer() {
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-white mb-2">
+        <h1 className="text-2xl font-semibold text-text mb-2">
           Liquidity Optimizer
         </h1>
-        <p className="text-gray-400">
+        <p className="text-slate-400">
           Configure, run, and review liquidity optimization with quantum
           benchmark comparison.
         </p>
@@ -129,9 +129,9 @@ export default function Optimizer() {
       {/* Step Indicator */}
       <div className="flex items-center gap-4 mb-8">
         <StepIndicator step={1} current={step} label="Configure" />
-        <div className="h-px w-16 bg-gray-700" />
+        <div className="h-px w-16 bg-slate-700" />
         <StepIndicator step={2} current={step} label="Run" />
-        <div className="h-px w-16 bg-gray-700" />
+        <div className="h-px w-16 bg-slate-700" />
         <StepIndicator step={3} current={step} label="Review" />
       </div>
 
@@ -142,7 +142,7 @@ export default function Optimizer() {
             <span className="text-red-400">❌</span>
             <span className="text-red-400 font-medium">Error</span>
           </div>
-          <p className="text-sm text-gray-300 mt-1">{error}</p>
+          <p className="text-sm text-slate-300 mt-1">{error}</p>
           <button
             onClick={clearError}
             className="text-sm text-red-400 hover:underline mt-2"
@@ -213,12 +213,12 @@ const StepIndicator: React.FC<{
             ? "bg-teal-500 text-[#FFFFFF]"
             : isActive
               ? "bg-teal-500/20 text-teal-600 border-2 border-teal-500"
-              : "bg-gray-700 text-gray-400"
+              : "bg-slate-700 text-slate-400"
         }`}
       >
         {isComplete ? "✓" : step}
       </div>
-      <span className={isActive ? "text-white font-medium" : "text-gray-400"}>
+      <span className={isActive ? "text-text font-medium" : "text-slate-400"}>
         {label}
       </span>
     </div>
@@ -237,8 +237,8 @@ const ConfigureStep: React.FC<{
       {/* Quantum Status */}
 
       {/* Solver Configuration */}
-      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
+      <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+        <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-4">
           Solver Configuration
         </h3>
 
@@ -253,7 +253,7 @@ const ConfigureStep: React.FC<{
             disabled={!quantumStatus?.quantum_ready}
           />
           <div>
-            <span className="text-white">Include Quantum Solvers</span>
+            <span className="text-text">Include Quantum Solvers</span>
             {!quantumStatus?.quantum_ready && (
               <span className="text-yellow-400 text-sm ml-2">
                 (not available)
@@ -262,7 +262,7 @@ const ConfigureStep: React.FC<{
           </div>
         </label>
 
-        <p className="text-sm text-gray-500 mt-2 ml-7">
+        <p className="text-sm text-slate-500 mt-2 ml-7">
           Run QAOA and other quantum algorithms for comparison (slower but
           provides benchmark data)
         </p>
@@ -286,10 +286,10 @@ const RunningStep: React.FC<{ loading: boolean }> = ({ loading }) => {
   return (
     <div className="flex flex-col items-center justify-center py-16">
       <div className="w-16 h-16 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin mb-6" />
-      <h3 className="text-xl font-medium text-white mb-2">
+      <h3 className="text-xl font-medium text-text mb-2">
         Running Optimization
       </h3>
-      <p className="text-gray-400 text-center max-w-md">
+      <p className="text-slate-400 text-center max-w-md">
         Building QUBO formulation and running classical and quantum solvers.
         This may take a few moments...
       </p>
@@ -327,8 +327,8 @@ const ResultsStep: React.FC<{
         <span className="text-2xl mt-0.5">💡</span>
         <div>
           <h4 className="text-sm font-medium text-teal-400 uppercase tracking-wider mb-1">Algorithmic Insight</h4>
-          <p className="text-gray-300 text-sm">
-            Quantum optimization successfully identified excess liquidity. <span className="text-white font-medium">{largestCorridor}</span> saw the largest reduction ({largestPercent}% reduction), while maintaining strict empirical settlement safety margins.
+          <p className="text-slate-300 text-sm">
+            Quantum optimization successfully identified excess liquidity. <span className="text-text font-medium">{largestCorridor}</span> saw the largest reduction ({largestPercent}% reduction), while maintaining strict empirical settlement safety margins.
           </p>
         </div>
       </div>
@@ -357,7 +357,7 @@ const ResultsStep: React.FC<{
       {/* Benchmark Chart */}
       {result.benchmark && (
         <div>
-          <h2 className="text-xl font-semibold text-white mb-4">
+          <h2 className="text-xl font-semibold text-text mb-4">
             Classical vs Quantum Comparison
           </h2>
           <BenchmarkComparisonChart
@@ -369,14 +369,14 @@ const ResultsStep: React.FC<{
       )}
 
       {/* Corridor Results Table */}
-      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h3 className="text-lg font-medium text-white mb-4">
+      <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+        <h3 className="text-lg font-medium text-text mb-4">
           Corridor Results
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-gray-500 border-b border-gray-700">
+              <tr className="text-left text-slate-500 border-b border-slate-700">
                 <th className="pb-3">Corridor</th>
                 <th className="pb-3 text-right">Current</th>
                 <th className="pb-3 text-right">Recommended</th>
@@ -388,15 +388,15 @@ const ResultsStep: React.FC<{
               {result.corridor_results.map((corridor: any) => (
                 <tr
                   key={corridor.corridor_id}
-                  className="border-b border-gray-700/50"
+                  className="border-b border-slate-700/50"
                 >
-                  <td className="py-3 font-medium text-white">
+                  <td className="py-3 font-medium text-text">
                     {corridor.corridor_code}
                   </td>
-                  <td className="py-3 text-right text-gray-300">
+                  <td className="py-3 text-right text-slate-300">
                     ${corridor.current_balance.toFixed(1)}M
                   </td>
-                  <td className="py-3 text-right text-gray-300">
+                  <td className="py-3 text-right text-slate-300">
                     ${corridor.recommended_balance.toFixed(1)}M
                   </td>
                   <td className="py-3 text-right text-green-400">
@@ -411,10 +411,10 @@ const ResultsStep: React.FC<{
             <tfoot>
               <tr className="font-medium">
                 <td className="pt-4">Total</td>
-                <td className="pt-4 text-right text-white">
+                <td className="pt-4 text-right text-text">
                   ${result.total_liquidity.toFixed(1)}M
                 </td>
-                <td className="pt-4 text-right text-white">
+                <td className="pt-4 text-right text-text">
                   $
                   {(result.total_liquidity - result.capital_released).toFixed(
                     1,
@@ -437,7 +437,7 @@ const ResultsStep: React.FC<{
       {result.warnings && result.warnings.length > 0 && (
         <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
           <h4 className="text-yellow-400 font-medium mb-2">⚠️ Warnings</h4>
-          <ul className="text-sm text-gray-300 space-y-1">
+          <ul className="text-sm text-slate-300 space-y-1">
             {result.warnings.map((warning: string, idx: number) => (
               <li key={idx}>• {warning}</li>
             ))}
@@ -449,7 +449,7 @@ const ResultsStep: React.FC<{
       <div className="flex gap-4">
         <button
           onClick={onBack}
-          className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors"
+          className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-text font-medium rounded-lg transition-colors"
         >
           ← Run Another Optimization
         </button>
@@ -475,17 +475,17 @@ const SummaryCard: React.FC<{
     className={`rounded-lg p-4 border ${
       highlight
         ? "bg-teal-500/10 border-teal-500/30"
-        : "bg-gray-800 border-gray-700"
+        : "bg-slate-800 border-slate-700"
     }`}
   >
-    <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">
+    <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">
       {label}
     </div>
     <div
-      className={`text-2xl font-bold ${highlight ? "text-teal-400" : "text-white"}`}
+      className={`text-2xl font-bold ${highlight ? "text-teal-400" : "text-text"}`}
     >
       {value}
     </div>
-    {sublabel && <div className="text-xs text-gray-400 mt-1">{sublabel}</div>}
+    {sublabel && <div className="text-xs text-slate-400 mt-1">{sublabel}</div>}
   </div>
 );

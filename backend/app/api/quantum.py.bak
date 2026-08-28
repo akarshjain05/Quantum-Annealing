@@ -224,7 +224,7 @@ def get_benchmark_history(limit: int = Query(50, le=200)) -> List[Dict[str, Any]
                     "capital_released": data.get("capital_released")
                 })
         except Exception as e:
-            logger.error(f"Error loading {filepath}: {e}")
+            print(f"Error loading {filepath}: {e}")
     return results
 
 
@@ -349,13 +349,9 @@ def run_optimization(
     from app.api.optimization import persist_optimization_run
 
     # Run the real optimization engine to get authentic results
-    # Avoid running classical solver twice: pass the best state we just computed
-    import numpy as np
-    best_x = benchmark_result.results[benchmark_result.best_solver].solution_vector
     outcome = engine_run_optimization(
         inputs,
         seed=solver_config.seed,
-        precomputed_x=best_x
     )
     
     # Persist the run to the database so the Dashboard can see it
@@ -399,7 +395,7 @@ def run_optimization(
     qubo_info = {
         "num_variables": problem.n,
         "dimension": f"{problem.n}x{problem.n}",
-        "num_nonzero": int(problem.num_nonzero),
+        "num_nonzero": problem.num_nonzero,
         "sparsity": f"{problem.sparsity * 100:.2f}%",
         "problem_hash": problem.problem_hash
     }
@@ -581,9 +577,9 @@ def validate_qubo(
         
         return {
             "valid": len(issues) == 0 or (len(issues) == 1 and "symmetric" in issues[0]),
-            "num_variables": int(n),
+            "num_variables": n,
             "dimension": f"{n}x{n}",
-            "num_nonzero": int(problem.num_nonzero),
+            "num_nonzero": problem.num_nonzero,
             "sparsity": f"{problem.sparsity * 100:.2f}%",
             "is_symmetric": bool(is_symmetric),
             "hash": problem.problem_hash,

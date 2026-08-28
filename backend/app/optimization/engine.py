@@ -130,6 +130,7 @@ def run_optimization(
     onehot_penalty: Optional[float] = None,
     weights: Optional[Dict[str, float]] = None,
     global_liquidity_cap_musd: Optional[float] = None,
+    precomputed_x: Optional[List[int]] = None,
 ) -> OptimizationOutcome:
     qubo = build_qubo(corridors, weights=weights, onehot_penalty=onehot_penalty, global_liquidity_cap_musd=global_liquidity_cap_musd)
 

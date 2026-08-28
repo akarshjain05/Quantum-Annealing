@@ -19,11 +19,16 @@ export default function Layout({ children }) {
   const location = useLocation();
   const [pendingCount, setPendingCount] = useState(0);
 
-  useEffect(() => {
-    client.get("/api/optimization/approvals/pending")
-      .then(res => setPendingCount(res.data.length || 0))
-      .catch(() => setPendingCount(0));
-  }, [location.pathname]);
+useEffect(() => {
+    const fetchPending = () => {
+      client.get("/api/optimization/approvals/pending")
+        .then(res => setPendingCount(res.data.length || 0))
+        .catch(() => setPendingCount(0));
+    };
+    fetchPending();
+    const interval = setInterval(fetchPending, 30000); // Poll every 30s
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="min-h-screen flex">

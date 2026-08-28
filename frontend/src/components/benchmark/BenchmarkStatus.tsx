@@ -38,12 +38,12 @@ export const BenchmarkStatus: React.FC<BenchmarkStatusProps> = ({
 }) => {
   if (loading) {
     return (
-      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 animate-pulse">
-        <div className="h-6 bg-gray-700 rounded w-1/3 mb-4"></div>
+      <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 animate-pulse">
+        <div className="h-6 bg-slate-700 rounded w-1/3 mb-4"></div>
         <div className="space-y-3">
-          <div className="h-4 bg-gray-700 rounded w-1/2"></div>
-          <div className="h-4 bg-gray-700 rounded w-2/3"></div>
-          <div className="h-4 bg-gray-700 rounded w-1/2"></div>
+          <div className="h-4 bg-slate-700 rounded w-1/2"></div>
+          <div className="h-4 bg-slate-700 rounded w-2/3"></div>
+          <div className="h-4 bg-slate-700 rounded w-1/2"></div>
         </div>
       </div>
     );
@@ -55,15 +55,15 @@ export const BenchmarkStatus: React.FC<BenchmarkStatusProps> = ({
         <h3 className="text-lg font-medium text-red-400 mb-2">
           ❌ Error Loading Engine Status
         </h3>
-        <p className="text-sm text-gray-400">{error}</p>
+        <p className="text-sm text-slate-400">{error}</p>
       </div>
     );
   }
 
   if (!status) {
     return (
-      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <p className="text-gray-400">No engine data available</p>
+      <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+        <p className="text-slate-400">No engine data available</p>
       </div>
     );
   }
@@ -104,9 +104,9 @@ export const BenchmarkStatus: React.FC<BenchmarkStatusProps> = ({
     });
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+    <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-medium text-white">
+        <h3 className="text-lg font-medium text-text">
           Optimization Engine Status
         </h3>
         <span
@@ -149,7 +149,7 @@ export const BenchmarkStatus: React.FC<BenchmarkStatusProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Standard Compute */}
         <div>
-          <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-3">
+          <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-3">
             ☁️ Standard Cloud Compute
           </h4>
           <div className="space-y-2">
@@ -165,7 +165,7 @@ export const BenchmarkStatus: React.FC<BenchmarkStatusProps> = ({
 
         {/* Quantum Compute */}
         <div>
-          <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-3">
+          <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-3">
             ⚛️ Quantum-Accelerated Compute
           </h4>
           <div className="space-y-2">
@@ -178,7 +178,7 @@ export const BenchmarkStatus: React.FC<BenchmarkStatusProps> = ({
                 />
               ))
             ) : (
-              <p className="text-sm text-gray-500 italic">
+              <p className="text-sm text-slate-500 italic">
                 No quantum cores registered
               </p>
             )}
@@ -187,8 +187,8 @@ export const BenchmarkStatus: React.FC<BenchmarkStatusProps> = ({
       </div>
 
       {/* Message */}
-      <div className="mt-6 pt-4 border-t border-gray-700">
-        <p className="text-sm text-gray-400">
+      <div className="mt-6 pt-4 border-t border-slate-700">
+        <p className="text-sm text-slate-400">
           {status.quantum_ready
             ? "System is operating at peak capacity. Quantum routing algorithms are active."
             : "System is using classical fallback. Quantum cores are currently unavailable."}
@@ -210,16 +210,16 @@ const LibraryCard: React.FC<{
         ? available
           ? "bg-green-500/10 border-green-500/30"
           : "bg-yellow-500/10 border-yellow-500/30"
-        : "bg-gray-800/50 border-gray-700"
+        : "bg-slate-800/50 border-slate-700"
     }`}
   >
     <div className="flex items-center gap-2 mb-1">
       <span className={available ? "text-green-400" : "text-red-400"}>
         {available ? "✓" : "✗"}
       </span>
-      <span className="font-medium text-white text-sm">{name}</span>
+      <span className="font-medium text-text text-sm">{name}</span>
     </div>
-    <div className="text-xs text-gray-500 mt-2 leading-relaxed">
+    <div className="text-xs text-slate-500 mt-2 leading-relaxed">
       {description}
     </div>
   </div>
@@ -232,22 +232,22 @@ const SolverCard: React.FC<{ solver: SolverInfo; tag?: string }> = ({
   <div
     className={`flex items-center justify-between p-3 rounded-lg border ${
       solver.is_available
-        ? "bg-gray-700/30 border-gray-600/50"
-        : "bg-gray-800/30 border-gray-700/50 opacity-50"
+        ? "bg-slate-700/30 border-slate-600/50"
+        : "bg-slate-800/30 border-slate-700/50 opacity-50"
     }`}
   >
     <div className="flex items-center gap-3">
       <span
-        className={solver.is_available ? "text-green-400" : "text-gray-500"}
+        className={solver.is_available ? "text-green-400" : "text-slate-500"}
       >
         {solver.is_available ? "●" : "○"}
       </span>
-      <span className="text-sm font-medium text-gray-200">
+      <span className="text-sm font-medium text-slate-200">
         {solver.display_name}
       </span>
     </div>
     {tag && (
-      <span className="text-[10px] uppercase tracking-wider text-gray-400 bg-gray-800 px-2 py-1 rounded">
+      <span className="text-[10px] uppercase tracking-wider text-slate-400 bg-slate-800 px-2 py-1 rounded">
         {tag}
       </span>
     )}

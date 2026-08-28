@@ -194,8 +194,7 @@ def _find_corridor(db: Session, question: str):
     corridors = db.query(models.Corridor).all()
     _, code = _parse_query_with_llm(question)
     
-    # If LLM returned None, it might have fallen back. Try deterministic extraction.
-    if not HAS_GEMINI or not settings.GEMINI_API_KEY or not code:
+    if not code:
         code = _fallback_find_corridor_code(question, corridors)
         
     if not code:

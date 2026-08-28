@@ -140,14 +140,14 @@ const BenchmarkSummary: React.FC<{ data: BenchmarkData }> = ({ data }) => {
       
       
       
-      <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">
+      <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">
           Solvers Tested
         </div>
-        <div className="text-2xl font-bold text-white">
+        <div className="text-2xl font-bold text-text">
           {data.solvers.length}
         </div>
-        <div className="text-xs text-gray-400">
+        <div className="text-xs text-slate-400">
           <span className="text-teal-400">{classicalSolvers.length} classical</span>
           {quantumSolvers.length > 0 && (
             <>, <span className="text-purple-400">{quantumSolvers.length} quantum</span></>
@@ -155,14 +155,14 @@ const BenchmarkSummary: React.FC<{ data: BenchmarkData }> = ({ data }) => {
         </div>
       </div>
       
-      <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-        <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">
+      <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">
           Total Time
         </div>
-        <div className="text-2xl font-bold text-white">
+        <div className="text-2xl font-bold text-text">
           {formatTime(data.total_time_ms)}
         </div>
-        <div className="text-xs text-gray-400">all solvers</div>
+        <div className="text-xs text-slate-400">all solvers</div>
       </div>
     </div>
   );
@@ -189,12 +189,12 @@ const ExecutionTimeChart: React.FC<{ solvers: SolverResult[]; bestSolver: string
     if (!active || !payload?.length) return null;
     const data = payload[0].payload;
     return (
-      <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 shadow-lg">
-        <p className="font-medium text-white">{data.fullName}</p>
-        <p className="text-sm text-gray-400">
+      <div className="bg-slate-800 border border-slate-700 rounded-lg p-3 shadow-lg">
+        <p className="font-medium text-text">{data.fullName}</p>
+        <p className="text-sm text-slate-400">
           Time: <span className="text-teal-400 font-medium">{formatTime(data.time)}</span>
         </p>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-slate-500 mt-1">
           {data.isQuantum ? '🔮 Quantum' : '💻 Classical'}
         </p>
       </div>
@@ -202,8 +202,8 @@ const ExecutionTimeChart: React.FC<{ solvers: SolverResult[]; bestSolver: string
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-      <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
+    <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+      <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-4">
         Execution Time Comparison
       </h4>
       <div className="h-64">
@@ -236,7 +236,7 @@ const ExecutionTimeChart: React.FC<{ solvers: SolverResult[]; bestSolver: string
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <p className="text-xs text-gray-500 mt-3">
+      <p className="text-xs text-slate-500 mt-3">
         Lower is better. Quantum simulators have overhead; real QPU timing would differ.
       </p>
     </div>
@@ -265,13 +265,13 @@ const SolutionQualityChart: React.FC<{ solvers: SolverResult[]; bestSolver: stri
     if (!active || !payload?.length) return null;
     const data = payload[0].payload;
     return (
-      <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 shadow-lg">
-        <p className="font-medium text-white">{data.name}</p>
-        <p className="text-sm text-gray-400">
+      <div className="bg-slate-800 border border-slate-700 rounded-lg p-3 shadow-lg">
+        <p className="font-medium text-text">{data.name}</p>
+        <p className="text-sm text-slate-400">
           Quality: <span className="text-green-400 font-medium">{data.quality.toFixed(2)}%</span>
         </p>
-        <p className="text-sm text-gray-400">
-          Energy: <span className="text-white">{formatEnergy(data.energy)}</span>
+        <p className="text-sm text-slate-400">
+          Energy: <span className="text-text">{formatEnergy(data.energy)}</span>
         </p>
         {data.gap > 0 && (
           <p className="text-xs text-yellow-400 mt-1">
@@ -286,8 +286,8 @@ const SolutionQualityChart: React.FC<{ solvers: SolverResult[]; bestSolver: stri
   const domainMin = Math.max(0, Math.floor(minQuality - 5));
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-      <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
+    <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+      <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-4">
         Solution Quality (% of Optimal)
       </h4>
       <div className="h-64">
@@ -322,7 +322,7 @@ const SolutionQualityChart: React.FC<{ solvers: SolverResult[]; bestSolver: stri
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <p className="text-xs text-gray-500 mt-3">
+      <p className="text-xs text-slate-500 mt-3">
         100% = optimal solution found. Green line indicates optimum.
       </p>
     </div>
@@ -339,11 +339,11 @@ const ConvergenceChart: React.FC<{ solvers: SolverResult[] }> = ({ solvers }) =>
 
   if (solversWithConvergence.length === 0) {
     return (
-      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
+      <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+        <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-4">
           Convergence History
         </h4>
-        <div className="h-64 flex items-center justify-center text-gray-500">
+        <div className="h-64 flex items-center justify-center text-slate-500">
           No convergence data available
         </div>
       </div>
@@ -376,8 +376,8 @@ const ConvergenceChart: React.FC<{ solvers: SolverResult[] }> = ({ solvers }) =>
   const lineColors = [COLORS.classical, COLORS.quantum, COLORS.best, COLORS.warning];
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-      <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
+    <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+      <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-4">
         Convergence History
       </h4>
       <div className="h-64">
@@ -417,7 +417,7 @@ const ConvergenceChart: React.FC<{ solvers: SolverResult[] }> = ({ solvers }) =>
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <p className="text-xs text-gray-500 mt-3">
+      <p className="text-xs text-slate-500 mt-3">
         Energy should decrease (improve) over iterations for optimization algorithms.
       </p>
     </div>
@@ -436,14 +436,14 @@ const ResultsTable: React.FC<{ solvers: SolverResult[]; bestSolver: string | nul
   }, [solvers]);
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-      <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
+    <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+      <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-4">
         Detailed Results
       </h4>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-gray-500 border-b border-gray-700">
+            <tr className="text-left text-slate-500 border-b border-slate-700">
               <th className="pb-3 pr-4">Solver</th>
               <th className="pb-3 pr-4">Type</th>
               <th className="pb-3 pr-4 text-right">Energy</th>
@@ -458,12 +458,12 @@ const ResultsTable: React.FC<{ solvers: SolverResult[]; bestSolver: string | nul
               return (
                 <tr 
                   key={solver.solver_type}
-                  className={`border-b border-gray-700/50 ${isBest ? 'bg-green-500/10' : ''}`}
+                  className={`border-b border-slate-700/50 ${isBest ? 'bg-green-500/10' : ''}`}
                 >
                   <td className="py-3 pr-4">
                     <div className="flex items-center gap-2">
                       {isBest && <span className="text-green-400">🏆</span>}
-                      <span className={`font-medium ${isBest ? 'text-green-400' : 'text-white'}`}>
+                      <span className={`font-medium ${isBest ? 'text-green-400' : 'text-text'}`}>
                         {getDisplayName(solver.solver_type, solver.display_name)}
                       </span>
                     </div>
@@ -477,10 +477,10 @@ const ResultsTable: React.FC<{ solvers: SolverResult[]; bestSolver: string | nul
                       {solver.is_quantum ? '🔮 Quantum' : '💻 Classical'}
                     </span>
                   </td>
-                  <td className="py-3 pr-4 text-right font-mono text-gray-300">
+                  <td className="py-3 pr-4 text-right font-mono text-slate-300">
                     {formatEnergy(solver.energy)}
                   </td>
-                  <td className="py-3 pr-4 text-right text-gray-300">
+                  <td className="py-3 pr-4 text-right text-slate-300">
                     {formatTime(solver.execution_time_ms)}
                   </td>
                   <td className="py-3 pr-4 text-right">
@@ -488,7 +488,7 @@ const ResultsTable: React.FC<{ solvers: SolverResult[]; bestSolver: string | nul
                       {solver.solution_quality.toFixed(2)}%
                     </span>
                   </td>
-                  <td className="py-3 text-right text-gray-400">
+                  <td className="py-3 text-right text-slate-400">
                     {solver.gap_percent === 0 ? (
                       <span className="text-green-400">Optimal</span>
                     ) : (
@@ -518,15 +518,15 @@ const QuantumVsClassicalCard: React.FC<{ data: BenchmarkData }> = ({ data }) => 
         <h4 className="text-lg font-medium text-blue-400 mb-3">
           ℹ️ Quantum Solvers Not Included
         </h4>
-        <p className="text-sm text-gray-300">
+        <p className="text-sm text-slate-300">
           Only classical solvers were run in this benchmark. This could be because:
         </p>
-        <ul className="text-sm text-gray-400 list-disc list-inside mt-2 space-y-1">
+        <ul className="text-sm text-slate-400 list-disc list-inside mt-2 space-y-1">
           <li>Problem size ({data.problem_size} variables) exceeds quantum simulator limits</li>
           <li>Quantum libraries (Qiskit) not installed</li>
           <li>Quantum solvers were disabled in configuration</li>
         </ul>
-        <p className="text-sm text-gray-300 mt-4">
+        <p className="text-sm text-slate-300 mt-4">
           For problems with 20 or fewer variables, QAOA simulation is available.
         </p>
       </div>
@@ -546,40 +546,40 @@ const QuantumVsClassicalCard: React.FC<{ data: BenchmarkData }> = ({ data }) => 
     : 0;
 
   return (
-    <div className="bg-gradient-to-r from-teal-500/10 to-purple-500/10 border border-gray-700 rounded-lg p-6">
-      <h4 className="text-lg font-medium text-white mb-4">
+    <div className="bg-gradient-to-r from-teal-500/10 to-purple-500/10 border border-slate-700 rounded-lg p-6">
+      <h4 className="text-lg font-medium text-text mb-4">
         ⚔️ Classical vs Quantum Comparison
       </h4>
       
       <div className="grid grid-cols-2 gap-6">
-        <div className={`p-4 rounded-lg ${classicalWins ? 'bg-teal-500/20 border border-teal-500/30' : 'bg-gray-800/50'}`}>
+        <div className={`p-4 rounded-lg ${classicalWins ? 'bg-teal-500/20 border border-teal-500/30' : 'bg-slate-800/50'}`}>
           <div className="flex items-center gap-2 mb-3">
             <span className="text-2xl">💻</span>
-            <span className="font-medium text-white">Classical</span>
+            <span className="font-medium text-text">Classical</span>
             {classicalWins && <span className="text-green-400 text-sm">👑 Winner</span>}
           </div>
           {bestClassical && (
             <>
-              <div className="text-sm text-gray-400">
+              <div className="text-sm text-slate-400">
                 Best: <span className="text-teal-400">{getDisplayName(bestClassical.solver_type, bestClassical.display_name)}</span>
               </div>
-              <div className="text-sm text-gray-400">
-                Energy: <span className="text-white font-mono">{formatEnergy(bestClassical.energy)}</span>
+              <div className="text-sm text-slate-400">
+                Energy: <span className="text-text font-mono">{formatEnergy(bestClassical.energy)}</span>
               </div>
-              <div className="text-sm text-gray-400">
-                Time: <span className="text-white">{formatTime(bestClassical.execution_time_ms)}</span>
+              <div className="text-sm text-slate-400">
+                Time: <span className="text-text">{formatTime(bestClassical.execution_time_ms)}</span>
               </div>
             </>
           )}
         </div>
         
-        <div className={`p-4 rounded-lg ${quantumWins ? 'bg-purple-500/20 border border-purple-500/30' : 'bg-gray-800/50'}`}>
+        <div className={`p-4 rounded-lg ${quantumWins ? 'bg-purple-500/20 border border-purple-500/30' : 'bg-slate-800/50'}`}>
           <div className="flex items-center gap-2 mb-3">
             <span className="text-2xl">🔮</span>
-            <span className="font-medium text-white">Quantum</span>
+            <span className="font-medium text-text">Quantum</span>
             {quantumWins && <span className="text-green-400 text-sm">👑 Winner</span>}
           </div>
-          <div className="text-sm text-gray-400">
+          <div className="text-sm text-slate-400">
             Best: <span className="text-purple-400">{getDisplayName(bestQuantum.solver_type, bestQuantum.display_name)}</span>
             {bestQuantum.metadata?.mocked_chunked_qaoa && (
               <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 uppercase tracking-wider" title="Classical SA with fabricated delay to simulate QAOA scale">
@@ -587,18 +587,18 @@ const QuantumVsClassicalCard: React.FC<{ data: BenchmarkData }> = ({ data }) => 
               </span>
             )}
           </div>
-          <div className="text-sm text-gray-400">
-            Energy: <span className="text-white font-mono">{formatEnergy(bestQuantum.energy)}</span>
+          <div className="text-sm text-slate-400">
+            Energy: <span className="text-text font-mono">{formatEnergy(bestQuantum.energy)}</span>
           </div>
-          <div className="text-sm text-gray-400">
-            Time: <span className="text-white">{formatTime(bestQuantum.execution_time_ms)}</span>
+          <div className="text-sm text-slate-400">
+            Time: <span className="text-text">{formatTime(bestQuantum.execution_time_ms)}</span>
           </div>
         </div>
       </div>
       
-      <div className="mt-4 pt-4 border-t border-gray-700">
-        <h5 className="text-sm font-medium text-gray-400 mb-2">Analysis</h5>
-        <ul className="text-sm text-gray-300 space-y-1">
+      <div className="mt-4 pt-4 border-t border-slate-700">
+        <h5 className="text-sm font-medium text-slate-400 mb-2">Analysis</h5>
+        <ul className="text-sm text-slate-300 space-y-1">
           <li>
             • Solution quality: {bestClassical && Math.abs(bestClassical.energy - bestQuantum.energy) < 0.01 
               ? 'Both methods found equivalent solutions' 
@@ -631,7 +631,7 @@ const QuantumAdvantageDisclosure: React.FC<{ problemSize: number }> = ({ problem
       <h4 className="text-lg font-medium text-yellow-400 mb-3">
         ⚠️ About Quantum Advantage
       </h4>
-      <div className="text-sm text-gray-300 space-y-3">
+      <div className="text-sm text-slate-300 space-y-3">
         <p>
           <strong>Current Status:</strong> For this problem size ({problemSize} variables), 
           classical simulated annealing and quantum approaches achieve similar solution quality.
@@ -640,7 +640,7 @@ const QuantumAdvantageDisclosure: React.FC<{ problemSize: number }> = ({ problem
         <p>
           <strong>Where Quantum May Help:</strong>
         </p>
-        <ul className="list-disc list-inside text-gray-400 space-y-1 ml-2">
+        <ul className="list-disc list-inside text-slate-400 space-y-1 ml-2">
           <li>Problems with 500+ variables (50+ corridors)</li>
           <li>Problems with dense connectivity (many interactions)</li>
           <li>When running on actual quantum hardware (D-Wave, IBM)</li>
@@ -670,8 +670,8 @@ export const BenchmarkComparisonChart: React.FC<BenchmarkChartProps> = ({
 
   if (!data || !data.solvers || data.solvers.length === 0) {
     return (
-      <div className={`bg-gray-800 rounded-lg p-8 text-center ${className}`}>
-        <p className="text-gray-400">No benchmark data available</p>
+      <div className={`bg-slate-800 rounded-lg p-8 text-center ${className}`}>
+        <p className="text-slate-400">No benchmark data available</p>
       </div>
     );
   }
@@ -683,25 +683,25 @@ export const BenchmarkComparisonChart: React.FC<BenchmarkChartProps> = ({
       <div className="flex items-center gap-6 px-2">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded" style={{ backgroundColor: COLORS.classical }}></div>
-          <span className="text-sm text-gray-400">Classical Solvers</span>
+          <span className="text-sm text-slate-400">Classical Solvers</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded" style={{ backgroundColor: COLORS.quantum }}></div>
-          <span className="text-sm text-gray-400">Quantum Solvers</span>
+          <span className="text-sm text-slate-400">Quantum Solvers</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 rounded" style={{ backgroundColor: COLORS.best }}></div>
-          <span className="text-sm text-gray-400">Best Result</span>
+          <span className="text-sm text-slate-400">Best Result</span>
         </div>
       </div>
       
-      <div className="flex gap-2 border-b border-gray-700">
+      <div className="flex gap-2 border-b border-slate-700">
         <button
           onClick={() => setActiveTab('charts')}
           className={`px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === 'charts'
               ? 'text-teal-400 border-b-2 border-teal-400'
-              : 'text-gray-400 hover:text-white'
+              : 'text-slate-400 hover:text-text'
           }`}
         >
           Charts
@@ -711,7 +711,7 @@ export const BenchmarkComparisonChart: React.FC<BenchmarkChartProps> = ({
           className={`px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === 'table'
               ? 'text-teal-400 border-b-2 border-teal-400'
-              : 'text-gray-400 hover:text-white'
+              : 'text-slate-400 hover:text-text'
           }`}
         >
           Detailed Table
@@ -721,7 +721,7 @@ export const BenchmarkComparisonChart: React.FC<BenchmarkChartProps> = ({
           className={`px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === 'analysis'
               ? 'text-teal-400 border-b-2 border-teal-400'
-              : 'text-gray-400 hover:text-white'
+              : 'text-slate-400 hover:text-text'
           }`}
         >
           Analysis

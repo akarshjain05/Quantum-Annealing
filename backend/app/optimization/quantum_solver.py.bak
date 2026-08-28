@@ -762,7 +762,7 @@ class ChunkedQAOA(BaseSolver):
     def solve(self, problem: QUBOProblem) -> SolverResult:
         import time
         from app.optimization.decomposition import build_chunks, has_valid_decomposition
-        from app.optimization.chunked_qaoa_benchmark import solve_chunk, stitch_solution
+        from chunked_qaoa_benchmark import solve_chunk, stitch_solution
         
         start_time = time.perf_counter()
         
@@ -897,11 +897,11 @@ class QAOACustom(BaseSolver):
             qc.measure_all()
             return qc
         
-        backend = AerSimulator()
         def objective(params: np.ndarray) -> float:
             gamma = params[:self.p]
             beta = params[self.p:]
             qc = qaoa_circuit(gamma.tolist(), beta.tolist())
+            backend = AerSimulator()
             transpiled = transpile(qc, backend)
             job = backend.run(transpiled, shots=self.shots, seed_simulator=self.seed)
             counts = job.result().get_counts()
